@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- target covariance ellipse -->
+  <g transform="translate(300 190) rotate(-28)">
+    <ellipse rx="150" ry="62" fill="none" stroke="#fbfaf7" stroke-width="1.5" opacity="0.85"/>
+    <ellipse rx="100" ry="41" fill="none" stroke="#fbfaf7" stroke-width="1" opacity="0.45"/>
+  </g>
+  <!-- synthetic covariance ellipse, being matched toward the target -->
+  <g transform="translate(300 190) rotate(-28)">
+    <ellipse rx="138" ry="56" fill="none" stroke="#026234" stroke-width="1.5" opacity="0.9"/>
+  </g>
+  <!-- mismatched synthetic covariance (ghost), the thing being corrected away -->
+  <g transform="translate(300 190) rotate(34)" opacity="0.3">
+    <ellipse rx="120" ry="78" fill="none" stroke="#026234" stroke-width="1" stroke-dasharray="5 5"/>
+  </g>
+  <!-- sampled points -->
+  <g fill="#fbfaf7">
+    <circle cx="300" cy="190" r="4"/>
+    <circle cx="218" cy="232" r="3"/>
+    <circle cx="392" cy="150" r="3"/>
+    <circle cx="356" cy="142" r="3"/>
+    <circle cx="248" cy="244" r="3"/>
+  </g>
+</svg>

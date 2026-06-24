@@ -1,0 +1,1521 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Shimeng Huang">
+<meta name="author" content="Matthew Robinson">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2026-02-23">
+<meta name="description" content="Mendelian Randomization (MR) uses genetic variants as instruments to estimate causal effects from observational data, but its core assumptions — especially the independence between instruments and unobserved confounders — are routinely broken by population stratification and assortative mating. Leveraging the growing availability of multi-environment biobank data, this work proposes a representation-learning framework that exploits cross-environment invariance to recover the latent exogenous component of a confounded genetic instrument. It provides identifiability guarantees for recovering these latent instruments under several mixing mechanisms, and demonstrates effective bias correction in simulations and in semi-synthetic experiments built from the All of Us Research Hub.">
+
+<title>Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e28080e7c37a1579d20c7fa5b78f5608.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-eec7d6f73bdeace7b4cd9250a7b8dff4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-e28080e7c37a1579d20c7fa5b78f5608.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning – CLAI Research Group">
+<meta property="og:description" content="Mendelian Randomization (MR) uses genetic variants as instruments to estimate causal effects from observational data, but its core assumptions — especially the independence between instruments and unobserved confounders — are routinely broken by population stratification and assortative mating. Leveraging the growing availability of multi-environment biobank data, this work proposes a representation-learning framework that exploits cross-environment invariance to recover the latent exogenous component of a confounded genetic instrument. It provides identifiability guarantees for recovering these latent instruments under several mixing mechanisms, and demonstrates effective bias correction in simulations and in semi-synthetic experiments built from the All of Us Research Hub.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/mendelian-randomization-representation-learning/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning – CLAI Research Group">
+<meta name="twitter:description" content="Mendelian Randomization (MR) uses genetic variants as instruments to estimate causal effects from observational data, but its core assumptions — especially the independence between instruments and unobserved confounders — are routinely broken by population stratification and assortative mating. Leveraging the growing availability of multi-environment biobank data, this work proposes a representation-learning framework that exploits cross-environment invariance to recover the latent exogenous component of a confounded genetic instrument. It provides identifiability guarantees for recovering these latent instruments under several mixing mechanisms, and demonstrates effective bias correction in simulations and in semi-synthetic experiments built from the All of Us Research Hub.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/mendelian-randomization-representation-learning/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning">
+<meta name="citation_author" content="Shimeng Huang">
+<meta name="citation_author" content="Matthew Robinson">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2026-02-23">
+<meta name="citation_cover_date" content="2026-02-23">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-02-23">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2026/mendelian-randomization-representation-learning/">
+<meta name="citation_language" content="en">
+<meta name="citation_journal_title" content="arXiv preprint">
+<meta name="citation_reference" content="citation_title=Identification of causal effects using instrumental variables;,citation_author=Joshua D. Angrist;,citation_author=Guido W. Imbens;,citation_author=Donald B. Rubin;,citation_publication_date=1996;,citation_cover_date=1996;,citation_year=1996;,citation_issue=434;,citation_volume=91;,citation_journal_title=Journal of the American Statistical Association;,citation_publisher=Taylor &amp;amp;amp; Francis;">
+<meta name="citation_reference" content="citation_title=Mendelian randomization;,citation_author=Eleanor Sanderson;,citation_author=M. Maria Glymour;,citation_author=Michael V. Holmes;,citation_author=Hyunseung Kang;,citation_author=Jean Morrison;,citation_author=Marcus R. Munafò;,citation_author=Tom Palmer;,citation_author=C. Mary Schooling;,citation_author=Chris Wallace;,citation_author=Qingyuan Zhao;,citation_author=others;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_issue=1;,citation_volume=2;,citation_journal_title=Nature Reviews Methods Primers;,citation_publisher=Nature Publishing Group;">
+<meta name="citation_reference" content="citation_title=Selecting instruments for Mendelian randomization in the wake of genome-wide association studies;,citation_author=Daniel I. Swerdlow;,citation_author=Karoline B. Kuchenbaecker;,citation_author=Sonia Shah;,citation_author=Reecha Sofat;,citation_author=Michael V. Holmes;,citation_author=Jon White;,citation_author=Jennifer S. Mindell;,citation_author=Mika Kivimaki;,citation_author=Eric J. Brunner;,citation_author=John C. Whittaker;,citation_author=others;,citation_publication_date=2016;,citation_cover_date=2016;,citation_year=2016;,citation_issue=5;,citation_volume=45;,citation_journal_title=International Journal of Epidemiology;,citation_publisher=Oxford University Press;">
+<meta name="citation_reference" content="citation_title=Mendelian randomization with invalid instruments: Effect estimation and bias detection through Egger regression;,citation_author=Jack Bowden;,citation_author=George Davey Smith;,citation_author=Stephen Burgess;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;,citation_issue=2;,citation_volume=44;,citation_journal_title=International Journal of Epidemiology;,citation_publisher=Oxford University Press;">
+<meta name="citation_reference" content="citation_title=The GENIUS approach to robust Mendelian randomization inference;,citation_author=Eric Tchetgen Tchetgen;,citation_author=BaoLuo Sun;,citation_author=Stefan Walter;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_issue=3;,citation_volume=36;,citation_journal_title=Statistical Science;,citation_publisher=Institute of Mathematical Statistics;">
+<meta name="citation_reference" content="citation_title=The “All of Us” research program;,citation_author=The All of Us Research Program Investigators;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_issue=7;,citation_volume=381;,citation_journal_title=New England Journal of Medicine;,citation_publisher=Massachusetts Medical Society;">
+<meta name="citation_reference" content="citation_title=Multi-domain causal representation learning via weak distributional invariances;,citation_author=Kartik Ahuja;,citation_author=Amin Mansouri;,citation_author=Yixin Wang;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=International conference on artificial intelligence and statistics (AISTATS);,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=Unifying causal representation learning with the invariance principle;,citation_author=Dingling Yao;,citation_author=Dario Rancati;,citation_author=Riccardo Cadei;,citation_author=Marco Fumero;,citation_author=Francesco Locatello;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_conference_title=International conference on learning representations (ICLR);">
+<meta name="citation_reference" content="citation_title=Variational autoencoders and nonlinear ICA: A unifying framework;,citation_author=Ilyes Khemakhem;,citation_author=Diederik P. Kingma;,citation_author=Ricardo Pio Monti;,citation_author=Aapo Hyvärinen;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_conference_title=International conference on artificial intelligence and statistics (AISTATS);,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=Challenging common assumptions in the unsupervised learning of disentangled representations;,citation_author=Francesco Locatello;,citation_author=Stefan Bauer;,citation_author=Mario Lucic;,citation_author=Gunnar Raetsch;,citation_author=Sylvain Gelly;,citation_author=Bernhard Schölkopf;,citation_author=Olivier Bachem;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_conference_title=International conference on machine learning (ICML);,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=Conditional instrumental variable regression with representation learning for causal inference;,citation_author=Debo Cheng;,citation_author=Ziqi Xu;,citation_author=Jiuyong Li;,citation_author=Lin Liu;,citation_author=Jixue Liu;,citation_author=Thuc Duy Le;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=International conference on learning representations (ICLR);">
+<meta name="citation_reference" content="citation_title=Disentangled representation learning for causal inference with instruments;,citation_author=Debo Cheng;,citation_author=Ziqi Xu;,citation_author=Jiuyong Li;,citation_author=Lin Liu;,citation_author=Jixue Liu;,citation_author=Thuc Duy Le;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_issue=8;,citation_volume=35;,citation_journal_title=IEEE Transactions on Neural Networks and Learning Systems;,citation_publisher=IEEE;">
+<meta name="citation_reference" content="citation_title=A kernel two-sample test;,citation_author=Arthur Gretton;,citation_author=Karsten M. Borgwardt;,citation_author=Malte J. Rasch;,citation_author=Bernhard Schölkopf;,citation_author=Alexander J. Smola;,citation_publication_date=2012;,citation_cover_date=2012;,citation_year=2012;,citation_issue=25;,citation_volume=13;,citation_journal_title=Journal of Machine Learning Research;">
+<meta name="citation_reference" content="citation_title=Measuring statistical dependence with Hilbert–Schmidt norms;,citation_author=Arthur Gretton;,citation_author=Olivier Bousquet;,citation_author=Alex Smola;,citation_author=Bernhard Schölkopf;,citation_publication_date=2005;,citation_cover_date=2005;,citation_year=2005;,citation_conference_title=Algorithmic learning theory (ALT);,citation_conference=Springer;">
+<meta name="citation_reference" content="citation_title=Representation learning with contrastive predictive coding;,citation_author=Aaron Oord;,citation_author=Yazhe Li;,citation_author=Oriol Vinyals;,citation_publication_date=2018;,citation_cover_date=2018;,citation_year=2018;,citation_journal_title=arXiv preprint arXiv:1807.03748;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem-with-genetic-instruments" id="toc-the-problem-with-genetic-instruments" class="nav-link active" data-scroll-target="#the-problem-with-genetic-instruments">The problem with genetic instruments</a></li>
+  <li><a href="#a-multi-environment-setup" id="toc-a-multi-environment-setup" class="nav-link" data-scroll-target="#a-multi-environment-setup">A multi-environment setup</a></li>
+  <li><a href="#identifying-the-invariant-component" id="toc-identifying-the-invariant-component" class="nav-link" data-scroll-target="#identifying-the-invariant-component">Identifying the invariant component</a></li>
+  <li><a href="#good-and-bad-uses-of-the-learned-representation" id="toc-good-and-bad-uses-of-the-learned-representation" class="nav-link" data-scroll-target="#good-and-bad-uses-of-the-learned-representation">Good and bad uses of the learned representation</a></li>
+  <li><a href="#experiments" id="toc-experiments" class="nav-link" data-scroll-target="#experiments">Experiments</a></li>
+  <li><a href="#why-it-matters" id="toc-why-it-matters" class="nav-link" data-scroll-target="#why-it-matters">Why it matters</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning</h1>
+<p class="subtitle lead">Recovering the invariant, exogenous part of a confounded genetic instrument by learning what stays stable across populations</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Causal Inference</div>
+    <div class="quarto-category">Representation Learning</div>
+    <div class="quarto-category">AI for Science</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Mendelian Randomization (MR) uses genetic variants as instruments to estimate causal effects from observational data, but its core assumptions — especially the independence between instruments and unobserved confounders — are routinely broken by population stratification and assortative mating. Leveraging the growing availability of multi-environment biobank data, this work proposes a representation-learning framework that exploits cross-environment invariance to recover the latent exogenous component of a confounded genetic instrument. It provides identifiability guarantees for recovering these latent instruments under several mixing mechanisms, and demonstrates effective bias correction in simulations and in semi-synthetic experiments built from the All of Us Research Hub.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Shimeng Huang <a href="mailto:shimeng.huang@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Matthew Robinson </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 23, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-icml">
+<span class="venue-name">ICML 2026</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2602.19782" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a></div>
+<section id="the-problem-with-genetic-instruments" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-problem-with-genetic-instruments">The problem with genetic instruments</h2>
+<p>When randomized trials are infeasible or unethical, epidemiologists turn to <strong>Mendelian Randomization</strong> (MR): an instrumental-variable (IV) method <span class="citation" data-cites="angrist1996identification">(<a href="#ref-angrist1996identification" role="doc-biblioref">Angrist et al. 1996</a>)</span> that uses genetic variants as instruments for a risk factor, exploiting the fact that alleles are (in principle) assigned at conception independently of later-life confounders <span class="citation" data-cites="sanderson2022mendelian">(<a href="#ref-sanderson2022mendelian" role="doc-biblioref"><span class="nocase">Sanderson et al.</span> 2022</a>)</span>. A variable <span class="math inline">Z</span> is a <em>valid</em> instrument for an exposure <span class="math inline">D</span> with respect to an outcome <span class="math inline">Y</span>, in the presence of an unobserved confounder <span class="math inline">H</span>, when it satisfies three conditions:</p>
+<div class="no-row-height column-margin column-container"><div id="ref-angrist1996identification" class="csl-entry" role="listitem">
+Angrist, Joshua D., Guido W. Imbens, and Donald B. Rubin. 1996. <span>“Identification of Causal Effects Using Instrumental Variables.”</span> <em>Journal of the American Statistical Association</em> 91 (434): 444–55.
+</div><div id="ref-sanderson2022mendelian" class="csl-entry" role="listitem">
+<span class="nocase">Sanderson, Eleanor, M. Maria Glymour, Michael V. Holmes, et al.</span> 2022. <span>“Mendelian Randomization.”</span> <em>Nature Reviews Methods Primers</em> 2 (1): 6.
+</div></div><ul>
+<li><strong>Relevance</strong> — <span class="math inline">Z</span> is associated with <span class="math inline">D</span>;</li>
+<li><strong>Exchangeability</strong> — <span class="math inline">Z \perp H</span>;</li>
+<li><strong>Exclusion restriction</strong> — <span class="math inline">Z \perp Y \mid H, D</span>.</li>
+</ul>
+<div class="page-columns page-full"><p></p><div class="no-row-height column-margin column-container"><span class="margin-aside">Relevance is empirically checkable; exchangeability and the exclusion restriction are not, and are the ones that break in practice <span class="citation" data-cites="swerdlow2016selecting">(<a href="#ref-swerdlow2016selecting" role="doc-biblioref"><span class="nocase">Swerdlow et al.</span> 2016</a>)</span>.</span></div><div class="no-row-height column-margin column-container"><div id="ref-swerdlow2016selecting" class="csl-entry" role="listitem">
+<span class="nocase">Swerdlow, Daniel I., Karoline B. Kuchenbaecker, Sonia Shah, et al.</span> 2016. <span>“Selecting Instruments for <span>Mendelian</span> Randomization in the Wake of Genome-Wide Association Studies.”</span> <em>International Journal of Epidemiology</em> 45 (5): 1600–1616.
+</div></div></div>
+<p>The trouble is that in real genetic data the exchangeability condition is routinely violated. <strong>Population stratification</strong> and assortative mating make genetic variants and phenotypes share ancestry- and environment-driven influences, so the variant is no longer independent of the confounder, and the MR estimate is biased.</p>
+<p>A worked example makes the failure concrete. Suppose we want the average causal effect (ACE) of type II diabetes (<span class="math inline">D</span>) on coronary artery disease (<span class="math inline">Y</span>), both confounded by unobserved population-level factors <span class="math inline">H</span>. The candidate instruments <span class="math inline">Z = (Z_1, Z_2, Z_3)</span> are each a mixture of latent sources <span class="math inline">U = (U_1, U_2, U_3)</span>: <span class="math inline">U_2</span> and <span class="math inline">U_3</span> are stochastic recombination governed by Mendel’s law (valid), while <span class="math inline">U_1</span> is driven by population factors <span class="math inline">H</span> (invalid). Because every observed variant mixes in a little of the invalid <span class="math inline">U_1</span>, <strong>all of <span class="math inline">Z_1, Z_2, Z_3</span> become invalid instruments</strong> — even though two clean instruments are hiding inside.</p>
+<div class="page-columns page-full">
+<div id="fig-entangle" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-entangle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="fig-entangle.svg" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-entangle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: A schematic of the entanglement problem. Latent sources (centre) generate the observed variants on the left; an invalid source (red, <span class="math inline">U_1</span>) is influenced by the unobserved confounder <span class="math inline">H</span>, so its leakage into every observed variant <span class="math inline">Z_1, Z_2, Z_3</span> renders all of them invalid. The green sources (<span class="math inline">U_2, U_3</span>) would be valid if they could be isolated. Schematic by the editors of this page, redrawn from the structure described in the original paper.
+</figcaption>
+</figure>
+</div>
+</div>
+<p>If we could recover the latent variables <span class="math inline">U</span> from the observed <span class="math inline">Z</span>, we would get back two valid instruments. That recovery problem is exactly an <em>identification</em> problem in representation learning — and it is the heart of the paper.</p>
+</section>
+<section id="a-multi-environment-setup" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="a-multi-environment-setup">A multi-environment setup</h2>
+<p>The key resource is that the same traits can now be studied across many populations: large biobanks such as All of Us <span class="citation" data-cites="allofus2019">(<a href="#ref-allofus2019" role="doc-biblioref">The All of Us Research Program Investigators 2019</a>)</span> make <strong>multi-environment</strong> data available. The underlying causal biology is shared across populations, but allele frequencies and linkage-disequilibrium structure differ by demographic history. So an observed variant can be read as a <em>mixture</em> of an <strong>invariant biological signal</strong> and an <strong>environment-specific confounding component</strong>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-allofus2019" class="csl-entry" role="listitem">
+The All of Us Research Program Investigators. 2019. <span>“The <span>‘<span>All</span> of <span>Us</span>’</span> Research Program.”</span> <em>New England Journal of Medicine</em> 381 (7): 668–76.
+</div></div><p>The paper formalizes this. Across <span class="math inline">K</span> environments one observes i.i.d. data <span class="math inline">\mathcal{D}_k = \{(Z_i^{(k)}, D_i^{(k)}, Y_i^{(k)})\}</span>, where the candidate instrument is generated through an invertible mixing function <span class="math inline">Z^{(k)} = f(W^{(k)}, V^{(k)})</span> from two independent latent blocks:</p>
+<ul>
+<li><span class="math inline">W^{(k)}</span> — the <strong>valid</strong> part: <span class="math inline">W^{(k)} \perp H^{(k)}</span>, and its distribution is <strong>invariant</strong> across environments;</li>
+<li><span class="math inline">V^{(k)}</span> — the <strong>invalid</strong> part: <span class="math inline">V^{(k)}</span> depends on <span class="math inline">H^{(k)}</span>, and its distribution <strong>shifts</strong> across environments.</li>
+</ul>
+<div class="page-columns page-full"><p></p><div class="no-row-height column-margin column-container"><span class="margin-aside"><span class="math inline">W</span> and <span class="math inline">V</span> need not be subvectors of <span class="math inline">Z</span> — they are entangled through <span class="math inline">f</span> and must be disentangled, not simply selected.</span></div></div>
+<p>So while <span class="math inline">Z^{(k)}</span> is invalid (because of <span class="math inline">V</span>), there exists a map <span class="math inline">\varphi:\mathcal{Z}\to\mathbb{R}^p</span> — the inverse of <span class="math inline">f</span> onto the <span class="math inline">W</span> coordinates — such that <span class="math inline">\varphi(Z^{(k)})</span> <em>is</em> a valid instrument.</p>
+<div class="page-columns page-full">
+<div id="fig-setup" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="fig-setup.svg" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: The general setup. The observed instrument <span class="math inline">Z</span> is an entangled mixture of a valid, environment-invariant component <span class="math inline">W</span> (green) and an invalid component <span class="math inline">V</span> (red) that shifts with the environment and is tied to the unobserved confounder <span class="math inline">H</span>. Solid arrows are the data-generating mechanism; dashed red arrows are the confounding paths through <span class="math inline">V</span> and <span class="math inline">H</span>. Recovering <span class="math inline">W</span> from <span class="math inline">Z</span> restores a valid instrument for <span class="math inline">D \to Y</span>. Schematic by the editors of this page, redrawn from the structure described in the original paper.
+</figcaption>
+</figure>
+</div>
+</div>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><strong>Why recovering <span class="math inline">W</span> up to a transformation is enough.</strong> Disentanglement does <em>not</em> remove the confounding between <span class="math inline">D</span> and <span class="math inline">Y</span> — that is what the instrument is for. It only recovers a clean instrument <span class="math inline">W</span> so that IV machinery can be applied correctly.</p>
+</div></div><p>The central object is the IV <strong>moment restriction</strong>: with the true causal parameter <span class="math inline">\theta_0</span>,</p>
+<p><span class="math display">
+\mathbb{E}\!\left[\varphi_0(Z)\,(Y - D^\top \theta_0)\right] = 0,
+</span></p>
+<p>which, together with a <strong>rank condition</strong>, identifies <span class="math inline">\theta_0</span> when <span class="math inline">\varphi_0</span> is known. A crucial convenience from representation-learning theory is that we <em>don’t</em> need <span class="math inline">\varphi_0</span> exactly: any <strong>bijective transformation of a valid instrument is still a valid instrument</strong>, and any rank-preserving affine transformation of an identifying instrument still identifies <span class="math inline">\theta_0</span>. This is exactly what representation learning can deliver — recovery up to a transformation — so the loose guarantees of disentanglement are tight enough for valid causal inference.</p>
+</section>
+<section id="identifying-the-invariant-component" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="identifying-the-invariant-component">Identifying the invariant component</h2>
+<p>The recovery is driven by <strong>distributional invariance</strong>. The paper trains an autoencoder <span class="math inline">(m_{\text{en}}, m_{\text{de}})</span> that reconstructs <span class="math inline">Z</span>, and requires the first <span class="math inline">\hat{p}</span> encoder coordinates to have a distribution that is <em>stable across environments</em>:</p>
+<p><span class="math display">
+\forall\, k, k' \in [K], \quad
+m_{\text{en}}(Z^{(k)})^{:\hat{p}} \stackrel{d}{=} m_{\text{en}}(Z^{(k')})^{:\hat{p}}.
+</span></p>
+<p>Reconstruction forces the representation to preserve the information in <span class="math inline">Z</span>; invariance forces the first block to track the environment-stable signal. Under <strong>injective polynomial mixing</strong> and a <strong>modular, sufficiently-variable</strong> shift in the distribution of <span class="math inline">V</span>, the result is clean:</p>
+<blockquote class="blockquote">
+<p>If <span class="math inline">\hat{p} \ge p</span>, the encoder’s first <span class="math inline">\hat{p}</span> coordinates <strong>perfectly identify</strong> <span class="math inline">W</span>, recovering it <strong>up to an affine transformation</strong> <span class="math inline">m_{\text{en}}(Z^{(k)})^{:\hat{p}} = A\,W^{(k)} + a</span>. If <span class="math inline">\hat{p} &lt; p</span>, <span class="math inline">W</span> is <strong>partially identified</strong> (recovered up to a linear projection).</p>
+</blockquote>
+<div class="page-columns page-full"><p></p><div class="no-row-height column-margin column-container"><span class="margin-aside">The companion analysis under general <span class="math inline">C^1</span>-diffeomorphic mixing recovers <span class="math inline">W</span> up to a diffeomorphism when <span class="math inline">\hat{p}\ge p</span>, using diffeomorphic encoders such as normalizing flows.</span></div></div>
+<p>The paper notes its assumptions are weaker than prior multi-environment causal representation learning <span class="citation" data-cites="ahuja24multi">(<a href="#ref-ahuja24multi" role="doc-biblioref">Ahuja et al. 2024</a>)</span>: it does not require an additive-noise SCM over the latents or that interventions act only on exogenous noise, and it explicitly works out what happens when the latent dimension is <strong>misspecified</strong>. It also connects to the invariance-principle view of representation learning <span class="citation" data-cites="yao2025unifying">(<a href="#ref-yao2025unifying" role="doc-biblioref">Yao et al. 2025</a>)</span> and to the broader identifiability literature <span class="citation" data-cites="khemakhem2020variational locatello2019challenging">(<a href="#ref-khemakhem2020variational" role="doc-biblioref">Khemakhem et al. 2020</a>; <a href="#ref-locatello2019challenging" role="doc-biblioref">Locatello et al. 2019</a>)</span>, while contrasting with earlier learned-representation IV methods that lacked recovery guarantees <span class="citation" data-cites="cheng2024conditional cheng2024disentangled">(<a href="#ref-cheng2024conditional" role="doc-biblioref">Cheng et al. 2024a</a>, <a href="#ref-cheng2024disentangled" role="doc-biblioref">2024b</a>)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-ahuja24multi" class="csl-entry" role="listitem">
+Ahuja, Kartik, Amin Mansouri, and Yixin Wang. 2024. <span>“Multi-Domain Causal Representation Learning via Weak Distributional Invariances.”</span> <em>International Conference on Artificial Intelligence and Statistics (AISTATS)</em>, 865–73.
+</div><div id="ref-yao2025unifying" class="csl-entry" role="listitem">
+Yao, Dingling, Dario Rancati, Riccardo Cadei, Marco Fumero, and Francesco Locatello. 2025. <span>“Unifying Causal Representation Learning with the Invariance Principle.”</span> <em>International Conference on Learning Representations (ICLR)</em>.
+</div><div id="ref-khemakhem2020variational" class="csl-entry" role="listitem">
+Khemakhem, Ilyes, Diederik P. Kingma, Ricardo Pio Monti, and Aapo Hyvärinen. 2020. <span>“Variational Autoencoders and Nonlinear <span>ICA</span>: A Unifying Framework.”</span> <em>International Conference on Artificial Intelligence and Statistics (AISTATS)</em>, 2207–17.
+</div><div id="ref-locatello2019challenging" class="csl-entry" role="listitem">
+Locatello, Francesco, Stefan Bauer, Mario Lucic, et al. 2019. <span>“Challenging Common Assumptions in the Unsupervised Learning of Disentangled Representations.”</span> <em>International Conference on Machine Learning (ICML)</em>, 4114–24.
+</div><div id="ref-cheng2024conditional" class="csl-entry" role="listitem">
+Cheng, Debo, Ziqi Xu, Jiuyong Li, Lin Liu, Jixue Liu, and Thuc Duy Le. 2024a. <span>“Conditional Instrumental Variable Regression with Representation Learning for Causal Inference.”</span> <em>International Conference on Learning Representations (ICLR)</em>.
+</div><div id="ref-cheng2024disentangled" class="csl-entry" role="listitem">
+Cheng, Debo, Ziqi Xu, Jiuyong Li, Lin Liu, Jixue Liu, and Thuc Duy Le. 2024b. <span>“Disentangled Representation Learning for Causal Inference with Instruments.”</span> <em>IEEE Transactions on Neural Networks and Learning Systems</em> 35 (8): 1–14.
+</div></div><p>The <strong>invalid</strong> block <span class="math inline">V</span> is harder: it is not identifiable in general, even when <span class="math inline">W</span> is perfectly recovered. Under polynomial mixing, adding an <strong>independence constraint</strong> between the two encoder blocks recovers <em>both</em> <span class="math inline">W</span> and <span class="math inline">V</span> up to affine transformations.</p>
+<p>In practice the autoencoder minimizes a weighted sum of a reconstruction loss, an <strong>invariance</strong> loss, and an <strong>independence</strong> loss; the paper uses Maximum Mean Discrepancy <span class="citation" data-cites="gretton2012kernel">(<a href="#ref-gretton2012kernel" role="doc-biblioref">Gretton et al. 2012</a>)</span> for invariance and the Hilbert–Schmidt Independence Criterion <span class="citation" data-cites="gretton2005measuring">(<a href="#ref-gretton2005measuring" role="doc-biblioref">Gretton et al. 2005</a>)</span> for independence, with a term that discourages representation collapse.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-gretton2012kernel" class="csl-entry" role="listitem">
+Gretton, Arthur, Karsten M. Borgwardt, Malte J. Rasch, Bernhard Schölkopf, and Alexander J. Smola. 2012. <span>“A Kernel Two-Sample Test.”</span> <em>Journal of Machine Learning Research</em> 13 (25): 723–73.
+</div><div id="ref-gretton2005measuring" class="csl-entry" role="listitem">
+Gretton, Arthur, Olivier Bousquet, Alex Smola, and Bernhard Schölkopf. 2005. <span>“Measuring Statistical Dependence with <span>Hilbert–Schmidt</span> Norms.”</span> <em>Algorithmic Learning Theory (ALT)</em>, 63–78.
+</div></div></section>
+<section id="good-and-bad-uses-of-the-learned-representation" class="level2">
+<h2 class="anchored" data-anchor-id="good-and-bad-uses-of-the-learned-representation">Good and bad uses of the learned representation</h2>
+<p>Once <span class="math inline">W</span> is the instrument, what about <span class="math inline">V</span>? Because <span class="math inline">V</span> is correlated with <span class="math inline">Y</span> (through <span class="math inline">H</span>) but independent of <span class="math inline">W</span>, in the <em>ideal</em> case where the true latents are observed it is a valid <strong>adjustment covariate</strong>: partialling it out reduces the asymptotic variance of the IV estimator. But with <em>learned</em> proxies <span class="math inline">\widehat{W}, \widehat{V}</span> two risks appear:</p>
+<ul>
+<li><strong>Efficiency loss via information leakage</strong> — if disentanglement is imperfect, <span class="math inline">\widehat{V}</span> may absorb part of <span class="math inline">W</span>, weakening the first stage and <em>inflating</em> variance.</li>
+<li><strong>Bias via a collider</strong> — if the independence constraint fails, <span class="math inline">\widehat{V}</span> can become a function of both <span class="math inline">W</span> and <span class="math inline">H</span>; conditioning on it opens a backdoor path and biases the estimator.</li>
+</ul>
+<p>This is why the independence constraint is not optional for the variance-reduction trick: recovering <span class="math inline">W</span> for plain IV needs invariance, but <em>safely using</em> <span class="math inline">V</span> needs independence too.</p>
+</section>
+<section id="experiments" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="experiments">Experiments</h2>
+<p><strong>Semi-synthetic, from All of Us.</strong> The authors extract <span class="math inline">652</span> genetic variants in the GLP1R region from individuals of East Asian and African predicted ancestry (<span class="math inline">8000</span> individuals per population), apply ICA to reduce to <span class="math inline">10</span> latent components, pick the component with the strongest cross-population shift as the confounder <span class="math inline">V</span>, and resample the rest as the invariant <span class="math inline">W</span> — then map back to SNP space so the genotypes keep realistic LD but carry controlled stratification. A two-dimensional exposure <span class="math inline">D</span> and scalar outcome <span class="math inline">Y</span> follow a linear SCM with an unobserved confounder <span class="math inline">H</span> copied from <span class="math inline">V</span>; the procedure is repeated over <span class="math inline">20</span> seeds.</p>
+<p>Training the autoencoder with <span class="math inline">\lambda_1 = \lambda_2 = 10</span>, two estimators are built on the learned representation: <span class="math inline">\text{2SLS}(\widehat{W})</span> and the partialling-out variant <span class="math inline">\text{PO}(\widehat{V})\text{-2SLS}(\widehat{W})</span>. They are compared against naive <span class="math inline">\text{2SLS}(Z)</span>, MR-Egger <span class="citation" data-cites="bowden2015mendelian">(<a href="#ref-bowden2015mendelian" role="doc-biblioref">Bowden et al. 2015</a>)</span>, and their population-label-adjusted counterparts <span class="math inline">\text{PO}(K)\text{-2SLS}(Z)</span> and <span class="math inline">\text{PO}(K)\text{-Egger}(Z)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-bowden2015mendelian" class="csl-entry" role="listitem">
+Bowden, Jack, George Davey Smith, and Stephen Burgess. 2015. <span>“Mendelian Randomization with Invalid Instruments: Effect Estimation and Bias Detection Through <span>Egger</span> Regression.”</span> <em>International Journal of Epidemiology</em> 44 (2): 512–25.
+</div></div><p>The reported qualitative findings (the paper presents these as box-plots of bias over the <span class="math inline">20</span> seeds):</p>
+<div id="tbl-aou" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-aou-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Bias of ACE estimators on the All-of-Us semi-synthetic task, as reported in the original paper. Numeric values for individual boxes are not transcribed here; only the headline magnitude (naive bias up to <span class="math inline">0.3</span>) is stated in the source text.
+</figcaption>
+<div aria-describedby="tbl-aou-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 36%">
+<col style="width: 31%">
+<col style="width: 32%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Estimator</th>
+<th style="text-align: left;">What it uses</th>
+<th style="text-align: left;">Reported bias behaviour</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\text{2SLS}(\widehat{W})</span> <em>(ours)</em></td>
+<td style="text-align: left;">learned invariant instrument</td>
+<td style="text-align: left;">bias centred near zero</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\text{PO}(\widehat{V})\text{-2SLS}(\widehat{W})</span> <em>(ours)</em></td>
+<td style="text-align: left;">learned instrument + adjustment</td>
+<td style="text-align: left;">bias near zero, <strong>tighter variance</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\text{2SLS}(Z)</span></td>
+<td style="text-align: left;">raw observed instrument</td>
+<td style="text-align: left;">large bias (up to <span class="math inline">0.3</span>)</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\text{Egger}(Z)</span></td>
+<td style="text-align: left;">raw observed instrument</td>
+<td style="text-align: left;">large bias</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\text{PO}(K)\text{-2SLS}(Z)</span></td>
+<td style="text-align: left;">raw + population label</td>
+<td style="text-align: left;">bias reduced but <strong>not</strong> eliminated</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\text{PO}(K)\text{-Egger}(Z)</span></td>
+<td style="text-align: left;">raw + population label</td>
+<td style="text-align: left;">bias reduced but <strong>not</strong> eliminated</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>Two messages stand out. First, partialling out the <strong>discrete population label</strong> (<span class="math inline">\text{PO}(K)</span>) helps but does <strong>not</strong> remove the bias, showing the confounding is more than a mean shift between populations. Second, the partialling-out estimator that adjusts for the learned <span class="math inline">\widehat{V}</span> has visibly <strong>tighter variance</strong> than plain <span class="math inline">\text{2SLS}(\widehat{W})</span> — the predicted efficiency gain.</p>
+<p><strong>Fully-synthetic ablations.</strong> With <span class="math inline">p = q = 2</span> and noise drawn from correlated Gaussians, the authors vary the mixing function across polynomials of degree <span class="math inline">1</span>–<span class="math inline">3</span> (giving <span class="math inline">d_Z \in \{5, 15, 35\}</span>) and an invertible MLP (<span class="math inline">d_Z = 4</span>):</p>
+<ul>
+<li><strong>Mixing mechanism.</strong> Both proposed estimators stay at low or near-zero bias across all four mixing functions, while every baseline shows large bias — standard IV and population-adjusted variants fail once the mixing is non-linear or the invalidity is latent rather than a discrete label.</li>
+<li><strong>Misspecified dimension.</strong> With the true <span class="math inline">p = 2</span> and degree-3 polynomial mixing, <strong>under-specifying</strong> <span class="math inline">\hat{p} \in \{1, 2\}</span> keeps bias small (a linear projection of <span class="math inline">W</span> suffices for valid IV), but <strong>over-specifying</strong> to <span class="math inline">\hat{p}=4</span> raises both bias and variance as the model leaks information from <span class="math inline">V</span> — so a conservative dimension is preferable when the instrument is still strong.</li>
+<li><strong>Independence loss.</strong> With the independence loss, both estimators are unbiased. Without it (<span class="math inline">\lambda_2 = 0</span>), <span class="math inline">\text{2SLS}(\widehat{W})</span> stays largely unbiased but <span class="math inline">\text{PO}(\widehat{V})\text{-2SLS}(\widehat{W})</span> picks up significant bias, worst under the complex Poly-3 and MLP mixings — confirming that the adjustment trick <em>requires</em> disentanglement.</li>
+</ul>
+</section>
+<section id="why-it-matters" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="why-it-matters">Why it matters</h2>
+<p>The paper reframes a long-standing epidemiological headache — invalid instruments from population structure — as a <strong>causal representation learning</strong> problem, and shows that cross-environment <strong>invariance</strong> is enough to recover the exogenous part of a confounded instrument up to a transformation that downstream IV estimation can absorb. The honest accounting of when the learned <em>invalid</em> component helps (variance reduction) versus hurts (leakage, collider bias) is the practical payoff. Limitations the authors flag: the guarantees rest on a <strong>sufficient-variability</strong> assumption whose finite-sample testing is open, and high-dimensional genetic settings would benefit from sparsity in the encoder. They also note the framework extends from multi-environment to multi-view data, where a contrastive objective such as InfoNCE <span class="citation" data-cites="oord2018representation">(<a href="#ref-oord2018representation" role="doc-biblioref">Oord et al. 2018</a>)</span> could replace the MMD invariance loss.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-oord2018representation" class="csl-entry" role="listitem">
+Oord, Aaron van den, Yazhe Li, and Oriol Vinyals. 2018. <span>“Representation Learning with Contrastive Predictive Coding.”</span> <em>arXiv Preprint arXiv:1807.03748</em>.
+</div></div><p>Full references appear in the margin and below; a copyable BibTeX entry for <em>this</em> paper is generated automatically.</p>
+
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{huang2026,
+  author = {Huang, Shimeng and Robinson, Matthew and Locatello,
+    Francesco},
+  title = {Addressing {Instrument–Outcome} {Confounding} in {Mendelian}
+    {Randomization} Through {Representation} {Learning}},
+  journal = {arXiv preprint},
+  date = {2026-02-23}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Yiwen Qiu">
+<meta name="author" content="Filip Kovačević">
+<meta name="author" content="Shimeng Huang">
+<meta name="author" content="Peter Spirtes">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2026-05-13">
+<meta name="description" content="Selection bias is pervasive in observational studies: large-scale biobanks exhibit “healthy volunteer bias”, and clinical or survey samples can differ systematically from the population they are meant to represent. This work studies when the average treatment effect (ATE) over the whole population can be identified from data observed only on a selected sub-population. It gives necessary and sufficient conditions for ATE identifiability under selection bias, phrased as restrictions on the classes of propensity scores, covariate-outcome distributions, and selection probabilities — assumptions that are strictly weaker than those of existing general frameworks and that do not require knowing where in the causal graph selection occurs. The conditions recover known graphical criteria as special cases, and two practical estimators (maximum likelihood and score matching, each with a learned selection-correction term) are validated on synthetic data and a semi-synthetic cohort built from the All of Us research program.">
+
+<title>Towards a Holistic Understanding of Selection Bias for Causal Effect Identification – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-e28080e7c37a1579d20c7fa5b78f5608.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-eec7d6f73bdeace7b4cd9250a7b8dff4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-e28080e7c37a1579d20c7fa5b78f5608.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Towards a Holistic Understanding of Selection Bias for Causal Effect Identification – CLAI Research Group">
+<meta property="og:description" content="Selection bias is pervasive in observational studies: large-scale biobanks exhibit “healthy volunteer bias”, and clinical or survey samples can differ systematically from the population they are meant to represent. This work studies when the average treatment effect (ATE) over the whole population can be identified from data observed only on a selected sub-population. It gives necessary and sufficient conditions for ATE identifiability under selection bias, phrased as restrictions on the classes of propensity scores, covariate-outcome distributions, and selection probabilities — assumptions that are strictly weaker than those of existing general frameworks and that do not require knowing where in the causal graph selection occurs. The conditions recover known graphical criteria as special cases, and two practical estimators (maximum likelihood and score matching, each with a learned selection-correction term) are validated on synthetic data and a semi-synthetic cohort built from the All of Us research program.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/selection-bias-causal-effect-identification/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="Towards a Holistic Understanding of Selection Bias for Causal Effect Identification – CLAI Research Group">
+<meta name="twitter:description" content="Selection bias is pervasive in observational studies: large-scale biobanks exhibit “healthy volunteer bias”, and clinical or survey samples can differ systematically from the population they are meant to represent. This work studies when the average treatment effect (ATE) over the whole population can be identified from data observed only on a selected sub-population. It gives necessary and sufficient conditions for ATE identifiability under selection bias, phrased as restrictions on the classes of propensity scores, covariate-outcome distributions, and selection probabilities — assumptions that are strictly weaker than those of existing general frameworks and that do not require knowing where in the causal graph selection occurs. The conditions recover known graphical criteria as special cases, and two practical estimators (maximum likelihood and score matching, each with a learned selection-correction term) are validated on synthetic data and a semi-synthetic cohort built from the All of Us research program.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/selection-bias-causal-effect-identification/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Towards a Holistic Understanding of Selection Bias for Causal Effect Identification">
+<meta name="citation_author" content="Yiwen Qiu">
+<meta name="citation_author" content="Filip Kovačević">
+<meta name="citation_author" content="Shimeng Huang">
+<meta name="citation_author" content="Peter Spirtes">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2026-05-13">
+<meta name="citation_cover_date" content="2026-05-13">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-05-13">
+<meta name="citation_fulltext_html_url" content="https://arxiv.org/abs/2605.13430">
+<meta name="citation_language" content="en">
+<meta name="citation_conference_title" content="Proceedings of the 43rd International Conference on Machine Learning (ICML)">
+<meta name="citation_reference" content="citation_title=Sample selection bias as a specification error;,citation_author=James J. Heckman;,citation_publication_date=1979;,citation_cover_date=1979;,citation_year=1979;,citation_journal_title=Econometrica: Journal of the Econometric Society;,citation_publisher=JSTOR;">
+<meta name="citation_reference" content="citation_title=A structural approach to selection bias;,citation_author=Miguel A. Hernán;,citation_author=Sonia Hernández-Dı́az;,citation_author=James M. Robins;,citation_publication_date=2004;,citation_cover_date=2004;,citation_year=2004;,citation_journal_title=Epidemiology;,citation_publisher=JSTOR;">
+<meta name="citation_reference" content="citation_title=A population-based investigation of participation rate and self-selection bias in momentary data capture and survey studies;,citation_author=Arthur A. Stone;,citation_author=Stefan Schneider;,citation_author=Joshua M. Smyth;,citation_author=Doerte U. Junghaenel;,citation_author=Mick P. Couper;,citation_author=Cheng Wen;,citation_author=Marilyn Mendez;,citation_author=Sarah Velasco;,citation_author=Sarah Goldstein;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_issue=3;,citation_volume=43;,citation_journal_title=Current Psychology;,citation_publisher=Springer;">
+<meta name="citation_reference" content="citation_title=The UK Biobank and selection bias;,citation_author=James M. Swanson;,citation_publication_date=2012;,citation_cover_date=2012;,citation_year=2012;,citation_issue=9837;,citation_doi=10.1016/S0140-6736(12)61179-9;,citation_volume=380;,citation_journal_title=The Lancet;,citation_publisher=Elsevier;">
+<meta name="citation_reference" content="citation_title=Reweighting UK Biobank corrects for pervasive selection bias due to volunteering;,citation_author=Sjoerd Alten;,citation_author=Benjamin W. Domingue;,citation_author=Jessica Faul;,citation_author=Titus Galama;,citation_author=Andries T. Marees;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_issue=3;,citation_doi=10.1093/ije/dyae054;,citation_volume=53;,citation_journal_title=International Journal of Epidemiology;">
+<meta name="citation_reference" content="citation_title=Quantifying biases in causal models: Classical confounding vs collider-stratification bias;,citation_author=Sander Greenland;,citation_publication_date=2003;,citation_cover_date=2003;,citation_year=2003;,citation_issue=3;,citation_doi=10.1097/01.EDE.0000042804.12056.6C;,citation_volume=14;,citation_journal_title=Epidemiology;">
+<meta name="citation_reference" content="citation_title=Endogenous selection bias: The problem of conditioning on a collider variable;,citation_author=Felix Elwert;,citation_author=Christopher Winship;,citation_publication_date=2014;,citation_cover_date=2014;,citation_year=2014;,citation_doi=10.1146/annurev-soc-071913-043455;,citation_volume=40;,citation_journal_title=Annual Review of Sociology;">
+<meta name="citation_reference" content="citation_title=On the identifiability and estimation of functional causal models in the presence of outcome-dependent selection;,citation_author=Kun Zhang;,citation_author=Jiji Zhang;,citation_author=Biwei Huang;,citation_author=Bernhard Schölkopf;,citation_author=Clark Glymour;,citation_publication_date=2016;,citation_cover_date=2016;,citation_year=2016;,citation_conference_title=Uncertainty in artificial intelligence (UAI);">
+<meta name="citation_reference" content="citation_title=Causal effect identification by adjustment under confounding and selection biases;,citation_author=Juan Correa;,citation_author=Elias Bareinboim;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_volume=31;,citation_conference_title=Proceedings of the AAAI conference on artificial intelligence;">
+<meta name="citation_reference" content="citation_title=Identification of causal effects in the presence of selection bias;,citation_author=Juan D. Correa;,citation_author=Jin Tian;,citation_author=Elias Bareinboim;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_issue=01;,citation_doi=10.1609/aaai.v33i01.33012744;,citation_volume=33;,citation_journal_title=Proceedings of the AAAI Conference on Artificial Intelligence;">
+<meta name="citation_reference" content="citation_title=S-ID: Causal effect identification in a sub-population;,citation_author=Amir Mohammad Abouei;,citation_author=Ehsan Mokhtarian;,citation_author=Negar Kiyavash;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://arxiv.org/abs/2309.02281;,citation_doi=10.48550/arXiv.2309.02281;">
+<meta name="citation_reference" content="citation_title=A statistical Taylor theorem and extrapolation of truncated densities;,citation_author=Constantinos Daskalakis;,citation_author=Vasilis Kontonis;,citation_author=Christos Tzamos;,citation_author=Manolis Zampetakis;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://arxiv.org/abs/2106.15908;,citation_doi=10.48550/arXiv.2106.15908;">
+<meta name="citation_reference" content="citation_title=Estimation of non-normalized statistical models by score matching;,citation_author=Aapo Hyvärinen;,citation_author=Peter Dayan;,citation_publication_date=2005;,citation_cover_date=2005;,citation_year=2005;,citation_issue=4;,citation_volume=6;,citation_journal_title=Journal of Machine Learning Research;">
+<meta name="citation_reference" content="citation_title=Causal inference for statistics, social, and biomedical sciences: An introduction;,citation_author=Guido W. Imbens;,citation_author=Donald B. Rubin;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;">
+<meta name="citation_reference" content="citation_title=What makes treatment effects identifiable? Characterizations and estimators beyond unconfoundedness;,citation_author=Yang Cai;,citation_author=Alkis Kalavasis;,citation_author=Katerina Mamali;,citation_author=Anay Mehrotra;,citation_author=Manolis Zampetakis;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_journal_title=arXiv preprint arXiv:2506.04194;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link active" data-scroll-target="#the-problem">The problem</a></li>
+  <li><a href="#setup-and-definitions" id="toc-setup-and-definitions" class="nav-link" data-scroll-target="#setup-and-definitions">Setup and definitions</a></li>
+  <li><a href="#a-unified-identifiability-condition" id="toc-a-unified-identifiability-condition" class="nav-link" data-scroll-target="#a-unified-identifiability-condition">A unified identifiability condition</a></li>
+  <li><a href="#estimation" id="toc-estimation" class="nav-link" data-scroll-target="#estimation">Estimation</a></li>
+  <li><a href="#experiments" id="toc-experiments" class="nav-link" data-scroll-target="#experiments">Experiments</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Towards a Holistic Understanding of Selection Bias for Causal Effect Identification</h1>
+<p class="subtitle lead">Necessary and sufficient conditions for identifying the average treatment effect when data is collected under selection bias</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Causal Inference</div>
+    <div class="quarto-category">Identifiability</div>
+    <div class="quarto-category">Theory</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Selection bias is pervasive in observational studies: large-scale biobanks exhibit “healthy volunteer bias”, and clinical or survey samples can differ systematically from the population they are meant to represent. This work studies when the average treatment effect (ATE) over the whole population can be identified from data observed only on a selected sub-population. It gives necessary and sufficient conditions for ATE identifiability under selection bias, phrased as restrictions on the classes of propensity scores, covariate-outcome distributions, and selection probabilities — assumptions that are strictly weaker than those of existing general frameworks and that do not require knowing where in the causal graph selection occurs. The conditions recover known graphical criteria as special cases, and two practical estimators (maximum likelihood and score matching, each with a learned selection-correction term) are validated on synthetic data and a semi-synthetic cohort built from the All of Us research program.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Yiwen Qiu <a href="mailto:yiwen.qiu@ista.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Filip Kovačević </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Shimeng Huang </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Peter Spirtes </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Carnegie Mellon University
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 13, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-icml">
+<span class="venue-name">ICML 2026</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2605.13430" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://github.com/EvieQ01/causal_effect_id_selection_bias" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
+<section id="the-problem" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-problem">The problem</h2>
+<p>The data we collect is often subject to <strong>selection bias</strong>: data points are preferentially included depending on some of the observed variables <span class="citation" data-cites="heckman1979sample">(<a href="#ref-heckman1979sample" role="doc-biblioref">Heckman 1979</a>)</span>. In medical studies, patients who volunteer for trials may differ systematically from those who do not <span class="citation" data-cites="hernan2004structural">(<a href="#ref-hernan2004structural" role="doc-biblioref">Hernán et al. 2004</a>)</span>; in surveys, respondents may not represent the broader population due to non-random participation <span class="citation" data-cites="stone2024population">(<a href="#ref-stone2024population" role="doc-biblioref">Stone et al. 2024</a>)</span>. Large-scale biobanks famously exhibit a “healthy volunteer bias”, where respondents are healthier and of higher socio-economic status than the population they are meant to represent <span class="citation" data-cites="swansonUKBiobankSelection2012 vanaltenReweightingUKBiobank2024">(<a href="#ref-swansonUKBiobankSelection2012" role="doc-biblioref">Swanson 2012</a>; <a href="#ref-vanaltenReweightingUKBiobank2024" role="doc-biblioref"><span class="nocase">van Alten et al.</span> 2024</a>)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-heckman1979sample" class="csl-entry" role="listitem">
+Heckman, James J. 1979. <span>“Sample Selection Bias as a Specification Error.”</span> <em>Econometrica: Journal of the Econometric Society</em>, 153–61.
+</div><div id="ref-hernan2004structural" class="csl-entry" role="listitem">
+Hernán, Miguel A., Sonia Hernández-Dı́az, and James M. Robins. 2004. <span>“A Structural Approach to Selection Bias.”</span> <em>Epidemiology</em>, 615–25.
+</div><div id="ref-stone2024population" class="csl-entry" role="listitem">
+Stone, Arthur A., Stefan Schneider, Joshua M. Smyth, et al. 2024. <span>“A Population-Based Investigation of Participation Rate and Self-Selection Bias in Momentary Data Capture and Survey Studies.”</span> <em>Current Psychology</em> 43 (3): 2074–90.
+</div><div id="ref-swansonUKBiobankSelection2012" class="csl-entry" role="listitem">
+Swanson, James M. 2012. <span>“The <span>UK Biobank</span> and Selection Bias.”</span> <em>The Lancet</em> 380 (9837): 110. <a href="https://doi.org/10.1016/S0140-6736(12)61179-9">https://doi.org/10.1016/S0140-6736(12)61179-9</a>.
+</div><div id="ref-vanaltenReweightingUKBiobank2024" class="csl-entry" role="listitem">
+<span class="nocase">van Alten, Sjoerd, Benjamin W. Domingue, Jessica Faul, Titus Galama, and Andries T. Marees</span>. 2024. <span>“Reweighting <span>UK Biobank</span> Corrects for Pervasive Selection Bias Due to Volunteering.”</span> <em>International Journal of Epidemiology</em> 53 (3): dyae054. <a href="https://doi.org/10.1093/ije/dyae054">https://doi.org/10.1093/ije/dyae054</a>.
+</div></div><div class="page-columns page-full"><p>This matters for causal inference because the average treatment effect (ATE) in the <em>selected</em> sub-population can differ sharply from the ATE in the <em>whole</em> population. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">The paper makes this concrete with a running example: a government estimating the effect of a free community fitness centre on cardiovascular health, using a digital health survey whose respondents skew toward higher socio-economic status.</span></div></div>
+<div class="page-columns page-full">
+<div id="fig-illustration" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-illustration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="illustration.png" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-illustration-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Selection bias when estimating the ATE of a physical-activity subsidy (<span class="math inline">T</span>) on cardiovascular health (<span class="math inline">Y</span>). Participation in the voluntary digital survey is driven by socio-economic status, so the observed (selected) population yields <span class="math inline">\mathrm{ATE}^{\mathrm{obs}}</span>, which can be far below the population-level <span class="math inline">\mathrm{ATE}^{\mathrm{all}}</span> if selection is not accounted for. From the original paper (Qiu et al., 2026).
+</figcaption>
+</figure>
+</div>
+</div>
+<p>For high-status individuals the subsidy may have a small marginal effect — they likely already exercise — while for lower-status individuals it could matter much more, so naively reading the ATE off the observed sample gives a severely biased estimate.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The paper restricts to the setting with no unobserved confounding (<span class="math inline">Y(t) \perp\!\!\!\perp T \mid X</span>) and overlap in the <em>unselected</em> population — standard assumptions in causal inference. After selection, the observed distribution may no longer satisfy overlap.</p></div></div></section>
+<section id="setup-and-definitions" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="setup-and-definitions">Setup and definitions</h2>
+<p>Each unit has covariates <span class="math inline">X \in \mathbb{R}^d</span>, a binary treatment <span class="math inline">T \in \{0,1\}</span>, and a treatment-dependent outcome <span class="math inline">Y(T) \in \mathbb{R}</span>. The target is the population ATE, <span class="math display">
+\tau_{\mathcal{P}} \coloneqq \mathbb{E}_{\mathcal{P}}\!\left[\,Y(1) - Y(0)\,\right].
+</span> A binary <strong>selection variable</strong> <span class="math inline">S</span> indicates whether a unit enters the dataset; we only observe <span class="math inline">\mathcal{P}(\mathbf{V}\mid S=1)</span> over <span class="math inline">\mathbf{V} = \{X, Y, T\}</span>.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><strong>Selection bias.</strong> Preferential inclusion of units such that <span class="math inline">\mathcal{P}(\mathbf{V}\mid S=1)\neq\mathcal{P}(\mathbf{V})</span>. The paper’s definition is deliberately general — it is <em>not</em> restricted to collider- stratification (M-bias) as in much of the epidemiological literature <span class="citation" data-cites="greenlandQuantifyingBiasesCausal2003 elwertEndogenousSelectionBias2014">(<a href="#ref-greenlandQuantifyingBiasesCausal2003" role="doc-biblioref">Greenland 2003</a>; <a href="#ref-elwertEndogenousSelectionBias2014" role="doc-biblioref">Elwert and Winship 2014</a>)</span>.</p>
+<div id="ref-greenlandQuantifyingBiasesCausal2003" class="csl-entry" role="listitem">
+Greenland, Sander. 2003. <span>“Quantifying Biases in Causal Models: Classical Confounding Vs Collider-Stratification Bias.”</span> <em>Epidemiology</em> 14 (3): 300. <a href="https://doi.org/10.1097/01.EDE.0000042804.12056.6C">https://doi.org/10.1097/01.EDE.0000042804.12056.6C</a>.
+</div><div id="ref-elwertEndogenousSelectionBias2014" class="csl-entry" role="listitem">
+Elwert, Felix, and Christopher Winship. 2014. <span>“Endogenous Selection Bias: The Problem of Conditioning on a Collider Variable.”</span> <em>Annual Review of Sociology</em> 40: 31–53. <a href="https://doi.org/10.1146/annurev-soc-071913-043455">https://doi.org/10.1146/annurev-soc-071913-043455</a>.
+</div></div></div><div class="page-columns page-full"><p>Identifiability is stated in terms of three distributions: the <strong>propensity score</strong> <span class="math inline">P_{t\mid x} = \Pr(T=t\mid X=x)</span>, the <strong>covariate-outcome</strong> distribution <span class="math inline">P_{xy(t)} = \Pr(X=x, Y(t)=y)</span>, and the <strong>selection probability</strong> <span class="math inline">P_{s\mid xyt} = \Pr(S=1\mid X=x, Y(t)=y, T=t)</span>. The paper studies two notions: <strong>s-ATE-full</strong>, identifiability of the ATE in the <em>whole</em> population, and <strong>s-ATE-sub</strong>, identifiability within the <em>selected</em> sub-population. The work focuses mostly on s-ATE-full, which is harder because the estimand concerns partly unobserved data. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Both notions are needed in practice: public-health policy targets the full population, whereas a drug that only helps diagnosed patients calls for the sub-population effect.</span></div></div>
+<p>This is strictly harder than estimating the conditional ATE (CATE, <span class="math inline">\tau_{\mathcal{P}}(x) = \mathbb{E}_{\mathcal{P}}[Y(1)-Y(0)\mid X=x]</span>), because the selection mechanism <span class="math inline">\Pr(S=1\mid\mathbf{V})</span> is unknown and may depend on the treatment or the outcome — not only on covariates <span class="citation" data-cites="imbens2015causal">(<a href="#ref-imbens2015causal" role="doc-biblioref">Imbens and Rubin 2015</a>)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-imbens2015causal" class="csl-entry" role="listitem">
+Imbens, Guido W., and Donald B. Rubin. 2015. <em>Causal Inference for Statistics, Social, and Biomedical Sciences: An Introduction</em>. Cambridge University Press.
+</div></div></section>
+<section id="a-unified-identifiability-condition" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="a-unified-identifiability-condition">A unified identifiability condition</h2>
+<p>The central result restricts the classes of propensity scores <span class="math inline">\mathbb{P}_{t\mid x}</span>, covariate-outcome distributions <span class="math inline">\mathbb{P}_{xy(t)}</span>, and selection mechanisms <span class="math inline">\mathbb{S}</span>. The <strong>Identifiability Condition under Selection</strong> requires that whenever two compatible distributions have <em>different</em> ATEs, they must also differ in the <em>observed</em> part of the distribution — so that the difference is detectable from the selected sample. Writing <span class="math inline">\alpha_P \coloneqq P_{s\mid xyt}/P(s)</span>, the observed product <span class="math inline">\alpha_P\, P_{t\mid x}\, P_{xy(t)}</span> corresponds to the observable <span class="math inline">P(X,Y,T\mid S=1)</span>.</p>
+<p>The paper proves this is exactly the right condition:</p>
+<blockquote class="blockquote">
+<p><strong>Characterization (s-ATE-full).</strong> The ATE <span class="math inline">\tau_P</span> is identifiable from any observational distribution realizable with respect to <span class="math inline">(\mathbb{P}_{t\mid x}, \mathbb{P}_{xy(t)}, \mathbb{S})</span> <strong>if and only if</strong> those classes satisfy the Identifiability Condition under Selection.</p>
+</blockquote>
+<div class="page-columns page-full"><p></p><div class="no-row-height column-margin column-container"><span class="margin-aside">The “only if” direction is what makes the condition useful: it is <em>necessary</em> and <em>independent</em> of any specific debiasing method, so it draws the boundary of what is possible at all under selection.</span></div></div>
+<p>Two instantiations are of practical interest, distinguishing <strong>deterministic</strong> selection (some region of the data space is fully censored) from <strong>non-deterministic</strong> selection (each point is retained with probability bounded below by <span class="math inline">d&gt;0</span>):</p>
+<ul>
+<li><strong>Deterministic selection.</strong> Identifiability holds for <span class="math inline">c</span>-weak-overlap propensity scores together with <em>smooth enough</em> outcome distributions — conditionals of exponential-polynomial form, <span class="math inline">P_{y(t)\mid x}\propto e^{f(x,y)}</span> with <span class="math inline">f</span> polynomial. This covers Gaussian and other common families. The intuition: deterministic selection produces a <em>truncated</em> version of the original distribution, and results from truncated statistics let one extrapolate back to the full distribution <span class="citation" data-cites="daskalakisStatisticalTaylorTheorem2021">(<a href="#ref-daskalakisStatisticalTaylorTheorem2021" role="doc-biblioref">Daskalakis et al. 2021</a>)</span>.</li>
+<li><strong>Non-deterministic selection.</strong> Identifiability holds for <span class="math inline">c</span>-weak-overlap propensity scores when the covariate-outcome distribution belongs to the Gaussian, Laplace (light-tailed), Pareto, or log-normal (heavy-tailed) families.</li>
+</ul>
+<div class="no-row-height column-margin column-container"><div id="ref-daskalakisStatisticalTaylorTheorem2021" class="csl-entry" role="listitem">
+Daskalakis, Constantinos, Vasilis Kontonis, Christos Tzamos, and Manolis Zampetakis. 2021. <em>A Statistical <span>Taylor</span> Theorem and Extrapolation of Truncated Densities</em>. <a href="https://doi.org/10.48550/arXiv.2106.15908">https://doi.org/10.48550/arXiv.2106.15908</a>.
+</div><div id="ref-correaIdentificationCausalEffects2019" class="csl-entry" role="listitem">
+Correa, Juan D., Jin Tian, and Elias Bareinboim. 2019. <span>“Identification of Causal Effects in the Presence of Selection Bias.”</span> <em>Proceedings of the AAAI Conference on Artificial Intelligence</em> 33 (01): 2744–51. <a href="https://doi.org/10.1609/aaai.v33i01.33012744">https://doi.org/10.1609/aaai.v33i01.33012744</a>.
+</div><div id="ref-zhang2016identifiability" class="csl-entry" role="listitem">
+Zhang, Kun, Jiji Zhang, Biwei Huang, Bernhard Schölkopf, and Clark Glymour. 2016. <span>“On the Identifiability and Estimation of Functional Causal Models in the Presence of Outcome-Dependent Selection.”</span> <em>Uncertainty in Artificial Intelligence (UAI)</em>.
+</div><div id="ref-aboueiSIDCausalEffect2024" class="csl-entry" role="listitem">
+Abouei, Amir Mohammad, Ehsan Mokhtarian, and Negar Kiyavash. 2024. <em>S-<span>ID</span>: Causal Effect Identification in a Sub-Population</em>. <a href="https://doi.org/10.48550/arXiv.2309.02281">https://doi.org/10.48550/arXiv.2309.02281</a>.
+</div><div id="ref-correa2017causal" class="csl-entry" role="listitem">
+Correa, Juan, and Elias Bareinboim. 2017. <span>“Causal Effect Identification by Adjustment Under Confounding and Selection Biases.”</span> <em>Proceedings of the AAAI Conference on Artificial Intelligence</em> 31.
+</div><div id="ref-cai2025makes" class="csl-entry" role="listitem">
+Cai, Yang, Alkis Kalavasis, Katerina Mamali, Anay Mehrotra, and Manolis Zampetakis. 2025. <span>“What Makes Treatment Effects Identifiable? Characterizations and Estimators Beyond Unconfoundedness.”</span> <em>arXiv Preprint arXiv:2506.04194</em>.
+</div></div><p>Crucially, these conditions do <strong>not</strong> require knowing <em>where</em> selection occurs in the causal graph — in contrast to graphical approaches that must pinpoint the selection mechanism. The framework also recovers existing graphical results as special cases: the selection-backdoor criterion <span class="citation" data-cites="correaIdentificationCausalEffects2019">(<a href="#ref-correaIdentificationCausalEffects2019" role="doc-biblioref">Correa et al. 2019</a>)</span>, outcome-dependent selection <span class="citation" data-cites="zhang2016identifiability">(<a href="#ref-zhang2016identifiability" role="doc-biblioref">Zhang et al. 2016</a>)</span>, and the S-id criterion for the sub-population effect <span class="citation" data-cites="aboueiSIDCausalEffect2024">(<a href="#ref-aboueiSIDCausalEffect2024" role="doc-biblioref">Abouei et al. 2024</a>)</span> all follow from the condition. Compared to <span class="citation" data-cites="zhang2016identifiability">Zhang et al. (<a href="#ref-zhang2016identifiability" role="doc-biblioref">2016</a>)</span> — which identifies outcome-dependent selection only under a non-Gaussian additive-noise model — the distributional assumptions here are <em>milder</em> and extend identifiability to settings previously considered unidentifiable <span class="citation" data-cites="correa2017causal correaIdentificationCausalEffects2019">(<a href="#ref-correa2017causal" role="doc-biblioref">Correa and Bareinboim 2017</a>; <a href="#ref-correaIdentificationCausalEffects2019" role="doc-biblioref">Correa et al. 2019</a>)</span>. The condition is related to that of <span class="citation" data-cites="cai2025makes">Cai et al. (<a href="#ref-cai2025makes" role="doc-biblioref">2025</a>)</span>, but addresses a fundamentally different problem: overlap violations concern the support of the true distribution, whereas selection bias is a distortion of how data enters the analysis.</p>
+</section>
+<section id="estimation" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="estimation">Estimation</h2>
+<p>When the distribution classes satisfy the deterministic or non-deterministic instantiation, the ATE is estimated in three stages: (1) fit the propensity score and isolate the region with common support, where data is subject only to non-deterministic selection; (2) estimate the conditional outcome distribution <span class="math inline">\hat{P}(y\mid x,t)</span> while correcting for selection through a learned weight <span class="math inline">\hat\beta(x,y,t)</span>; (3) reweight the observed samples by <span class="math inline">1/\hat\beta</span> to recover the population density and compute the ATE by counterfactual inference.</p>
+<p>Two estimators are given for the second stage. <strong>Maximum likelihood (MLE)</strong> minimizes the negative log-likelihood of the observed data, with a regularizer that keeps <span class="math inline">\log\hat\beta</span> close to zero (i.e.&nbsp;selection as weak as the data allows). <strong>Score matching (SM)</strong> <span class="citation" data-cites="hyvarinen2005estimation">(<a href="#ref-hyvarinen2005estimation" role="doc-biblioref">Hyvärinen and Dayan 2005</a>)</span> instead matches the gradient of the log-density; because the intractable partition function depends only on <span class="math inline">x</span> and <span class="math inline">t</span>, it vanishes under <span class="math inline">\nabla_y</span> and the observed score decomposes additively into a model score and a selection term <span class="math inline">\nabla_y \log\beta_\phi(x,y,t)</span>. The corrected versions are written <strong>MLE<span class="math inline">+\beta</span></strong> and <strong>SM<span class="math inline">+\beta</span></strong>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-hyvarinen2005estimation" class="csl-entry" role="listitem">
+Hyvärinen, Aapo, and Peter Dayan. 2005. <span>“Estimation of Non-Normalized Statistical Models by Score Matching.”</span> <em>Journal of Machine Learning Research</em> 6 (4).
+</div></div><p>Different estimators correct for different selection regimes:</p>
+<div id="tbl-estimators" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-estimators-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Which selection regimes each estimator corrects for. Naive inverse-propensity weighting (IPW) ignores selection entirely; the polynomial and uncorrected MLE/SM estimators handle deterministic selection (extrapolation) but not the non-deterministic case; only the <span class="math inline">+\beta</span> variants, which estimate the selection function, handle <em>any</em> selection.
+</figcaption>
+<div aria-describedby="tbl-estimators-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 26%">
+<col style="width: 34%">
+<col style="width: 39%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Estimator</th>
+<th style="text-align: center;">Deterministic selection</th>
+<th style="text-align: center;">Non-deterministic selection</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Naive IPW</td>
+<td style="text-align: center;">no</td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Polynomial</td>
+<td style="text-align: center;">yes</td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MLE</td>
+<td style="text-align: center;">yes</td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MLE <span class="math inline">+\beta</span></td>
+<td style="text-align: center;">yes</td>
+<td style="text-align: center;"><strong>yes</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Score Matching</td>
+<td style="text-align: center;">yes</td>
+<td style="text-align: center;">no</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SM <span class="math inline">+\beta</span></td>
+<td style="text-align: center;">yes</td>
+<td style="text-align: center;"><strong>yes</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="experiments" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="experiments">Experiments</h2>
+<p><strong>Synthetic data.</strong> Data is generated from <span class="math inline">Y=f(T,X,E)</span> with <span class="math inline">X</span> uniform and noise <span class="math inline">E</span> drawn from different distributions, under both additive (<span class="math inline">Y=f(T,X)+E</span>) and multiplicative (<span class="math inline">Y=(1+E)\cdot f(T,X)</span>) settings, with both deterministic and non-deterministic selection applied. Each run uses <span class="math inline">N=5000</span> samples; after selection roughly <span class="math inline">3000</span> remain, and each configuration is repeated <span class="math inline">5</span> times. Across Gaussian and Laplace noise and both noise forms, the corrected methods MLE<span class="math inline">+\beta</span> and SM<span class="math inline">+\beta</span> consistently approach the true ATE, whereas naive IPW is badly biased (<a href="#fig-ate-additive" class="quarto-xref">Figure&nbsp;2</a>, <a href="#fig-ate-multiplicative" class="quarto-xref">Figure&nbsp;3</a>).</p>
+<div class="column-page">
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-ate-additive" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ate-additive-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="ate-additive.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ate-additive-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Additive Gaussian / Laplace noise.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-ate-multiplicative" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-ate-multiplicative-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="ate-multiplicative.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-ate-multiplicative-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Multiplicative Gaussian / Laplace noise.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>ATE estimates (box plots over repeated runs) with both deterministic and non-deterministic selection. Naive IPW collapses far below the true ATE (dashed red), while the proposed methods — in particular the agnostic MLE<span class="math inline">+\beta</span> and SM<span class="math inline">+\beta</span> — recover it closely. From the original paper (Qiu et al., 2026).</p>
+</div>
+<p>The <span class="math inline">+\beta</span> corrections generally reduce error relative to their uncorrected counterparts but at the cost of higher variance; MLE<span class="math inline">+\beta</span> and SM<span class="math inline">+\beta</span> perform comparably, with SM<span class="math inline">+\beta</span> tending toward slightly lower variance.</p>
+<p><strong>Semi-synthetic data.</strong> The methods are evaluated on a cohort drawn from the All of Us Research Program, using Type 2 diabetes status as the exposure and BMI as the covariate. Because the true causal graph and hidden genetic confounders are unknown, a synthetic outcome <span class="math inline">Y=f(T,X)+E</span> (additive Gaussian noise) is generated so that the ground-truth ATE is available while the covariate-treatment distribution remains real. Using <span class="math inline">N=10{,}000</span> samples (BMI restricted to <span class="math inline">(10,80)</span>), non-deterministic selection leaves roughly <span class="math inline">2500</span>, repeated <span class="math inline">5</span> times. The proposed methods again reduce bias relative to the baselines (<a href="#fig-allofus" class="quarto-xref">Figure&nbsp;4</a>), though not completely — the authors attribute the residual gap to the complexity of the real-world distribution, e.g.&nbsp;very low propensity scores (<span class="math inline">\sim 0.05</span>) that make overlap weak.</p>
+<div id="fig-allofus" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-allofus-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="allofus.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-allofus-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: ATE estimation on the All of Us cohort. The corrected methods substantially reduce the bias of naive IPW toward the true ATE (dashed red), but a gap remains, which the authors attribute to weak overlap in the real-world distribution. From the original paper (Qiu et al., 2026).
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
+<p>The paper moves the analysis of selection bias from <em>graphical</em> criteria — which must locate where selection happens — to a <em>distributional</em> characterization: necessary and sufficient conditions on the propensity, covariate-outcome, and selection classes that are strictly weaker than those of prior general frameworks and independent of the graph structure. This yields identifiability in settings previously deemed unidentifiable, recovers known graphical criteria as special cases, and comes with practical MLE and score-matching estimators. The main limitation is the distributional assumptions themselves; the authors point to relaxing them, and to extensions toward causal discovery and experimental design, as future work.</p>
+
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@inproceedings{qiu2026,
+  author = {Qiu, Yiwen and Kovačević, Filip and Huang, Shimeng and
+    Spirtes, Peter and Locatello, Francesco},
+  title = {Towards a {Holistic} {Understanding} of {Selection} {Bias}
+    for {Causal} {Effect} {Identification}},
+  booktitle = {Proceedings of the 43rd International Conference on
+    Machine Learning (ICML)},
+  date = {2026-05-13},
+  url = {https://arxiv.org/abs/2605.13430}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

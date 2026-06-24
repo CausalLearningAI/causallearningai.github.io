@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- treatment / control split -->
+  <line x1="300" y1="40" x2="300" y2="340" stroke="#3a3a44" stroke-width="1" stroke-dasharray="4 5"/>
+  <!-- grid of neural codes: faint (entangled) vs highlighted (selected by NES) -->
+  <g fill="#3a3a44">
+    <circle cx="120" cy="110" r="5"/><circle cx="170" cy="150" r="5"/><circle cx="100" cy="200" r="5"/>
+    <circle cx="155" cy="240" r="5"/><circle cx="210" cy="120" r="5"/><circle cx="195" cy="290" r="5"/>
+    <circle cx="240" cy="200" r="5"/><circle cx="130" cy="290" r="5"/>
+    <circle cx="380" cy="110" r="5"/><circle cx="430" cy="150" r="5"/><circle cx="360" cy="200" r="5"/>
+    <circle cx="415" cy="240" r="5"/><circle cx="470" cy="120" r="5"/><circle cx="455" cy="290" r="5"/>
+    <circle cx="500" cy="200" r="5"/><circle cx="390" cy="290" r="5"/>
+  </g>
+  <!-- the two significant effects recovered -->
+  <g fill="#026234">
+    <circle cx="240" cy="200" r="8"/>
+    <circle cx="415" cy="240" r="8"/>
+  </g>
+  <g stroke="#026234" stroke-width="1.5" fill="none" opacity="0.8">
+    <circle cx="240" cy="200" r="16"/>
+    <circle cx="415" cy="240" r="16"/>
+  </g>
+  <g fill="#fbfaf7" font-family="monospace" font-size="15">
+    <text x="120" y="65">control</text>
+    <text x="380" y="65">treated</text>
+  </g>
+</svg>

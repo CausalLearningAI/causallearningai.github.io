@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- reference patch -->
+  <circle cx="300" cy="190" r="6" fill="#026234"/>
+  <!-- concentric neighbor rings: near -> far -->
+  <g fill="none" stroke="#6f6f78" stroke-width="1">
+    <circle cx="300" cy="190" r="55"/>
+    <circle cx="300" cy="190" r="95"/>
+    <circle cx="300" cy="190" r="135"/>
+  </g>
+  <!-- ranked neighbors along a ray, fading with distance -->
+  <g fill="#fbfaf7">
+    <circle cx="355" cy="190" r="5" opacity="1"/>
+    <circle cx="395" cy="190" r="4.5" opacity="0.8"/>
+    <circle cx="435" cy="190" r="4" opacity="0.6"/>
+  </g>
+  <g fill="#fbfaf7">
+    <circle cx="262" cy="150" r="4.5" opacity="0.85"/>
+    <circle cx="232" cy="120" r="4" opacity="0.65"/>
+    <circle cx="345" cy="245" r="4.5" opacity="0.85"/>
+    <circle cx="380" cy="285" r="4" opacity="0.6"/>
+    <circle cx="245" cy="255" r="4" opacity="0.55"/>
+  </g>
+  <!-- ordering arrow: near -> far -->
+  <line x1="300" y1="190" x2="430" y2="190" stroke="#026234" stroke-width="1.5" opacity="0.5" stroke-dasharray="3 4"/>
+</svg>
