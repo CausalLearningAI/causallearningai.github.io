@@ -69,9 +69,9 @@ div.csl-indent {
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-e28080e7c37a1579d20c7fa5b78f5608.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-eec7d6f73bdeace7b4cd9250a7b8dff4.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../../site_libs/bootstrap/bootstrap-e28080e7c37a1579d20c7fa5b78f5608.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-a62231895067df7b6b02a40e9c159ee5.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-50fe4492060c8b6154e7ead8c9dfb34c.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-a62231895067df7b6b02a40e9c159ee5.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -1084,6 +1084,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script>
+// Topics → metadata rail. On the publications list (a Quarto `default` listing)
+// Quarto renders each paper's categories as a `.listing-categories` chip row in
+// the body, under the title — which makes every row taller. The right-hand
+// metadata rail (date + venue badge) is shorter, leaving dead vertical space.
+// Move the topics into that rail, below the date and venue badge, so the two
+// columns balance and each row gets back the height the chip row was costing.
+// Runs after assets/venue-badge.html so the badge is already in the rail and the
+// topics land beneath it.
+// Progressive enhancement: with JS off, topics stay under the title.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    // Only the body copy carries a chip row; once moved it lives in .metadata, so
+    // re-running finds nothing here — naturally idempotent.
+    var cats = post.querySelector(".body .listing-categories");
+    var metadata = post.querySelector(".metadata");
+    if (!cats || !metadata) return;
+    metadata.appendChild(cats);
   });
 });
 </script>
