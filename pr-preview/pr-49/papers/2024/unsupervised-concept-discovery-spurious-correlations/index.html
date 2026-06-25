@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Md Rifat Arefin">
+<meta name="author" content="Yan Zhang">
+<meta name="author" content="Aristide Baratin">
+<meta name="author" content="Francesco Locatello">
+<meta name="author" content="Irina Rish">
+<meta name="author" content="Dianbo Liu">
+<meta name="author" content="Kenji Kawaguchi">
+<meta name="dcterms.date" content="2024-07-16">
+<meta name="description" content="Models that latch onto spurious correlations make brittle, biased predictions, and the usual fixes need human group annotations that are expensive or ill-defined. This paper draws a new connection between unsupervised object-centric learning and robustness: instead of inferring subgroups, it discovers concepts — discrete ideas shared across images — using slot attention plus vector quantization. The resulting method, CoBalT (Concept Balancing Technique), re-samples training data to balance these learned concepts, and matches or beats state-of-the-art group-robustness baselines on Waterbirds, CelebA, CMNIST, UrbanCars and ImageNet-9 — without any subgroup labels.">
+
+<title>Unsupervised Concept Discovery Mitigates Spurious Correlations – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-a208a425cdc81fcf85dda97472dc73c1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Unsupervised Concept Discovery Mitigates Spurious Correlations – CLAI Research Group">
+<meta property="og:description" content="Models that latch onto spurious correlations make brittle, biased predictions, and the usual fixes need human group annotations that are expensive or ill-defined. This paper draws a new connection between unsupervised object-centric learning and robustness: instead of inferring subgroups, it discovers concepts — discrete ideas shared across images — using slot attention plus vector quantization. The resulting method, CoBalT (Concept Balancing Technique), re-samples training data to balance these learned concepts, and matches or beats state-of-the-art group-robustness baselines on Waterbirds, CelebA, CMNIST, UrbanCars and ImageNet-9 — without any subgroup labels.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2024/unsupervised-concept-discovery-spurious-correlations/thumbnail.png">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta property="og:image:height" content="795">
+<meta property="og:image:width" content="1600">
+<meta name="twitter:title" content="Unsupervised Concept Discovery Mitigates Spurious Correlations – CLAI Research Group">
+<meta name="twitter:description" content="Models that latch onto spurious correlations make brittle, biased predictions, and the usual fixes need human group annotations that are expensive or ill-defined. This paper draws a new connection between unsupervised object-centric learning and robustness: instead of inferring subgroups, it discovers concepts — discrete ideas shared across images — using slot attention plus vector quantization. The resulting method, CoBalT (Concept Balancing Technique), re-samples training data to balance these learned concepts, and matches or beats state-of-the-art group-robustness baselines on Waterbirds, CelebA, CMNIST, UrbanCars and ImageNet-9 — without any subgroup labels.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2024/unsupervised-concept-discovery-spurious-correlations/thumbnail.png">
+<meta name="twitter:image-height" content="795">
+<meta name="twitter:image-width" content="1600">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Unsupervised Concept Discovery Mitigates Spurious Correlations">
+<meta name="citation_author" content="Md Rifat Arefin">
+<meta name="citation_author" content="Yan Zhang">
+<meta name="citation_author" content="Aristide Baratin">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_author" content="Irina Rish">
+<meta name="citation_author" content="Dianbo Liu">
+<meta name="citation_author" content="Kenji Kawaguchi">
+<meta name="citation_publication_date" content="2024-07-16">
+<meta name="citation_cover_date" content="2024-07-16">
+<meta name="citation_year" content="2024">
+<meta name="citation_online_date" content="2024-07-16">
+<meta name="citation_fulltext_html_url" content="https://arxiv.org/abs/2402.13368">
+<meta name="citation_language" content="en">
+<meta name="citation_conference_title" content="Proceedings of the 41st International Conference on Machine Learning (ICML)">
+<meta name="citation_reference" content="citation_title=Distributionally robust neural networks for group shifts: On the importance of regularization for worst-case generalization;,citation_author=Shiori Sagawa;,citation_author=Pang Wei Koh;,citation_author=Tatsunori B. Hashimoto;,citation_author=Percy Liang;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_fulltext_html_url=https://openreview.net/forum?id=ryxGuJrFvS;,citation_conference_title=International conference on learning representations (ICLR);">
+<meta name="citation_reference" content="citation_title=Invariant risk minimization;,citation_author=Martin Arjovsky;,citation_author=Léon Bottou;,citation_author=Ishaan Gulrajani;,citation_author=David Lopez-Paz;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_journal_title=arXiv preprint arXiv:1907.02893;">
+<meta name="citation_reference" content="citation_title=The pitfalls of simplicity bias in neural networks;,citation_author=Harshay Shah;,citation_author=Kaustav Tamuly;,citation_author=Aditi Raghunathan;,citation_author=Prateek Jain;,citation_author=Praneeth Netrapalli;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=33;,citation_journal_title=Advances in Neural Information Processing Systems;">
+<meta name="citation_reference" content="citation_title=Shortcut learning in deep neural networks;,citation_author=Robert Geirhos;,citation_author=Jörn-Henrik Jacobsen;,citation_author=Claudio Michaelis;,citation_author=Richard Zemel;,citation_author=Wieland Brendel;,citation_author=Matthias Bethge;,citation_author=Felix A. Wichmann;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=2;,citation_journal_title=Nature Machine Intelligence;">
+<meta name="citation_reference" content="citation_title=Last layer re-training is sufficient for robustness to spurious correlations;,citation_author=Polina Kirichenko;,citation_author=Pavel Izmailov;,citation_author=Andrew Gordon Wilson;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_fulltext_html_url=https://openreview.net/forum?id=Zb6c8A-Fghk;,citation_conference_title=The eleventh international conference on learning representations (ICLR);">
+<meta name="citation_reference" content="citation_title=Self-supervised visual representation learning with semantic grouping;,citation_author=Xin Wen;,citation_author=Bingchen Zhao;,citation_author=Anlin Zheng;,citation_author=Xiangyu Zhang;,citation_author=Xiaojuan Qi;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_volume=35;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Object-centric learning with slot attention;,citation_author=Francesco Locatello;,citation_author=Dirk Weissenborn;,citation_author=Thomas Unterthiner;,citation_author=Aravindh Mahendran;,citation_author=Georg Heigold;,citation_author=Jakob Uszkoreit;,citation_author=Alexey Dosovitskiy;,citation_author=Thomas Kipf;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=33;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Emerging properties in self-supervised vision transformers;,citation_author=Mathilde Caron;,citation_author=Hugo Touvron;,citation_author=Ishan Misra;,citation_author=Hervé Jégou;,citation_author=Julien Mairal;,citation_author=Piotr Bojanowski;,citation_author=Armand Joulin;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_conference_title=Proceedings of the IEEE/CVF international conference on computer vision (ICCV);">
+<meta name="citation_reference" content="citation_title=Neural discrete representation learning;,citation_author=Aaron Oord;,citation_author=Oriol Vinyals;,citation_author=Koray Kavukcuoglu;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_volume=30;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Bridging the gap to real-world object-centric learning;,citation_author=Maximilian Seitzer;,citation_author=Max Horn;,citation_author=Andrii Zadaianchuk;,citation_author=Dominik Zietlow;,citation_author=Tianjun Xiao;,citation_author=Carl-Johann Simon-Gabriel;,citation_author=Tong He;,citation_author=Zheng Zhang;,citation_author=Bernhard Schölkopf;,citation_author=Thomas Brox;,citation_author=Francesco Locatello;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_fulltext_html_url=https://openreview.net/forum?id=b9tUk-f_aG;,citation_conference_title=The eleventh international conference on learning representations (ICLR);">
+<meta name="citation_reference" content="citation_title=Identifying spurious biases early in training through the lens of simplicity bias;,citation_author=Yu Yang;,citation_author=Eric Gan;,citation_author=Gintare Karolina Dziugaite;,citation_author=Baharan Mirzasoleiman;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=International conference on artificial intelligence and statistics (AISTATS);,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=MaskTune: Mitigating spurious correlations by forcing to explore;,citation_author=Saeid Asgari;,citation_author=Aliasghar Khani;,citation_author=Fereshte Khani;,citation_author=Ali Gholami;,citation_author=Linh Tran;,citation_author=Ali Mahdavi-Amiri;,citation_author=Ghassan Hamarneh;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Group robust classification without any group information;,citation_author=Christos Tsirigotis;,citation_author=Joao Monteiro;,citation_author=Pau Rodriguez;,citation_author=David Vazquez;,citation_author=Aaron Courville;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_fulltext_html_url=https://openreview.net/forum?id=2OcNWFHFpk;,citation_conference_title=Advances in neural information processing systems (NeurIPS);">
+<meta name="citation_reference" content="citation_title=Discovering environments with XRM;,citation_author=Mohammad Pezeshki;,citation_author=Diane Bouchacourt;,citation_author=Mark Ibrahim;,citation_author=Nicolas Ballas;,citation_author=Pascal Vincent;,citation_author=David Lopez-Paz;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_journal_title=arXiv preprint arXiv:2309.16748;">
+<meta name="citation_reference" content="citation_title=Simple and fast group robustness by automatic feature reweighting;,citation_author=Shikai Qiu;,citation_author=Andres Potapczynski;,citation_author=Pavel Izmailov;,citation_author=Andrew Gordon Wilson;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_volume=202;,citation_conference_title=Proceedings of the 40th international conference on machine learning (ICML);,citation_conference=PMLR;,citation_series_title=Proceedings of machine learning research;">
+<meta name="citation_reference" content="citation_title=Discover and cure: Concept-aware mitigation of spurious correlation;,citation_author=Shirley Wu;,citation_author=Mert Yuksekgonul;,citation_author=Linjun Zhang;,citation_author=James Zou;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=International conference on machine learning (ICML);,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=A whac-a-mole dilemma: Shortcuts come in multiples where mitigating one amplifies others;,citation_author=Zhiheng Li;,citation_author=Ivan Evtimov;,citation_author=Albert Gordo;,citation_author=Caner Hazirbas;,citation_author=Tal Hassner;,citation_author=Cristian Canton Ferrer;,citation_author=Chenliang Xu;,citation_author=Mark Ibrahim;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition (CVPR);">
+<meta name="citation_reference" content="citation_title=Noise or signal: The role of image backgrounds in object recognition;,citation_author=Kai Yuanqing Xiao;,citation_author=Logan Engstrom;,citation_author=Andrew Ilyas;,citation_author=Aleksander Madry;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://openreview.net/forum?id=gl3D-xY7wLq;,citation_conference_title=International conference on learning representations (ICLR);">
+<meta name="citation_reference" content="citation_title=Variance reduction in SGD by distributed importance sampling;,citation_author=Guillaume Alain;,citation_author=Alex Lamb;,citation_author=Chinnadhurai Sankar;,citation_author=Aaron Courville;,citation_author=Yoshua Bengio;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;,citation_journal_title=arXiv preprint arXiv:1511.06481;">
+<meta name="citation_reference" content="citation_title=Deep learning face attributes in the wild;,citation_author=Ziwei Liu;,citation_author=Ping Luo;,citation_author=Xiaogang Wang;,citation_author=Xiaoou Tang;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;,citation_conference_title=Proceedings of the IEEE international conference on computer vision (ICCV);">
+<meta name="citation_reference" content="citation_title=Learning from failure: De-biasing classifier from biased classifier;,citation_author=Junhyun Nam;,citation_author=Hyuntak Cha;,citation_author=Sungsoo Ahn;,citation_author=Jaeho Lee;,citation_author=Jinwoo Shin;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=33;,citation_journal_title=Advances in Neural Information Processing Systems;">
+<meta name="citation_reference" content="citation_title=Correct-n-contrast: A contrastive approach for improving robustness to spurious correlations;,citation_author=Michael Zhang;,citation_author=Nimit S. Sohoni;,citation_author=Hongyang R. Zhang;,citation_author=Chelsea Finn;,citation_author=Christopher Ré;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_journal_title=arXiv preprint arXiv:2203.01517;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem-with-spurious-correlations" id="toc-the-problem-with-spurious-correlations" class="nav-link active" data-scroll-target="#the-problem-with-spurious-correlations">The problem with spurious correlations</a></li>
+  <li><a href="#from-subgroups-to-concepts" id="toc-from-subgroups-to-concepts" class="nav-link" data-scroll-target="#from-subgroups-to-concepts">From subgroups to concepts</a>
+  <ul class="collapse">
+  <li><a href="#stage-1-discovering-a-concept-dictionary" id="toc-stage-1-discovering-a-concept-dictionary" class="nav-link" data-scroll-target="#stage-1-discovering-a-concept-dictionary">Stage 1 — discovering a concept dictionary</a></li>
+  <li><a href="#stage-2-balancing-concepts" id="toc-stage-2-balancing-concepts" class="nav-link" data-scroll-target="#stage-2-balancing-concepts">Stage 2 — balancing concepts</a></li>
+  </ul></li>
+  <li><a href="#what-the-concepts-look-like" id="toc-what-the-concepts-look-like" class="nav-link" data-scroll-target="#what-the-concepts-look-like">What the concepts look like</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Unsupervised Concept Discovery Mitigates Spurious Correlations</h1>
+<p class="subtitle lead">Object-centric representation learning discovers data-driven <em>concepts</em> that stand in for subgroup labels — letting a classifier balance away spurious correlations without any group annotation</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Robustness &amp; OOD</div>
+    <div class="quarto-category">Representation Learning</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Models that latch onto spurious correlations make brittle, biased predictions, and the usual fixes need human group annotations that are expensive or ill-defined. This paper draws a new connection between unsupervised object-centric learning and robustness: instead of inferring subgroups, it discovers <em>concepts</em> — discrete ideas shared across images — using slot attention plus vector quantization. The resulting method, CoBalT (Concept Balancing Technique), re-samples training data to balance these learned concepts, and matches or beats state-of-the-art group-robustness baselines on Waterbirds, CelebA, CMNIST, UrbanCars and ImageNet-9 — without any subgroup labels.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Md Rifat Arefin <a href="mailto:rifat.arefin@mila.quebec" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Mila – Quebec AI Institute, Canada
+          </p>
+        <p class="affiliation">
+            University of Montreal, Canada
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Yan Zhang </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Samsung – SAIT AI Lab, Montreal, Canada
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Aristide Baratin </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Samsung – SAIT AI Lab, Montreal, Canada
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Irina Rish </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Mila – Quebec AI Institute, Canada
+          </p>
+        <p class="affiliation">
+            University of Montreal, Canada
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Dianbo Liu </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            National University of Singapore
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Kenji Kawaguchi </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            National University of Singapore
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">July 16, 2024</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-icml">
+<span class="venue-name">ICML 2024</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2402.13368" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://github.com/rarefin/CoBalT" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
+<section id="the-problem-with-spurious-correlations" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-problem-with-spurious-correlations">The problem with spurious correlations</h2>
+<div class="page-columns page-full"><p>Deep classifiers tend to predict from whatever correlates with the label in the training data, not from robustly informative features <span class="citation" data-cites="arjovsky2019invariant Sagawa2020Distributionally">(<a href="#ref-arjovsky2019invariant" role="doc-biblioref">Arjovsky et al. 2019</a>; <a href="#ref-Sagawa2020Distributionally" role="doc-biblioref">Sagawa et al. 2020</a>)</span>. Changing an image’s background can flip a prediction — a symptom of the <em>simplicity bias</em> of neural networks <span class="citation" data-cites="shah2020pitfalls Geirhos2020_shortcut">(<a href="#ref-shah2020pitfalls" role="doc-biblioref">Shah et al. 2020</a>; <a href="#ref-Geirhos2020_shortcut" role="doc-biblioref">Geirhos et al. 2020</a>)</span>. Such models can look strong on i.i.d. test data while failing on the <em>subgroups</em> where the correlation breaks. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">In Waterbirds, the spurious cue is the background — <em>land</em> vs <em>water</em> — which co-occurs with the bird type, so the rare (waterbird, land) and (landbird, water) combinations are easy to get wrong.</span></div></div>
+<div class="no-row-height column-margin column-container"><div id="ref-arjovsky2019invariant" class="csl-entry" role="listitem">
+Arjovsky, Martin, Léon Bottou, Ishaan Gulrajani, and David Lopez-Paz. 2019. <span>“Invariant Risk Minimization.”</span> <em>arXiv Preprint arXiv:1907.02893</em>.
+</div><div id="ref-shah2020pitfalls" class="csl-entry" role="listitem">
+Shah, Harshay, Kaustav Tamuly, Aditi Raghunathan, Prateek Jain, and Praneeth Netrapalli. 2020. <span>“The Pitfalls of Simplicity Bias in Neural Networks.”</span> <em>Advances in Neural Information Processing Systems</em> 33: 9573–85.
+</div><div id="ref-Geirhos2020_shortcut" class="csl-entry" role="listitem">
+Geirhos, Robert, Jörn-Henrik Jacobsen, Claudio Michaelis, et al. 2020. <span>“Shortcut Learning in Deep Neural Networks.”</span> <em>Nature Machine Intelligence</em> 2: 665–73.
+</div></div><p>The standard remedies partition the data by a known spurious attribute and then equalise training across those groups <span class="citation" data-cites="Sagawa2020Distributionally kirichenko2022last">(<a href="#ref-Sagawa2020Distributionally" role="doc-biblioref">Sagawa et al. 2020</a>; <a href="#ref-kirichenko2022last" role="doc-biblioref">Kirichenko et al. 2023</a>)</span>. But most real datasets carry no such annotations, and manual grouping is expensive and often ill-defined — the right partition is not obvious, and a dataset can hide <em>several</em> spurious cues at once. This paper asks whether the groups can be replaced by something a model discovers on its own.</p>
+</section>
+<section id="from-subgroups-to-concepts" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="from-subgroups-to-concepts">From subgroups to concepts</h2>
+<div class="page-columns page-full"><p>The central move is to stop trying to recover subgroups directly and instead discover <strong>concepts</strong>: discrete ideas that recur across images — <em>blue bird</em>, <em>street background</em>, <em>short beak</em> — that need not line up with the dataset’s official subgroups.  The authors build on object-centric self-supervised learning — specifically the semantic-grouping approach of <span class="citation" data-cites="wen2022self">Wen et al. (<a href="#ref-wen2022self" role="doc-biblioref">2022</a>)</span>, which uses slot attention <span class="citation" data-cites="locatello2020object">(<a href="#ref-locatello2020object" role="doc-biblioref">Locatello et al. 2020</a>)</span> to decompose a scene into its constituent parts — and argue that this decomposition can serve as a <em>data-driven proxy</em> for subgroup labels.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">The Waterbirds groups are exactly <span class="math inline">\{\text{waterbird},\text{landbird}\}\times\{\text{water},\text{land}\}</span>; the learned concepts are deliberately <em>not</em> tied to that product, and there are typically many more of them than there are annotated subgroups.</span><div id="ref-locatello2020object" class="csl-entry" role="listitem">
+Locatello, Francesco, Dirk Weissenborn, Thomas Unterthiner, et al. 2020. <span>“Object-Centric Learning with Slot Attention.”</span> <em>Advances in Neural Information Processing Systems</em> 33: 11525–38.
+</div></div></div>
+<p>The method, <strong>CoBalT</strong> (Concept Balancing Technique), follows the two-stage recipe common in this literature: first infer something about the training data, then use it for robust training.</p>
+<section id="stage-1-discovering-a-concept-dictionary" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="stage-1-discovering-a-concept-dictionary">Stage 1 — discovering a concept dictionary</h3>
+<p>A two-branch student/teacher network (asymmetric weights, teacher updated by an exponential moving average of the student) encodes two augmented views of an image and groups patches into slot representations <span class="math inline">z_s, z_t \in \mathbb{R}^{N\times d}</span>, where <span class="math inline">N</span> is the number of slots and <span class="math inline">d</span> their dimension. Each slot is a semantic grouping of a region — ideally a single object.</p>
+<div class="page-columns page-full">
+<div id="fig-architecture" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-architecture-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="architecture.png" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-architecture-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: How CoBalT learns concepts without human annotation. Two augmented views <span class="math inline">x_s, x_t</span> of an image pass through a student and an EMA-updated teacher; each branch produces patch features and then slot representations via a slot module. The slots are matched against a learned <em>concept dictionary</em> <span class="math inline">C\in\mathbb{R}^{K\times d}</span> by vector quantization, and a distillation loss <span class="math inline">\mathcal{L}_{vq}</span> aligns the student’s concept assignment with the teacher’s. From the original paper (Arefin et al., 2024).
+</figcaption>
+</figure>
+</div>
+</div>
+<p>On top of the slots, CoBalT learns a <strong>concept dictionary</strong> <span class="math inline">C\in\mathbb{R}^{K\times d}</span>: a codebook of <span class="math inline">K</span> vectors, each a symbolic concept, learned by vector quantization <span class="citation" data-cites="Oord2017NeuralDR">(<a href="#ref-Oord2017NeuralDR" role="doc-biblioref">Oord et al. 2017</a>)</span>. Slots are softly assigned to dictionary entries on the student branch and hard-assigned (via <span class="math inline">\arg\max</span>) on the teacher branch,</p>
+<div class="no-row-height column-margin column-container"><div id="ref-Oord2017NeuralDR" class="csl-entry" role="listitem">
+Oord, Aaron van den, Oriol Vinyals, and Koray Kavukcuoglu. 2017. <span>“Neural Discrete Representation Learning.”</span> <em>Advances in Neural Information Processing Systems</em> 30.
+</div></div><p><span class="math display">
+(p_s)_{ij} = \frac{\exp\!\big(-\lVert C_i - (\bar{z}_s)_j\rVert_2^2/\tau_s\big)}
+{\sum_{t=1}^{K}\exp\!\big(-\lVert C_t - (\bar{z}_s)_j\rVert_2^2/\tau_s\big)},
+\qquad
+(p_t)_i = \arg\max_j \; -\lVert C_j - (\bar{z}_t)_i\rVert_2^2,
+</span></p>
+<div class="page-columns page-full"><p>with slots L2-normalised and <span class="math inline">\tau_s</span> a temperature. The dictionary is updated as an exponential moving average of the teacher’s assigned slot representations (codebook update rate <span class="math inline">\alpha_c = 0.9</span> in all experiments).  A novel cross-entropy term <span class="math inline">\mathcal{L}_{vq}</span> distills the teacher’s discrete concept assignment onto the student, and is added to the attention-distillation and contrastive losses inherited from <span class="citation" data-cites="wen2022self">Wen et al. (<a href="#ref-wen2022self" role="doc-biblioref">2022</a>)</span>:</p><div class="no-row-height column-margin column-container"><span class="margin-aside">The soft/hard asymmetry — softmax for the student, sharpened <span class="math inline">\arg\max</span> for the teacher — follows DINO <span class="citation" data-cites="Caron2021EmergingPI">(<a href="#ref-Caron2021EmergingPI" role="doc-biblioref">Caron et al. 2021</a>)</span> and is what prevents the slots from collapsing into a single cluster.</span><div id="ref-wen2022self" class="csl-entry" role="listitem">
+Wen, Xin, Bingchen Zhao, Anlin Zheng, Xiangyu Zhang, and Xiaojuan Qi. 2022. <span>“Self-Supervised Visual Representation Learning with Semantic Grouping.”</span> <em>Advances in Neural Information Processing Systems</em> 35: 16423–38.
+</div></div><div class="no-row-height column-margin column-container"><div id="ref-Caron2021EmergingPI" class="csl-entry" role="listitem">
+Caron, Mathilde, Hugo Touvron, Ishan Misra, et al. 2021. <span>“Emerging Properties in Self-Supervised Vision Transformers.”</span> <em>Proceedings of the IEEE/CVF International Conference on Computer Vision (ICCV)</em>, 9650–60.
+</div></div></div>
+<p><span class="math display">
+\mathcal{L} = \mathcal{L}_{dis} + \mathcal{L}_{con} + \mathcal{L}_{vq}.
+</span></p>
+<p>The output of Stage 1 is an association of every training image with a set of discrete concepts, and hence concept-occurrence statistics across the dataset.</p>
+</section>
+<section id="stage-2-balancing-concepts" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="stage-2-balancing-concepts">Stage 2 — balancing concepts</h3>
+<p>With the concepts frozen, a <em>separate</em> classifier is trained — its architecture is “inconsequential”; the contribution is the <strong>sampling</strong>. Inspired by the observation that, when ground-truth subgroups are known, simply balancing the subgroup sampling rate is the most effective fix <span class="citation" data-cites="Sagawa2020Distributionally yang2024identifying">(<a href="#ref-Sagawa2020Distributionally" role="doc-biblioref">Sagawa et al. 2020</a>; <a href="#ref-yang2024identifying" role="doc-biblioref">Yang et al. 2024</a>)</span>, CoBalT balances <em>learned concepts</em> instead: prevalent concepts are sampled less often, rare ones more often, and within each concept the classes are balanced where possible. Inside a cluster <span class="math inline">c</span> with class counts <span class="math inline">|T_{c,y}|</span>, the sampling weight and probability are</p>
+<div class="no-row-height column-margin column-container"></div><p><span class="math display">
+w_{c,y} = \frac{1}{|T_{c,y}|}, \qquad
+p_{c,y} = \frac{w_{c,y}^{\lambda}}{\sum_{\hat{y}} w_{c,\hat{y}}^{\lambda}},
+</span></p>
+<div class="page-columns page-full"><p>where <span class="math inline">\lambda</span> is a sampling factor (default <span class="math inline">1</span>, increased when concept clusters are poorly separated, guided by the silhouette score).  A subtlety the paper is careful about: each image belongs to <em>several</em> concepts rather than one subgroup, and a concept can appear across classes at different frequencies.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Unlike methods that contrast groups <em>within</em> a class, CoBalT contrasts samples from the <em>same concept</em> that belong to <em>different</em> classes.</span></div></div>
+<p>Because group annotations are also typically needed for <em>model selection</em>, the paper reports three early-stopping variants: <strong>CoBalT<span class="math inline">_{hg}</span></strong> (human-annotated worst group), <strong>CoBalT<span class="math inline">_{ig}</span></strong> (worst group <em>inferred</em> from the discovered concepts), and <strong>CoBalT<span class="math inline">_{avg}</span></strong> (plain average validation accuracy). The latter two use no human group labels at all.</p>
+</section>
+</section>
+<section id="what-the-concepts-look-like" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="what-the-concepts-look-like">What the concepts look like</h2>
+<p>The slot decomposition recovers interpretable regions: in Waterbirds, parts of the bird’s body and backgrounds such as trees and water; in ImageNet-9, humans, animals and grass; in CelebA, the nose, eyes and hair.</p>
+<div class="page-columns page-full">
+<div id="fig-segmentation" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-segmentation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="slot-segmentation.png" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-segmentation-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Slot segmentations across datasets (Waterbirds, CelebA, ImageNet-9), using four slots each. Pixels are grouped by slot into high-level regions — bird body parts and backgrounds, facial parts, and foreground/background elements. From the original paper (Arefin et al., 2024).
+</figcaption>
+</figure>
+</div>
+</div>
+<p>Quantizing the slots into the concept dictionary then clusters <em>images</em> by shared concepts — even across classes. Selecting two of the discovered Waterbirds concepts, one reads as a <em>trees/bamboo</em> background and the other as a <em>water</em> background, each pulling together waterbirds and landbirds that happen to share that backdrop.</p>
+<div class="page-columns page-full">
+<div id="fig-clusters" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-clusters-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="concept-clusters.png" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-clusters-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Images from Waterbirds grouped by two discovered concepts — readable as a trees/bamboo background and a water background — each spanning both the waterbird and landbird classes. Concepts cut across class labels, which is what lets them act as proxies for spurious subgroups. From the original paper (Arefin et al., 2024).
+</figcaption>
+</figure>
+</div>
+</div>
+</section>
+<section id="results" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<p>CoBalT is evaluated on CMNIST, Waterbirds, CelebA, UrbanCars and the ImageNet-9 background challenge (IN-9L), against group-robustness methods that span the full annotation spectrum — from those needing group labels at train <em>and</em> validation time, to fully group-agnostic ones.</p>
+<div class="column-page page-columns page-full">
+<div id="tbl-main" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-main-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Worst-group (WG) and average accuracy on CMNIST, Waterbirds and CelebA. Sections, from top: methods using group labels for both train and validation; group labels for validation only; and no group annotation at all. Best within each section in bold (as reported). Baseline numbers are taken from the original paper.
+</figcaption>
+<div aria-describedby="tbl-main-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 7%">
+<col style="width: 20%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 14%">
+<col style="width: 14%">
+<col style="width: 10%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: center;">Group label (Tr/Val)</th>
+<th style="text-align: right;">CMNIST WG</th>
+<th style="text-align: right;">CMNIST Avg</th>
+<th style="text-align: right;">Waterbirds WG</th>
+<th style="text-align: right;">Waterbirds Avg</th>
+<th style="text-align: right;">CelebA WG</th>
+<th style="text-align: right;">CelebA Avg</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">GB</td>
+<td style="text-align: center;">✓ / ✓</td>
+<td style="text-align: right;"><strong>82.2±1.0</strong></td>
+<td style="text-align: right;"><strong>91.7±0.6</strong></td>
+<td style="text-align: right;">86.3±0.3</td>
+<td style="text-align: right;">93.0±1.5</td>
+<td style="text-align: right;">85.0±1.1</td>
+<td style="text-align: right;">92.7±0.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">GDRO <span class="citation" data-cites="Sagawa2020Distributionally">(<a href="#ref-Sagawa2020Distributionally" role="doc-biblioref">Sagawa et al. 2020</a>)</span></td>
+<td style="text-align: center;">✓ / ✓</td>
+<td style="text-align: right;">78.5±4.5</td>
+<td style="text-align: right;">90.6±0.1</td>
+<td style="text-align: right;">89.9±0.6</td>
+<td style="text-align: right;">92.0±0.6</td>
+<td style="text-align: right;"><strong>88.9±1.3</strong></td>
+<td style="text-align: right;"><strong>93.9±0.1</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DFR<span class="math inline">^{\text{Val}}</span> <span class="citation" data-cites="kirichenko2022last">(<a href="#ref-kirichenko2022last" role="doc-biblioref">Kirichenko et al. 2023</a>)</span></td>
+<td style="text-align: center;">✓ / ✓</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;"><strong>91.8±2.6</strong></td>
+<td style="text-align: right;">93.5±1.4</td>
+<td style="text-align: right;">87.3±1.0</td>
+<td style="text-align: right;">90.2±0.8</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SPARE <span class="citation" data-cites="yang2024identifying">(<a href="#ref-yang2024identifying" role="doc-biblioref">Yang et al. 2024</a>)</span></td>
+<td style="text-align: center;">✗ / ✓</td>
+<td style="text-align: right;"><strong>83.0±1.7</strong></td>
+<td style="text-align: right;">91.8±0.7</td>
+<td style="text-align: right;">89.8±0.6</td>
+<td style="text-align: right;">94.2±1.6</td>
+<td style="text-align: right;"><strong>90.3±0.3</strong></td>
+<td style="text-align: right;">91.1±0.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">AFR <span class="citation" data-cites="Qiu2023SimpleAF">(<a href="#ref-Qiu2023SimpleAF" role="doc-biblioref">Qiu et al. 2023</a>)</span></td>
+<td style="text-align: center;">✗ / ✓</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">90.4±1.1</td>
+<td style="text-align: right;">94.2±1.2</td>
+<td style="text-align: right;">82.0±0.5</td>
+<td style="text-align: right;">91.3±0.3</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CoBalT<span class="math inline">_{hg}</span> (ours)</td>
+<td style="text-align: center;">✗ / ✓</td>
+<td style="text-align: right;">79.0±4.3</td>
+<td style="text-align: right;"><strong>96.6±1.8</strong></td>
+<td style="text-align: right;"><strong>90.6±0.7</strong></td>
+<td style="text-align: right;">93.7±0.6</td>
+<td style="text-align: right;">88.0±2.5</td>
+<td style="text-align: right;">92.3±0.7</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ERM</td>
+<td style="text-align: center;">✗ / ✗</td>
+<td style="text-align: right;">0.0±0.0</td>
+<td style="text-align: right;">20.1±0.2</td>
+<td style="text-align: right;">62.6±0.3</td>
+<td style="text-align: right;"><strong>97.3±1.0</strong></td>
+<td style="text-align: right;">47.7±2.1</td>
+<td style="text-align: right;"><strong>94.9±0.3</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MaskTune <span class="citation" data-cites="asgari2022masktune">(<a href="#ref-asgari2022masktune" role="doc-biblioref">Asgari et al. 2022</a>)</span></td>
+<td style="text-align: center;">✗ / ✗</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">86.4±1.9</td>
+<td style="text-align: right;">93.0±0.7</td>
+<td style="text-align: right;">78.0±1.2</td>
+<td style="text-align: right;">91.3±0.1</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ULA <span class="citation" data-cites="Tsirigotis2023GroupRC">(<a href="#ref-Tsirigotis2023GroupRC" role="doc-biblioref">Tsirigotis et al. 2023</a>)</span></td>
+<td style="text-align: center;">✗ / ✗</td>
+<td style="text-align: right;"><strong>75.1±0.8</strong></td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">86.1±1.5</td>
+<td style="text-align: right;">91.5±0.7</td>
+<td style="text-align: right;">86.5±3.7</td>
+<td style="text-align: right;">93.9±0.2</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">XRM <span class="citation" data-cites="Pezeshki2023DiscoveringEW">(<a href="#ref-Pezeshki2023DiscoveringEW" role="doc-biblioref">Pezeshki et al. 2023</a>)</span></td>
+<td style="text-align: center;">✗ / ✗</td>
+<td style="text-align: right;">70.5</td>
+<td style="text-align: right;">–</td>
+<td style="text-align: right;">86.1</td>
+<td style="text-align: right;">90.6</td>
+<td style="text-align: right;"><strong>89.8</strong></td>
+<td style="text-align: right;">91.8</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CoBalT<span class="math inline">_{ig}</span> (ours)</td>
+<td style="text-align: center;">✗ / ✗</td>
+<td style="text-align: right;">73.5±2.1</td>
+<td style="text-align: right;">96.0±1.6</td>
+<td style="text-align: right;">89.0±1.6</td>
+<td style="text-align: right;">92.5±1.7</td>
+<td style="text-align: right;"><strong>89.2±1.2</strong></td>
+<td style="text-align: right;">92.3±0.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CoBalT<span class="math inline">_{avg}</span> (ours)</td>
+<td style="text-align: center;">✗ / ✗</td>
+<td style="text-align: right;">74.5±2.0</td>
+<td style="text-align: right;"><strong>96.2±2.0</strong></td>
+<td style="text-align: right;"><strong>90.6±0.7</strong></td>
+<td style="text-align: right;">93.8±0.8</td>
+<td style="text-align: right;">81.1±2.7</td>
+<td style="text-align: right;">92.8±0.9</td>
+</tr>
+</tbody>
+</table>
+<div class="no-row-height column-margin column-container"><div id="ref-Sagawa2020Distributionally" class="csl-entry" role="listitem">
+Sagawa, Shiori, Pang Wei Koh, Tatsunori B. Hashimoto, and Percy Liang. 2020. <span>“Distributionally Robust Neural Networks for Group Shifts: On the Importance of Regularization for Worst-Case Generalization.”</span> <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=ryxGuJrFvS">https://openreview.net/forum?id=ryxGuJrFvS</a>.
+</div><div id="ref-kirichenko2022last" class="csl-entry" role="listitem">
+Kirichenko, Polina, Pavel Izmailov, and Andrew Gordon Wilson. 2023. <span>“Last Layer Re-Training Is Sufficient for Robustness to Spurious Correlations.”</span> <em>The Eleventh International Conference on Learning Representations (ICLR)</em>. <a href="https://openreview.net/forum?id=Zb6c8A-Fghk">https://openreview.net/forum?id=Zb6c8A-Fghk</a>.
+</div><div id="ref-yang2024identifying" class="csl-entry" role="listitem">
+Yang, Yu, Eric Gan, Gintare Karolina Dziugaite, and Baharan Mirzasoleiman. 2024. <span>“Identifying Spurious Biases Early in Training Through the Lens of Simplicity Bias.”</span> <em>International Conference on Artificial Intelligence and Statistics (AISTATS)</em>, 2953–61.
+</div><div id="ref-Qiu2023SimpleAF" class="csl-entry" role="listitem">
+Qiu, Shikai, Andres Potapczynski, Pavel Izmailov, and Andrew Gordon Wilson. 2023. <span>“Simple and Fast Group Robustness by Automatic Feature Reweighting.”</span> <em>Proceedings of the 40th International Conference on Machine Learning (ICML)</em>, Proceedings of machine learning research, vol. 202: 28448–67.
+</div><div id="ref-Tsirigotis2023GroupRC" class="csl-entry" role="listitem">
+Tsirigotis, Christos, Joao Monteiro, Pau Rodriguez, David Vazquez, and Aaron Courville. 2023. <span>“Group Robust Classification Without Any Group Information.”</span> <em>Advances in Neural Information Processing Systems (NeurIPS)</em>. <a href="https://openreview.net/forum?id=2OcNWFHFpk">https://openreview.net/forum?id=2OcNWFHFpk</a>.
+</div><div id="ref-Pezeshki2023DiscoveringEW" class="csl-entry" role="listitem">
+Pezeshki, Mohammad, Diane Bouchacourt, Mark Ibrahim, Nicolas Ballas, Pascal Vincent, and David Lopez-Paz. 2023. <span>“Discovering Environments with XRM.”</span> <em>arXiv Preprint arXiv:2309.16748</em>.
+</div></div></div>
+</figure>
+</div>
+</div>
+<div class="page-columns page-full"><p>Among the fully group-agnostic methods (bottom block), <strong>CoBalT<span class="math inline">_{ig}</span></strong> outperforms the recent ULA and XRM on Waterbirds worst-group accuracy by nearly <strong>3%</strong> (89.0±1.6 vs 86.1 for both), while staying competitive on CelebA and CMNIST. The variants that <em>do not</em> infer groups still hold up: CoBalT<span class="math inline">_{avg}</span> reaches 90.6±0.7 worst-group on Waterbirds. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">On CMNIST and CelebA — where concepts are <em>less spatially separable</em> than a foreground bird against a background — the authors note the benefit is more limited, consistent with the method’s reliance on spatially separable concepts.</span></div></div>
+<p><strong>Two spurious correlations at once.</strong> UrbanCars deliberately injects two cues per class — a <em>background</em> and a <em>co-occurring object</em> — where prior methods exhibit “whack-a-mole” behaviour, fixing one cue while amplifying the other <span class="citation" data-cites="li2023whac">(<a href="#ref-li2023whac" role="doc-biblioref">Li et al. 2023</a>)</span>. Here CoBalT<span class="math inline">_{ig}</span> reaches <strong>80.0±2.8</strong> worst-group accuracy, about <strong>3%</strong> over SPARE (76.9±1.8), the strongest group-agnostic baseline, while ERM, LfF and JTT collapse on the worst group.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-li2023whac" class="csl-entry" role="listitem">
+Li, Zhiheng, Ivan Evtimov, Albert Gordo, et al. 2023. <span>“A Whac-a-Mole Dilemma: Shortcuts Come in Multiples Where Mitigating One Amplifies Others.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)</em>, 20071–82.
+</div></div><div id="tbl-urbancars" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-urbancars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: UrbanCars (ResNet-50), where each class carries <em>two</em> spurious cues (background + co-occurring object). Values as reported.
+</figcaption>
+<div aria-describedby="tbl-urbancars-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: right;">Worst Group</th>
+<th style="text-align: right;">Average</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ERM</td>
+<td style="text-align: right;">28.4</td>
+<td style="text-align: right;"><strong>97.6</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">JTT</td>
+<td style="text-align: right;">55.8</td>
+<td style="text-align: right;">95.9</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">GDRO</td>
+<td style="text-align: right;">75.2</td>
+<td style="text-align: right;">91.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">SPARE</td>
+<td style="text-align: right;">76.9±1.8</td>
+<td style="text-align: right;">96.6±0.5</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CoBalT<span class="math inline">_{ig}</span> (ours)</td>
+<td style="text-align: right;"><strong>80.0±2.8</strong></td>
+<td style="text-align: right;">96.3±0.6</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CoBalT<span class="math inline">_{avg}</span> (ours)</td>
+<td style="text-align: right;">76.8±6.5</td>
+<td style="text-align: right;">97.3±0.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p><strong>Attribute generalization (ImageNet-9).</strong> Trained only on the original IN-9L training set, CoBalT is tested under background swaps. CoBalT<span class="math inline">_{ig}</span> improves over MaskTune by <strong>1.5%</strong> on Mixed-rand (80.1 vs 78.6) and <strong>1.9%</strong> on Only-FG (90.0 vs 88.1), with parity on the unmodified set.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The paper’s prose also reports a 1.1% gain on Mixed-same, but its own table lists CoBalT<span class="math inline">_{ig}</span> at 91.2 vs MaskTune at 91.1 there (a 0.1-point gap); we report the table values verbatim and flag the discrepancy rather than restate the prose figure.</p></div></div><div id="tbl-in9l" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-in9l-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: ImageNet-9 background challenge (ResNet-50, 4 slots, codebook size 8). Baseline numbers from the original paper.
+</figcaption>
+<div aria-describedby="tbl-in9l-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: right;">Original</th>
+<th style="text-align: right;">Mixed-same</th>
+<th style="text-align: right;">Mixed-rand</th>
+<th style="text-align: right;">Only-FG</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">ERM</td>
+<td style="text-align: right;"><strong>97.9</strong></td>
+<td style="text-align: right;">90.5</td>
+<td style="text-align: right;">79.2</td>
+<td style="text-align: right;">88.5</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CIM</td>
+<td style="text-align: right;">97.7</td>
+<td style="text-align: right;">89.8</td>
+<td style="text-align: right;"><strong>81.1</strong></td>
+<td style="text-align: right;">–</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MaskTune <span class="citation" data-cites="asgari2022masktune">(<a href="#ref-asgari2022masktune" role="doc-biblioref">Asgari et al. 2022</a>)</span></td>
+<td style="text-align: right;">95.6</td>
+<td style="text-align: right;">91.1</td>
+<td style="text-align: right;">78.6</td>
+<td style="text-align: right;">88.1</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">CoBalT<span class="math inline">_{ig}</span> (ours)</td>
+<td style="text-align: right;"><strong>97.9</strong></td>
+<td style="text-align: right;"><strong>91.2</strong></td>
+<td style="text-align: right;">80.1</td>
+<td style="text-align: right;">90.0</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">CoBalT<span class="math inline">_{avg}</span> (ours)</td>
+<td style="text-align: right;"><strong>97.9</strong></td>
+<td style="text-align: right;"><strong>91.2</strong></td>
+<td style="text-align: right;">80.3</td>
+<td style="text-align: right;"><strong>90.1</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="no-row-height column-margin column-container"><div id="ref-asgari2022masktune" class="csl-entry" role="listitem">
+Asgari, Saeid, Aliasghar Khani, Fereshte Khani, et al. 2022. <span>“MaskTune: Mitigating Spurious Correlations by Forcing to Explore.”</span> <em>Advances in Neural Information Processing Systems</em>.
+</div></div></div>
+</figure>
+</div>
+<p><strong>Robust without validation groups.</strong> When human-annotated <em>validation</em> groups are withheld for CelebA — forcing baselines to select models on average accuracy — most group-inference methods fall <em>below</em> ERM on the worst group. CoBalT infers its own validation groups: CoBalT<span class="math inline">_{ig}</span> reaches <strong>89.2±1.2</strong> worst-group accuracy versus 78.0±1.2 for MaskTune and 47.7±2.1 for ERM.</p>
+<p>The method also relies <em>less</em> on backgrounds than ERM, visible in GradCAM:</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<div id="fig-gradcam" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-gradcam-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="waterbirds-gradcam.png" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-gradcam-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Input, ERM and CoBalT GradCAM on Waterbirds (left to right). ERM attends to the background; CoBalT concentrates on the bird. From the original paper (Arefin et al., 2024).
+</figcaption>
+</figure>
+</div>
+</div></div><p>On the Biased Action Recognition (BAR) dataset, where actions are biased toward distinct places and concepts are clearly spatial, CoBalT<span class="math inline">_{ig}</span> reaches <strong>67.0±0.9</strong> accuracy, above LfF (63.0±2.8), ReBias (59.7±1.5) and ERM (51.9±5.9).</p>
+</section>
+<section id="takeaways" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
+<p>CoBalT shows that the group annotations usually demanded by spurious-correlation methods can be replaced by <em>concepts discovered without supervision</em>: slot attention plus vector quantization yields a dictionary of recurring visual ideas that cut across class labels, and balancing those concepts during training produces classifiers competitive with, or better than, group-aware baselines — notably when a dataset hides <em>multiple</em> spurious cues, or when validation-time group labels are unavailable. The authors are explicit about the limits: the approach assumes concepts are <strong>spatially separable</strong>, so its advantage shrinks on datasets like CMNIST and CelebA where the spurious factor is not a distinct region, and the self-supervised concept learner must guard against representation collapse. Extending the idea beyond vision — to NLP and multimodal data — and factorizing each region into finer concepts are flagged as future work.</p>
+
+
+
+<div class="no-row-height column-margin column-container"><div class="margin-aside">
+<p>The figures on this page are reproduced from the original paper, which is released under CC&nbsp;BY&nbsp;4.0. A copyable BibTeX entry for <em>this</em> page is generated below.</p>
+</div></div>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@inproceedings{rifat_arefin2024,
+  author = {Rifat Arefin, Md and Zhang, Yan and Baratin, Aristide and
+    Locatello, Francesco and Rish, Irina and Liu, Dianbo and Kawaguchi,
+    Kenji},
+  title = {Unsupervised {Concept} {Discovery} {Mitigates} {Spurious}
+    {Correlations}},
+  booktitle = {Proceedings of the 41st International Conference on
+    Machine Learning (ICML)},
+  date = {2024-07-16},
+  url = {https://arxiv.org/abs/2402.13368}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script>
+// Topics → metadata rail. On the publications list (a Quarto `default` listing)
+// Quarto renders each paper's categories as a `.listing-categories` chip row in
+// the body, under the title — which makes every row taller. The right-hand
+// metadata rail (date + venue badge) is shorter, leaving dead vertical space.
+// Move the topics into that rail, below the date and venue badge, so the two
+// columns balance and each row gets back the height the chip row was costing.
+// Runs after assets/venue-badge.html so the badge is already in the rail and the
+// topics land beneath it.
+// Progressive enhancement: with JS off, topics stay under the title.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    // Only the body copy carries a chip row; once moved it lives in .metadata, so
+    // re-running finds nothing here — naturally idempotent.
+    var cats = post.querySelector(".body .listing-categories");
+    var metadata = post.querySelector(".metadata");
+    if (!cats || !metadata) return;
+    metadata.appendChild(cats);
+  });
+});
+</script>
+<script>
+// Click-to-expand for the home showcase teasers. Each highlighted paper's banner
+// figure (.home-highlights .thumbnail img) is wrapped by Quarto in a link to the
+// paper page — but the title already links there, so here we repurpose the figure
+// click to open the full-resolution image in a lightbox overlay instead.
+// (Styles: `.fig-lightbox` in theme/theme.scss.) Progressive enhancement: with JS
+// off, clicking the figure just follows the link to the paper.
+document.addEventListener("DOMContentLoaded", function () {
+  var figures = document.querySelectorAll(".home-highlights .quarto-post .thumbnail img");
+  if (!figures.length) return;
+
+  // One reusable overlay for every figure.
+  var overlay = document.createElement("div");
+  overlay.className = "fig-lightbox";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Expanded figure");
+
+  var closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "fig-lightbox-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.innerHTML = "&times;";
+
+  var big = document.createElement("img");
+  big.alt = "";
+
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(big);
+  document.body.appendChild(overlay);
+
+  var lastFocus = null;
+
+  function open(src, alt) {
+    big.src = src;
+    big.alt = alt || "";
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+  function close() {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    big.removeAttribute("src");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // Close on backdrop click, the × button, or Escape. A click on the image itself
+  // must not close (stop it bubbling to the backdrop).
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+  closeBtn.addEventListener("click", close);
+  big.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+
+  figures.forEach(function (img) {
+    var trigger = img.closest("a") || img;   // the link wrapper, or the image itself
+    if (trigger === img) { trigger.tabIndex = 0; trigger.setAttribute("role", "button"); }
+    trigger.setAttribute("aria-label", "Expand figure");
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();          // don't follow the link to the paper page
+      e.stopPropagation();
+      open(img.currentSrc || img.src, img.alt);
+    });
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
