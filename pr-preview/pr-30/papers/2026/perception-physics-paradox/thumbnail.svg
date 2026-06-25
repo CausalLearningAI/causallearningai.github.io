@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- cyclone spiral -->
+  <g stroke="#026234" stroke-width="1.5" fill="none" opacity="0.85">
+    <path d="M300 190
+             m0 -8
+             a8 8 0 1 1 -16 8
+             a24 24 0 1 1 40 -16
+             a48 48 0 1 1 -72 32
+             a96 96 0 1 1 136 -64
+             a150 150 0 1 1 -210 100"/>
+  </g>
+  <!-- eye -->
+  <circle cx="300" cy="190" r="5" fill="#fbfaf7"/>
+  <!-- latent manifold dots, compressing toward center (regime collapse) -->
+  <g fill="#fbfaf7" opacity="0.9">
+    <circle cx="300" cy="160" r="2.5"/>
+    <circle cx="320" cy="200" r="2.5"/>
+    <circle cx="278" cy="215" r="2.5"/>
+    <circle cx="335" cy="165" r="2.5"/>
+    <circle cx="265" cy="180" r="2.5"/>
+  </g>
+  <g fill="#6f6f78">
+    <circle cx="150" cy="100" r="3"/>
+    <circle cx="470" cy="110" r="3"/>
+    <circle cx="130" cy="280" r="3"/>
+    <circle cx="490" cy="290" r="3"/>
+  </g>
+</svg>
