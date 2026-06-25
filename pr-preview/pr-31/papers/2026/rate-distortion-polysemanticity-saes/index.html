@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Tommaso Mencattini">
+<meta name="author" content="Francesco Montagna">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2026-05-14">
+<meta name="description" content="Sparse autoencoders (SAEs) that accurately reconstruct their input (low distortion) while using few active features (low rate) often fail to learn monosemantic, human-interpretable features. We cast this tension as a rate-distortion-polysemanticity (RDP) tradeoff and show, theoretically and empirically, that enforcing monosemanticity raises both the rate and the distortion an SAE must pay. The optimal degree of polysemanticity is set by the data distribution — specifically by how ground-truth concepts co-occur — rather than by optimization choices. We derive necessary conditions that any polysemanticity measure must satisfy in realistic settings and audit nine proxies used on LLM-trained SAEs, finding that most fail to track the RDP-predicted direction. Polysemanticity is therefore a data-level constraint, not merely a training artifact.">
+
+<title>The Rate-Distortion-Polysemanticity Tradeoff in SAEs – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="The Rate-Distortion-Polysemanticity Tradeoff in SAEs – CLAI Research Group">
+<meta property="og:description" content="Sparse autoencoders (SAEs) that accurately reconstruct their input (low distortion) while using few active features (low rate) often fail to learn monosemantic, human-interpretable features. We cast this tension as a rate-distortion-polysemanticity (RDP) tradeoff and show, theoretically and empirically, that enforcing monosemanticity raises both the rate and the distortion an SAE must pay. The optimal degree of polysemanticity is set by the data distribution — specifically by how ground-truth concepts co-occur — rather than by optimization choices. We derive necessary conditions that any polysemanticity measure must satisfy in realistic settings and audit nine proxies used on LLM-trained SAEs, finding that most fail to track the RDP-predicted direction. Polysemanticity is therefore a data-level constraint, not merely a training artifact.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/rate-distortion-polysemanticity-saes/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="The Rate-Distortion-Polysemanticity Tradeoff in SAEs – CLAI Research Group">
+<meta name="twitter:description" content="Sparse autoencoders (SAEs) that accurately reconstruct their input (low distortion) while using few active features (low rate) often fail to learn monosemantic, human-interpretable features. We cast this tension as a rate-distortion-polysemanticity (RDP) tradeoff and show, theoretically and empirically, that enforcing monosemanticity raises both the rate and the distortion an SAE must pay. The optimal degree of polysemanticity is set by the data distribution — specifically by how ground-truth concepts co-occur — rather than by optimization choices. We derive necessary conditions that any polysemanticity measure must satisfy in realistic settings and audit nine proxies used on LLM-trained SAEs, finding that most fail to track the RDP-predicted direction. Polysemanticity is therefore a data-level constraint, not merely a training artifact.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/rate-distortion-polysemanticity-saes/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="The Rate-Distortion-Polysemanticity Tradeoff in SAEs">
+<meta name="citation_author" content="Tommaso Mencattini">
+<meta name="citation_author" content="Francesco Montagna">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2026-05-14">
+<meta name="citation_cover_date" content="2026-05-14">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-05-14">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2026/rate-distortion-polysemanticity-saes/">
+<meta name="citation_language" content="en">
+<meta name="citation_journal_title" content="arXiv preprint">
+<meta name="citation_reference" content="citation_title=Sparse autoencoders find highly interpretable features in language models;,citation_author=Hoagy Cunningham;,citation_author=Aidan Ewart;,citation_author=Logan Riggs;,citation_author=Robert Huben;,citation_author=Lee Sharkey;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_journal_title=arXiv preprint arXiv:2309.08600;">
+<meta name="citation_reference" content="citation_title=Towards monosemanticity: Decomposing language models with dictionary learning;,citation_author=Trenton Bricken;,citation_author=Adly Templeton;,citation_author=Joshua Batson;,citation_author=Brian Chen;,citation_author=Adam Jermyn;,citation_author=Tom Conerly;,citation_author=Nick Turner;,citation_author=Cem Anil;,citation_author=Carson Denison;,citation_author=Amanda Askell;,citation_author=others;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_journal_title=Transformer Circuits Thread;">
+<meta name="citation_reference" content="citation_title=Toy models of superposition;,citation_author=Nelson Elhage;,citation_author=Tristan Hume;,citation_author=Catherine Olsson;,citation_author=Nicholas Schiefer;,citation_author=Tom Henighan;,citation_author=Shauna Kravec;,citation_author=Zac Hatfield-Dodds;,citation_author=Robert Lasenby;,citation_author=Dawn Drain;,citation_author=Carol Chen;,citation_author=others;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_journal_title=Transformer Circuits Thread;">
+<meta name="citation_reference" content="citation_title=Rethinking lossy compression: The rate-distortion-perception tradeoff;,citation_author=Yochai Blau;,citation_author=Tomer Michaeli;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_conference_title=International conference on machine learning;">
+<meta name="citation_reference" content="citation_title=Coding theorems for a discrete source with a fidelity criterion;,citation_author=Claude E. Shannon;,citation_publication_date=1959;,citation_cover_date=1959;,citation_year=1959;,citation_volume=7;,citation_journal_title=IRE National Convention Record;">
+<meta name="citation_reference" content="citation_title=Improving dictionary learning with gated sparse autoencoders;,citation_author=Senthooran Rajamanoharan;,citation_author=Arthur Conmy;,citation_author=Lewis Smith;,citation_author=Tom Lieberum;,citation_author=Vikrant Varma;,citation_author=János Kramár;,citation_author=Rohin Shah;,citation_author=Neel Nanda;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_journal_title=arXiv preprint arXiv:2404.16014;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#a-rate-distortion-polysemanticity-formulation" id="toc-a-rate-distortion-polysemanticity-formulation" class="nav-link" data-scroll-target="#a-rate-distortion-polysemanticity-formulation">A rate-distortion-polysemanticity formulation</a></li>
+  <li><a href="#theory-tightening-one-budget-pushes-up-the-others" id="toc-theory-tightening-one-budget-pushes-up-the-others" class="nav-link" data-scroll-target="#theory-tightening-one-budget-pushes-up-the-others">Theory: tightening one budget pushes up the others</a>
+  <ul class="collapse">
+  <li><a href="#the-rate-tax-made-tangible" id="toc-the-rate-tax-made-tangible" class="nav-link" data-scroll-target="#the-rate-tax-made-tangible">The rate tax, made tangible</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">The Rate-Distortion-Polysemanticity Tradeoff in SAEs</h1>
+<p class="subtitle lead">Why interpretable features cost rate and reconstruction</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Interpretability</div>
+    <div class="quarto-category">Theory</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Sparse autoencoders (SAEs) that accurately reconstruct their input (low distortion) while using few active features (low rate) often fail to learn monosemantic, human-interpretable features. We cast this tension as a rate-distortion-polysemanticity (RDP) tradeoff and show, theoretically and empirically, that enforcing monosemanticity raises both the rate and the distortion an SAE must pay. The optimal degree of polysemanticity is set by the data distribution — specifically by how ground-truth concepts co-occur — rather than by optimization choices. We derive necessary conditions that any polysemanticity measure must satisfy in realistic settings and audit nine proxies used on LLM-trained SAEs, finding that most fail to track the RDP-predicted direction. Polysemanticity is therefore a data-level constraint, not merely a training artifact.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Tommaso Mencattini </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            EPFL
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Montagna </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 14, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-arxiv">
+<span class="venue-name">arXiv 2026</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2605.14694" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a></div>
+<div class="column-page">
+<div class="scrolly">
+<div class="scrolly-figure">
+<div class="fig-annotate">
+  <img src="figR2.svg" alt="The rate-distortion-polysemanticity tradeoff: a rate-distortion frontier split into infeasible, polysemantic, and monosemantic regions, beside three encoder-decoder dictionaries — one monosemantic and two polysemantic — showing how the same activations can be coded at different rate and distortion budgets.">
+  <div class="hl layer" data-step="1" style="left:1%;top:4%;width:24%;height:87%"><span class="hl-tag">frontier</span></div>
+  <div class="hl layer" data-step="2" style="left:27%;top:4%;width:21%;height:90%"><span class="hl-tag">monosemantic</span></div>
+  <div class="hl layer" data-step="3" style="left:50%;top:4%;width:23%;height:90%"><span class="hl-tag">polysemantic · low R</span></div>
+  <div class="hl layer" data-step="4" style="left:76%;top:4%;width:23%;height:90%"><span class="hl-tag">polysemantic · low D</span></div>
+</div>
+<p><span class="source-note">From the original paper (Mencattini, Montagna &amp; Locatello, 2026). Highlights added for this walkthrough.</span></p>
+</div>
+<div class="scrolly-steps">
+<div class="scrolly-step" data-step="1">
+<p><span class="step-kicker">Step 01 — A frontier with three regions</span> Plot every SAE by its <span class="term" data-note="how many features fire on average — the size of the active code. Fewer active features means lower rate."><strong>rate</strong></span> <span class="math inline">R</span> and <span class="term" data-note="reconstruction error — how far the decoded activation is from the original. Lower distortion means a more faithful SAE."><strong>distortion</strong></span> <span class="math inline">D</span>. Below the curve is <strong>infeasible</strong>; just above it sit the <strong>polysemantic</strong> optima; only higher still — paying more rate, more distortion, or both — do the <strong>monosemantic</strong> solutions live.</p>
+</div>
+<div class="scrolly-step" data-step="2">
+<p><span class="step-kicker">Step 02 — Monosemantic: one feature, one concept</span> Insist that each feature track exactly one ground-truth concept. The code is maximally interpretable, but resolving every concept separately means <strong>more features fire</strong>: this dictionary holds <span class="math inline">R := R_0</span>, <span class="math inline">D := D_0</span> as the reference budget the other two must beat.</p>
+</div>
+<div class="scrolly-step" data-step="3">
+<p><span class="step-kicker">Step 03 — Polysemantic: spend less rate</span> Now let a single feature carry several <span class="term" data-note="how often ground-truth concepts fire together in the data. When two concepts almost always appear together, a polysemantic code can pack them into one feature; a monosemantic code must spend a separate feature on each.">co-occurring</span> concepts at once. Packing <em>cat</em>, <em>dog</em>, <em>fur</em> into one unit keeps the reconstruction faithful (<span class="math inline">D = D_0</span>) while <strong>fewer features fire</strong> — <span class="math inline">R \ll R_0</span>. Interpretability is the price.</p>
+</div>
+<div class="scrolly-step" data-step="4">
+<p><span class="step-kicker">Step 04 — Polysemantic: spend less distortion</span> The same packing trick can instead buy fidelity: hold the rate at <span class="math inline">R = R_0</span> and the freed capacity drives <strong>distortion down</strong>, <span class="math inline">D \ll D_0</span>. Either way the lesson is one curve — <em>enforcing monosemanticity lifts the whole frontier</em>, so holding <span class="math inline">R</span> or <span class="math inline">D</span> fixed forces the other budget up.</p>
+</div>
+</div>
+</div>
+</div>
+<section id="introduction" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Sparse autoencoders have become the workhorse of mechanistic interpretability: trained to reconstruct a model’s activations through a sparse bottleneck, they promise to recover the underlying <em>features</em> a network uses <span class="citation" data-cites="cunningham2023">(<a href="#ref-cunningham2023" role="doc-biblioref">Cunningham et al. 2023</a>)</span>. The hope is that these features are <span class="term" data-note="one feature stands for exactly one human-readable concept, instead of many concepts entangled in a single unit">monosemantic</span> — each one tracking a single human-legible concept rather than a blend of several <span class="citation" data-cites="bricken2023">(<a href="#ref-bricken2023" role="doc-biblioref"><span class="nocase">Bricken et al.</span> 2023</a>)</span>. In practice SAEs that reconstruct well with few active units tend to learn <span class="term" data-note="a single feature mixes several ground-truth concepts at once; the opposite of monosemantic">polysemantic</span> features, and tightening one objective seems to slacken another.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-cunningham2023" class="csl-entry" role="listitem">
+Cunningham, Hoagy, Aidan Ewart, Logan Riggs, Robert Huben, and Lee Sharkey. 2023. <span>“Sparse Autoencoders Find Highly Interpretable Features in Language Models.”</span> <em>arXiv Preprint arXiv:2309.08600</em>.
+</div><div id="ref-bricken2023" class="csl-entry" role="listitem">
+<span class="nocase">Bricken, Trenton, Adly Templeton, Joshua Batson, et al.</span> 2023. <span>“Towards Monosemanticity: Decomposing Language Models with Dictionary Learning.”</span> <em>Transformer Circuits Thread</em>.
+</div><div id="ref-blau2019" class="csl-entry" role="listitem">
+Blau, Yochai, and Tomer Michaeli. 2019. <span>“Rethinking Lossy Compression: The Rate-Distortion-Perception Tradeoff.”</span> <em>International Conference on Machine Learning</em>.
+</div><div id="ref-shannon1959" class="csl-entry" role="listitem">
+Shannon, Claude E. 1959. <span>“Coding Theorems for a Discrete Source with a Fidelity Criterion.”</span> <em>IRE National Convention Record</em> 7: 142–63.
+</div></div><div class="page-columns page-full"><p>We argue this is not an accident of training but an information-theoretic constraint. Borrowing the rate-distortion-perception framing of lossy compression <span class="citation" data-cites="blau2019 shannon1959">(<a href="#ref-blau2019" role="doc-biblioref">Blau and Michaeli 2019</a>; <a href="#ref-shannon1959" role="doc-biblioref">Shannon 1959</a>)</span>, we add a third axis — polysemanticity — and show the three quantities trade off against each other. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Superposition predicts that a model packs more concepts than it has dimensions, which is exactly what forces polysemantic codes.</span></div></div>
+<p>A claim that deserves a caveat lives in a margin footnote.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;We assume access to ground-truth concepts when <em>defining</em> polysemanticity; the audit in §4 concerns proxies usable without them.</p></div></div></section>
+<section id="a-rate-distortion-polysemanticity-formulation" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="a-rate-distortion-polysemanticity-formulation">A rate-distortion-polysemanticity formulation</h2>
+<p>An SAE encodes an input <span class="math inline">x</span> to a sparse code <span class="math inline">z_\theta(x)</span> and decodes back to <span class="math inline">\hat{x}_\theta</span>. Training minimizes reconstruction error under a sparsity penalty <span class="math inline">S</span> with weight <span class="math inline">\lambda</span>:</p>
+<p><span class="math display">
+\arg\min_{\theta\in\Theta}\ \mathbb{E}\!\left[\,\lVert x - \hat{x}_\theta\rVert_2^2 + \lambda\, S\!\left(z_\theta(x)\right)\right].
+</span></p>
+<p>We summarize a trained SAE by three scalars. The <span class="term" data-note="how many features fire on average — the size of the active code. Fewer active features means lower rate."><strong>rate</strong></span> <span class="math inline">R(\theta) = \mathbb{E}\,\lVert z_\theta(x)\rVert_0</span> counts active features; the <span class="term" data-note="reconstruction error — how far the decoded activation is from the original. Lower distortion means a more faithful SAE."><strong>distortion</strong></span> <span class="math inline">D(\theta) = \mathbb{E}\,\lVert x-\hat{x}_\theta\rVert_2^2</span> is the reconstruction error; and the <strong>polysemanticity</strong> of a learned dictionary with concept-similarity matrix <span class="math inline">C\in\mathbb{R}^{m\times n}</span> is</p>
+<p><span class="math display">
+P(C) := \frac{1}{m}\sum_{i=1}^{m}\Bigl(1 - \max_{\ell} c_{i\ell}^2\Bigr)\ \in [0,1],
+</span></p>
+<p>the average spread of each feature across ground-truth concepts. A feature aligned with a single concept contributes <span class="math inline">0</span>; one split evenly across concepts contributes near <span class="math inline">1</span>.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><strong>The RDP function.</strong> Collecting the three budgets, we study <span class="math inline">R^*(D_0,P_0) := \inf_\theta \{\, R(\theta) : D(\theta)\le D_0,\ P(\theta)\le P_0 \,\}</span>, the smallest rate achievable under a joint distortion and polysemanticity budget. This is the SAE analogue of Shannon’s rate-distortion function with one extra constraint.</p>
+</div></div><p>What does a dictionary actually look like at the two ends of the polysemanticity axis? The same handful of activations can be explained two ways. A <em>polysemantic</em> dictionary lets a few features each carry several concepts at once — when, say, <em>cat</em>, <em>dog</em>, <em>fur</em>, and <em>paw</em> tend to co-occur, two features can pack all four, keeping the rate low at the cost of a high <span class="math inline">P</span>. A <em>monosemantic</em> dictionary insists that each feature track exactly one concept, driving <span class="math inline">P \to 0</span> but forcing four features on instead of two. The second option is more interpretable but simply needs <em>more features</em> active — which is precisely the rate the next section quantifies.</p>
+</section>
+<section id="theory-tightening-one-budget-pushes-up-the-others" class="level2">
+<h2 class="anchored" data-anchor-id="theory-tightening-one-budget-pushes-up-the-others">Theory: tightening one budget pushes up the others</h2>
+<p>The central object is the RDP function <span class="math inline">R^*(D_0,P_0)</span> defined in the margin. Two results characterize its shape.</p>
+<p><strong>Monotonicity.</strong> <span class="math inline">R^*(D_0,P_0)</span> is nonincreasing in <span class="math inline">P_0</span>: demanding more monosemantic features (a smaller <span class="math inline">P_0</span>) can only raise the required rate at a fixed distortion. Tightening any one of the three budgets forces at least one of the other two up.</p>
+<p><strong>A rate tax for monosemanticity.</strong> Let an optimal <em>polysemantic</em> baseline reach distortion <span class="math inline">D_\infty</span> with rate <span class="math inline">k</span>. Any SAE that matches that distortion while being monosemantic must pay</p>
+<p><span class="math display">
+R(\theta) \ \ge\ \mathbb{E}_{p_c}\lVert c\rVert_0 - \delta \ &gt;\ k,
+</span></p>
+<p>where <span class="math inline">\mathbb{E}_{p_c}\lVert c\rVert_0</span> is the expected number of <em>co-occurring</em> concepts and <span class="math inline">\delta</span> a small slack. The premium is governed entirely by how <span class="term" data-note="how often ground-truth concepts fire together in the data. When two concepts almost always appear together, a polysemantic code can pack them into one feature; a monosemantic code must spend a separate feature on each.">concepts co-occur</span> in the data: when concepts fire together, a monosemantic code must spend a separate feature on each, while a polysemantic code can reuse one.</p>
+<p>Under an orthogonality assumption the loss collapses to a clean combinatorial form, <span class="math inline">\mathcal{L}(\theta) = \mathbb{E}_{p_S}\!\left[\,|S| + |\hat S_\theta| - 2\,|S\cap\hat S_\theta|\,\right]</span>, the expected symmetric difference between true and reconstructed concept sets — making the rate tax explicit as the cost of resolving every co-occurrence.</p>
+<section id="the-rate-tax-made-tangible" class="level3">
+<h3 class="anchored" data-anchor-id="the-rate-tax-made-tangible">The rate tax, made tangible</h3>
+<p>Read the bound as a dial on the polysemanticity budget <span class="math inline">P_0</span>. As <span class="math inline">P_0</span> tightens from permissive toward strict monosemanticity, the optimal operating point must climb the rate axis to hold distortion fixed at <span class="math inline">D_0</span>: it can no longer pack co-occurring concepts into a shared feature, so it spends a separate feature on each. The vertical gap that opens above the polysemantic optimum — the floor at rate <span class="math inline">k</span> — is the <strong>rate tax</strong>, and the dual statement holds on the distortion axis. Both taxes share the same driver: the conservation law <span class="math inline">D + R = \mathbb{E}_{p_c}\lVert c\rVert_0</span> on the monosemantic class, which is why the price is set entirely by how often concepts co-occur in the data.</p>
+</section>
+</section>
+<section id="results" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<p>The predicted frontier is a <em>staircase</em>: at a fixed polysemanticity budget the optimal rate steps up as the distortion budget tightens, and the whole monosemantic curve sits above the polysemantic one by the rate tax. The paper measures exactly this on synthetic data (<a href="#fig-frontier" class="quarto-xref">Figure&nbsp;1</a>).</p>
+<div class="page-columns page-full">
+<div class="paper-figure page-columns page-full">
+<div id="fig-frontier" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-frontier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="figR1.png" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-frontier-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Empirical RDP frontier for TopK SAEs on a synthetic DGP (<span class="math inline">n=20</span> concepts in <span class="math inline">\mathbb{R}^6</span>, <span class="math inline">\sim\!0.6</span> features active per sample; sweep over rate <span class="math inline">k\in\{1,\dots,8\}</span> and monosemanticity penalty <span class="math inline">\lambda\in\{0,\dots,100\}</span>, 7 seeds). <strong>(a)</strong> the full <span class="math inline">(P,D,R)</span> surface; <strong>(b)</strong> <span class="math inline">P</span> vs <span class="math inline">D</span> at rate bounds <span class="math inline">k\le k_0</span>; <strong>(c)</strong> <span class="math inline">P</span> vs <span class="math inline">R</span> at distortion budgets <span class="math inline">D\le D_0</span>; <strong>(d)</strong> the <span class="math inline">R</span> vs <span class="math inline">D</span> frontier at polysemanticity budgets <span class="math inline">P\le P_0</span> — the predicted staircase, shifting right (worse rate <em>and</em> distortion) as monosemanticity is demanded.
+</figcaption>
+</figure>
+</div>
+<p><span class="source-note">From the original paper (Mencattini, Montagna &amp; Locatello, 2026).</span></p>
+</div>
+</div>
+<p>On synthetic data — <span class="math inline">n=20</span> orthogonal concepts in <span class="math inline">\mathbb{R}^6</span> with roughly <span class="math inline">0.6</span> features active per sample — sweeping the code size <span class="math inline">k\in\{1,\dots,8\}</span> and the monosemanticity penalty <span class="math inline">\lambda\in\{0,\dots,100\}</span> reproduces the predicted staircase — the rightmost panel of <a href="#fig-frontier" class="quarto-xref">Figure&nbsp;1</a>. The more interesting test is whether <em>existing</em> interpretability metrics move in the RDP-predicted direction. Auditing nine polysemanticity proxies on Gemma TopK/ReLU SAEs from SAEBench (<a href="#tbl-audit" class="quarto-xref">Table&nbsp;1</a>), most do not: the automated-interpretability and unlearning scores are <em>anti</em>-correlated with the theory, while feature-splitting and sparse-probing only weakly agree.</p>
+<div id="tbl-audit" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-audit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Audit of polysemanticity proxies on Gemma TopK SAEs. Lower <span class="math inline">V</span> is better; higher <span class="math inline">\rho</span> is better; a random baseline gives <span class="math inline">V=0.5</span>.
+</figcaption>
+<div aria-describedby="tbl-audit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 28%">
+<col style="width: 32%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Violation <span class="math inline">V(\hat P)</span> ↓</th>
+<th style="text-align: right;">Rank corr. <span class="math inline">\rho(\hat P)</span> ↑</th>
+<th style="text-align: left;">Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">AutoInterp</td>
+<td style="text-align: right;">0.886</td>
+<td style="text-align: right;">−0.68</td>
+<td style="text-align: left;">Anti-correlated</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Unlearning</td>
+<td style="text-align: right;">0.762</td>
+<td style="text-align: right;">−0.54</td>
+<td style="text-align: left;">Anti-correlated</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Splitting</td>
+<td style="text-align: right;">0.441</td>
+<td style="text-align: right;">+0.21</td>
+<td style="text-align: left;">Weakly agrees</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sparse Probing</td>
+<td style="text-align: right;">0.351</td>
+<td style="text-align: right;">+0.19</td>
+<td style="text-align: left;">Weakly agrees</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>The full audit across all nine proxies — on both TopK and ReLU SAEs — tells the same story (<a href="#fig-audit" class="quarto-xref">Figure&nbsp;2</a>): violation rates cluster at or above the random baseline, and most rank correlations are negative.</p>
+<div class="page-columns page-full">
+<div class="paper-figure page-columns page-full">
+<div id="fig-audit" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-audit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="figR3.svg" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-audit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <span class="math inline">V</span> (left two panels, lower is better; dashed line marks the random baseline <span class="math inline">V=\tfrac12</span>) and <span class="math inline">\rho</span> (right two panels, higher is better) for the nine SAEBench proxies on TopK and ReLU Gemma SAEs. AutoInterp and Unlearning sit furthest in the wrong direction; only Splitting and Sparse Probing weakly agree.
+</figcaption>
+</figure>
+</div>
+<p><span class="source-note">From the original paper (Mencattini, Montagna &amp; Locatello, 2026).</span></p>
+</div>
+</div>
+<p>No widely adopted metric clearly tracks the RDP-predicted direction, and the strongest-looking proxies point the wrong way — a caution for studies that read monosemanticity off these scores.</p>
+</section>
+<section id="conclusion" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Polysemanticity in SAEs is, at bottom, a property of the data: when concepts co-occur, monosemantic features cost extra rate and extra distortion, and no amount of tuning removes that tax <span class="citation" data-cites="elhage2022">(<a href="#ref-elhage2022" role="doc-biblioref"><span class="nocase">Elhage et al.</span> 2022</a>)</span>. The practical implication is that better interpretability will come from architectural and optimization choices that account for co-occurrence structure, not from chasing monosemanticity as a free objective. Full references appear in the margin; a copyable BibTeX entry for <em>this</em> paper is generated automatically.</p>
+
+
+<div class="no-row-height column-margin column-container"><div id="ref-elhage2022" class="csl-entry" role="listitem">
+<span class="nocase">Elhage, Nelson, Tristan Hume, Catherine Olsson, et al.</span> 2022. <span>“Toy Models of Superposition.”</span> <em>Transformer Circuits Thread</em>.
+</div></div>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{mencattini2026,
+  author = {Mencattini, Tommaso and Montagna, Francesco and Locatello,
+    Francesco},
+  title = {The {Rate-Distortion-Polysemanticity} {Tradeoff} in {SAEs}},
+  journal = {arXiv preprint},
+  date = {2026-05-14}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script>
+// Topics → metadata rail. On the publications list (a Quarto `default` listing)
+// Quarto renders each paper's categories as a `.listing-categories` chip row in
+// the body, under the title — which makes every row taller. The right-hand
+// metadata rail (date + venue badge) is shorter, leaving dead vertical space.
+// Move the topics into that rail, below the date and venue badge, so the two
+// columns balance and each row gets back the height the chip row was costing.
+// Runs after assets/venue-badge.html so the badge is already in the rail and the
+// topics land beneath it.
+// Progressive enhancement: with JS off, topics stay under the title.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    // Only the body copy carries a chip row; once moved it lives in .metadata, so
+    // re-running finds nothing here — naturally idempotent.
+    var cats = post.querySelector(".body .listing-categories");
+    var metadata = post.querySelector(".metadata");
+    if (!cats || !metadata) return;
+    metadata.appendChild(cats);
+  });
+});
+</script>
+<script>
+// Click-to-expand for the home showcase teasers. Each highlighted paper's banner
+// figure (.home-highlights .thumbnail img) is wrapped by Quarto in a link to the
+// paper page — but the title already links there, so here we repurpose the figure
+// click to open the full-resolution image in a lightbox overlay instead.
+// (Styles: `.fig-lightbox` in theme/theme.scss.) Progressive enhancement: with JS
+// off, clicking the figure just follows the link to the paper.
+document.addEventListener("DOMContentLoaded", function () {
+  var figures = document.querySelectorAll(".home-highlights .quarto-post .thumbnail img");
+  if (!figures.length) return;
+
+  // One reusable overlay for every figure.
+  var overlay = document.createElement("div");
+  overlay.className = "fig-lightbox";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Expanded figure");
+
+  var closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "fig-lightbox-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.innerHTML = "&times;";
+
+  var big = document.createElement("img");
+  big.alt = "";
+
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(big);
+  document.body.appendChild(overlay);
+
+  var lastFocus = null;
+
+  function open(src, alt) {
+    big.src = src;
+    big.alt = alt || "";
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+  function close() {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    big.removeAttribute("src");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // Close on backdrop click, the × button, or Escape. A click on the image itself
+  // must not close (stop it bubbling to the backdrop).
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+  closeBtn.addEventListener("click", close);
+  big.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+
+  figures.forEach(function (img) {
+    var trigger = img.closest("a") || img;   // the link wrapper, or the image itself
+    if (trigger === img) { trigger.tabIndex = 0; trigger.setAttribute("role", "button"); }
+    trigger.setAttribute("aria-label", "Expand figure");
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();          // don't follow the link to the paper page
+      e.stopPropagation();
+      open(img.currentSrc || img.src, img.alt);
+    });
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
