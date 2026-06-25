@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 360" font-family="'JetBrains Mono', ui-monospace, monospace" fill="none">
+  <style>
+    .node  { fill: var(--bs-body-bg, #fcfbf8); stroke: currentColor; stroke-width: 2; }
+    .lbl   { fill: currentColor; font-size: 19px; font-weight: 600; text-anchor: middle; dominant-baseline: central; }
+    .edge  { stroke: currentColor; stroke-width: 2.2; }
+    .cap   { fill: currentColor; font-size: 14px; text-anchor: middle; }
+    .tag   { fill: currentColor; font-size: 13px; font-weight: 700; letter-spacing: .06em; }
+    .accent{ stroke: #026234; }
+    .accenttx { fill: #026234; }
+    .conflict { stroke: #b23b2e; stroke-width: 2.6; }
+    .conflicttx { fill: #b23b2e; }
+    .subbox { fill: none; stroke-dasharray: 5 4; stroke-width: 1.6; }
+  </style>
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="currentColor"/>
+    </marker>
+    <marker id="arR" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#b23b2e"/>
+    </marker>
+  </defs>
+
+  <!-- LEFT: subset S = {X, Y, Z1} -->
+  <rect class="subbox" x="40" y="70" width="230" height="230" rx="14" stroke="#026234"/>
+  <text class="tag accenttx" x="56" y="92">SUBSET  S</text>
+  <!-- nodes -->
+  <line class="edge" x1="120" y1="135" x2="120" y2="220" marker-end="url(#ar)"/>
+  <line class="edge" x1="205" y1="150" x2="140" y2="215" marker-end="url(#ar)"/>
+  <circle class="node" cx="120" cy="125" r="24"/><text class="lbl" x="120" y="125">X</text>
+  <circle class="node" cx="120" cy="230" r="24"/><text class="lbl" x="120" y="230">Y</text>
+  <circle class="node" cx="215" cy="140" r="24"/><text class="lbl" x="215" y="140">Z&#8321;</text>
+  <text class="cap" x="155" y="180" transform="rotate(0 155 180)"></text>
+
+  <!-- RIGHT: subset T = {X, Y, Z2} -->
+  <rect class="subbox" x="650" y="70" width="230" height="230" rx="14" stroke="#b23b2e"/>
+  <text class="tag conflicttx" x="666" y="92">SUBSET  T</text>
+  <line class="conflict" x1="745" y1="220" x2="745" y2="135" marker-end="url(#arR)"/>
+  <line class="conflict" x1="830" y1="150" x2="765" y2="215" marker-end="url(#arR)"/>
+  <circle class="node" cx="745" cy="125" r="24"/><text class="lbl" x="745" y="125">X</text>
+  <circle class="node" cx="745" cy="230" r="24"/><text class="lbl" x="745" y="230">Y</text>
+  <circle class="node" cx="840" cy="140" r="24"/><text class="lbl" x="840" y="140">Z&#8322;</text>
+
+  <!-- CENTER: the conflict -->
+  <text class="lbl conflicttx" x="460" y="120" font-size="30">&#8800;</text>
+  <text class="cap conflicttx" x="460" y="160" font-weight="700">incompatible</text>
+  <text class="cap" x="460" y="186">X &#8594; Y  on S</text>
+  <text class="cap" x="460" y="206">Y &#8594; X  on T</text>
+  <text class="cap" x="460" y="246">same edge,</text>
+  <text class="cap" x="460" y="266">opposite directions</text>
+
+  <text class="cap" x="155" y="332">X &#8594; Y</text>
+  <text class="cap conflicttx" x="745" y="332">Y &#8594; X</text>
+</svg>
