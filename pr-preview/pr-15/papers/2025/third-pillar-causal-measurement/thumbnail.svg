@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- latent causal variables (white nodes) -->
+  <g fill="#fbfaf7" stroke="#fbfaf7" stroke-width="1.5">
+    <circle cx="180" cy="120" r="22" fill="#16161d"/>
+    <circle cx="300" cy="90"  r="22" fill="#16161d"/>
+    <circle cx="420" cy="120" r="22" fill="#16161d"/>
+  </g>
+  <!-- latent edges -->
+  <g stroke="#6f6f78" stroke-width="1.6" fill="none">
+    <line x1="200" y1="112" x2="282" y2="98"/>
+    <line x1="318" y1="98"  x2="400" y2="112"/>
+  </g>
+  <!-- measurement (proxy) nodes, accent -->
+  <g fill="#026234" stroke="#026234" stroke-width="1.5">
+    <circle cx="180" cy="280" r="20" fill="#16161d"/>
+    <circle cx="300" cy="280" r="20" fill="#16161d"/>
+    <circle cx="420" cy="280" r="20" fill="#16161d"/>
+  </g>
+  <!-- measurement edges (latent -> proxy) -->
+  <g stroke="#026234" stroke-width="2" stroke-dasharray="5 4" fill="none" opacity="0.9">
+    <line x1="180" y1="142" x2="180" y2="260"/>
+    <line x1="300" y1="112" x2="300" y2="260"/>
+    <line x1="420" y1="142" x2="420" y2="260"/>
+  </g>
+  <text x="300" y="58"  text-anchor="middle" font-family="monospace" font-size="15" fill="#6f6f78">latent causal variables</text>
+  <text x="300" y="335" text-anchor="middle" font-family="monospace" font-size="15" fill="#026234">learned measurements</text>
+</svg>

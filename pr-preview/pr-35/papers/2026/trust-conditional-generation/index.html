@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Berker Demirel">
+<meta name="author" content="Valentino Maiorca">
+<meta name="author" content="Marco Fumero">
+<meta name="author" content="Theofanis Karaletsos">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2026-06-08">
+<meta name="description" content="Conditional generators are a natural tool for controllable generation, including settings where the desired condition is a new composition of observed attributes or experimental factors — conditions for which real samples may be rare, expensive, or not yet observed. This creates a circularity for evaluation: standard conditional quality metrics require a reference target distribution, but in the extrapolative regime that distribution is unavailable by definition. We introduce a post-hoc, per-sample trust score that assesses conditional samples using only the training distribution. The score combines global realism (compatibility with the real data manifold) and attribute-wise faithfulness (whether a sample is closer to the requested attributes than to plausible alternatives). Under a mild coverage condition, the score recovers meaningful comparisons across extrapolated generations, enabling filtering, ranking, and abstention on off-the-shelf pretrained models. In biological imaging, selected samples better preserve real morphological structure and improve downstream prediction, with similar gains on controlled vision benchmarks; the score can also be applied during generation, enabling abstention before full decoding.">
+
+<title>Assessing Sample Quality in Conditional Generation under Compositional Shift – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Assessing Sample Quality in Conditional Generation under Compositional Shift – CLAI Research Group">
+<meta property="og:description" content="Conditional generators are a natural tool for controllable generation, including settings where the desired condition is a new composition of observed attributes or experimental factors — conditions for which real samples may be rare, expensive, or not yet observed. This creates a circularity for evaluation: standard conditional quality metrics require a reference target distribution, but in the extrapolative regime that distribution is unavailable by definition. We introduce a post-hoc, per-sample trust score that assesses conditional samples using only the training distribution. The score combines global realism (compatibility with the real data manifold) and attribute-wise faithfulness (whether a sample is closer to the requested attributes than to plausible alternatives). Under a mild coverage condition, the score recovers meaningful comparisons across extrapolated generations, enabling filtering, ranking, and abstention on off-the-shelf pretrained models. In biological imaging, selected samples better preserve real morphological structure and improve downstream prediction, with similar gains on controlled vision benchmarks; the score can also be applied during generation, enabling abstention before full decoding.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/trust-conditional-generation/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="Assessing Sample Quality in Conditional Generation under Compositional Shift – CLAI Research Group">
+<meta name="twitter:description" content="Conditional generators are a natural tool for controllable generation, including settings where the desired condition is a new composition of observed attributes or experimental factors — conditions for which real samples may be rare, expensive, or not yet observed. This creates a circularity for evaluation: standard conditional quality metrics require a reference target distribution, but in the extrapolative regime that distribution is unavailable by definition. We introduce a post-hoc, per-sample trust score that assesses conditional samples using only the training distribution. The score combines global realism (compatibility with the real data manifold) and attribute-wise faithfulness (whether a sample is closer to the requested attributes than to plausible alternatives). Under a mild coverage condition, the score recovers meaningful comparisons across extrapolated generations, enabling filtering, ranking, and abstention on off-the-shelf pretrained models. In biological imaging, selected samples better preserve real morphological structure and improve downstream prediction, with similar gains on controlled vision benchmarks; the score can also be applied during generation, enabling abstention before full decoding.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/trust-conditional-generation/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Assessing Sample Quality in Conditional Generation under Compositional Shift">
+<meta name="citation_author" content="Berker Demirel">
+<meta name="citation_author" content="Valentino Maiorca">
+<meta name="citation_author" content="Marco Fumero">
+<meta name="citation_author" content="Theofanis Karaletsos">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2026-06-08">
+<meta name="citation_cover_date" content="2026-06-08">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-06-08">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2026/trust-conditional-generation/">
+<meta name="citation_language" content="en">
+<meta name="citation_journal_title" content="arXiv preprint">
+<meta name="citation_reference" content="citation_title=GANs trained by a two time-scale update rule converge to a local nash equilibrium;,citation_author=Martin Heusel;,citation_author=Hubert Ramsauer;,citation_author=Thomas Unterthiner;,citation_author=Bernhard Nessler;,citation_author=Sepp Hochreiter;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_volume=30;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Demystifying MMD GANs;,citation_author=Mikołaj Bińkowski;,citation_author=Danica J. Sutherland;,citation_author=Michael Arbel;,citation_author=Arthur Gretton;,citation_publication_date=2018;,citation_cover_date=2018;,citation_year=2018;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=A simple unified framework for detecting out-of-distribution samples and adversarial attacks;,citation_author=Kimin Lee;,citation_author=Kibok Lee;,citation_author=Honglak Lee;,citation_author=Jinwoo Shin;,citation_publication_date=2018;,citation_cover_date=2018;,citation_year=2018;,citation_volume=31;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=High-resolution image synthesis with latent diffusion models;,citation_author=Robin Rombach;,citation_author=Andreas Blattmann;,citation_author=Dominik Lorenz;,citation_author=Patrick Esser;,citation_author=Björn Ommer;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Compositional abilities emerge multiplicatively: Exploring diffusion models on a synthetic task;,citation_author=Maya Okawa;,citation_author=Ekdeep Singh Lubana;,citation_author=Robert P. Dick;,citation_author=Hidenori Tanaka;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_volume=36;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Energy-based out-of-distribution detection;,citation_author=Weitang Liu;,citation_author=Xiaoyun Wang;,citation_author=John D. Owens;,citation_author=Yixuan Li;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=33;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=CellProfiler: Image analysis software for identifying and quantifying cell phenotypes;,citation_author=Anne E. Carpenter;,citation_author=Thouis R. Jones;,citation_author=Michael R. Lamprecht;,citation_author=others;,citation_publication_date=2006;,citation_cover_date=2006;,citation_year=2006;,citation_issue=10;,citation_volume=7;,citation_journal_title=Genome Biology;">
+<meta name="citation_reference" content="citation_title=Reliable fidelity and diversity metrics for generative models;,citation_author=Muhammad Ferjad Naeem;,citation_author=Seong Joon Oh;,citation_author=Youngjung Uh;,citation_author=Yunjey Choi;,citation_author=Jaejun Yoo;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_conference_title=International conference on machine learning;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#a-reference-free-trust-score" id="toc-a-reference-free-trust-score" class="nav-link" data-scroll-target="#a-reference-free-trust-score">A reference-free trust score</a>
+  <ul class="collapse">
+  <li><a href="#when-can-a-missing-target-be-recovered" id="toc-when-can-a-missing-target-be-recovered" class="nav-link" data-scroll-target="#when-can-a-missing-target-be-recovered">When can a missing target be recovered?</a></li>
+  </ul></li>
+  <li><a href="#experiments" id="toc-experiments" class="nav-link" data-scroll-target="#experiments">Experiments</a>
+  <ul class="collapse">
+  <li><a href="#sorting-by-trust-then-choosing-where-to-cut" id="toc-sorting-by-trust-then-choosing-where-to-cut" class="nav-link" data-scroll-target="#sorting-by-trust-then-choosing-where-to-cut">Sorting by trust, then choosing where to cut</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Assessing Sample Quality in Conditional Generation under Compositional Shift</h1>
+<p class="subtitle lead">A reference-free, per-sample trust score for extrapolative conditional generation</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Generative Models</div>
+    <div class="quarto-category">Robustness &amp; OOD</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Conditional generators are a natural tool for controllable generation, including settings where the desired condition is a new composition of observed attributes or experimental factors — conditions for which real samples may be rare, expensive, or not yet observed. This creates a circularity for evaluation: standard conditional quality metrics require a reference target distribution, but in the extrapolative regime that distribution is unavailable by definition. We introduce a post-hoc, per-sample trust score that assesses conditional samples using only the training distribution. The score combines global realism (compatibility with the real data manifold) and attribute-wise faithfulness (whether a sample is closer to the requested attributes than to plausible alternatives). Under a mild coverage condition, the score recovers meaningful comparisons across extrapolated generations, enabling filtering, ranking, and abstention on off-the-shelf pretrained models. In biological imaging, selected samples better preserve real morphological structure and improve downstream prediction, with similar gains on controlled vision benchmarks; the score can also be applied during generation, enabling abstention before full decoding.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Berker Demirel </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Valentino Maiorca </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Marco Fumero </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Theofanis Karaletsos </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Pyramidal Inc.&nbsp;&amp; Achira
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">June 8, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-arxiv">
+<span class="venue-name">arXiv 2026</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2606.09601" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://github.com/berkerdemirel/faithful-cond-gen" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
+<div class="column-page">
+<div class="scrolly">
+<div class="scrolly-figure">
+<div class="fig-annotate">
+  <img src="teaser.svg" alt="The trust score at a glance: a compositional request, a conditional generator, realism and faithfulness measurement, and a ranked trust list.">
+  <div class="hl layer" data-step="1" style="left:2%;top:8%;width:24%;height:51%"><span class="hl-tag">request</span></div>
+  <div class="hl layer" data-step="2" style="left:6%;top:36%;width:36%;height:60%"><span class="hl-tag">generate</span></div>
+  <div class="hl layer" data-step="3" style="left:49%;top:13%;width:32%;height:85%"><span class="hl-tag">measure R + F</span></div>
+  <div class="hl layer" data-step="4" style="left:80%;top:9%;width:19%;height:89%"><span class="hl-tag">trust</span></div>
+</div>
+<p><span class="source-note">Teaser figure from the original paper (Demirel, Maiorca, Fumero, Karaletsos &amp; Locatello, 2026). Highlights added for this walkthrough.</span></p>
+</div>
+<div class="scrolly-steps">
+<div class="scrolly-step" data-step="1">
+<p><span class="step-kicker">Step 01 — A compositional request</span> We ask a conditional generator for an <em>unseen</em> composition <span class="math inline">a^\star</span> — a combination of attributes (the corner of the cube) that was <strong>never jointly observed</strong> in training, even though each attribute value was seen on its own.</p>
+</div>
+<div class="scrolly-step" data-step="2">
+<p><span class="step-kicker">Step 02 — Generate a candidate</span> The conditional generator <span class="math inline">G_\theta</span> produces a candidate <span class="math inline">\hat x</span> for that request. Because the composition is new, there is <strong>no real reference</strong> to compare it against — only the training distribution.</p>
+</div>
+<div class="scrolly-step" data-step="3">
+<p><span class="step-kicker">Step 03 — Measure realism and faithfulness</span> An extractor <span class="math inline">\Phi</span> embeds the candidate, and we score it on two axes: <strong>realism</strong> <span class="math inline">R</span> — is it close to the real training distribution? — and <strong>faithfulness</strong> <span class="math inline">F</span> — is it closer to the <em>requested</em> attributes than to the plausible alternatives?</p>
+</div>
+<div class="scrolly-step" data-step="4">
+<p><span class="step-kicker">Step 04 — Trust, then act</span> Their sum <span class="math inline">T = R + F</span> gives every candidate a single score. Ranking by <span class="math inline">T</span> lets us <strong>keep</strong> the trustworthy samples, flag the <strong>borderline</strong> ones, and <strong>abstain</strong> on those past a threshold.</p>
+</div>
+</div>
+</div>
+</div>
+<section id="introduction" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Conditional generators let us <em>request</em> data: a face with a chosen set of attributes, or a cell under a chosen perturbation. The most valuable requests are often <em>compositional</em> — combinations of attributes that were never jointly observed at training time. In scientific domains this is precisely the point: we want to explore conditions for which real samples are rare, expensive, or not yet measured <span class="citation" data-cites="okawa2023">(<a href="#ref-okawa2023" role="doc-biblioref">Okawa et al. 2023</a>)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-okawa2023" class="csl-entry" role="listitem">
+Okawa, Maya, Ekdeep Singh Lubana, Robert P. Dick, and Hidenori Tanaka. 2023. <span>“Compositional Abilities Emerge Multiplicatively: Exploring Diffusion Models on a Synthetic Task.”</span> <em>Advances in Neural Information Processing Systems</em> 36.
+</div><div id="ref-heusel2017" class="csl-entry" role="listitem">
+Heusel, Martin, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp Hochreiter. 2017. <span>“GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium.”</span> <em>Advances in Neural Information Processing Systems</em> 30.
+</div><div id="ref-binkowski2018" class="csl-entry" role="listitem">
+Bińkowski, Mikołaj, Danica J. Sutherland, Michael Arbel, and Arthur Gretton. 2018. <span>“Demystifying MMD GANs.”</span> <em>International Conference on Learning Representations</em>.
+</div></div><div class="page-columns page-full"><p>This ambition collides with evaluation. Standard conditional quality metrics such as FID <span class="citation" data-cites="heusel2017">(<a href="#ref-heusel2017" role="doc-biblioref">Heusel et al. 2017</a>)</span> and KID <span class="citation" data-cites="binkowski2018">(<a href="#ref-binkowski2018" role="doc-biblioref">Bińkowski et al. 2018</a>)</span> compare generated samples against a <em>reference target distribution</em>. Under <span class="term" data-note="the requested condition is a new combination of attribute values that never appeared together in training — even though each value was seen individually">compositional shift</span> that target does not exist by construction, so the metrics that would tell us whether a generation is good are exactly the ones we cannot compute. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">We never see real samples of the requested composition — that is the whole reason we generated them.</span></div></div>
+<p>We resolve this circularity with a <strong>post-hoc, per-sample trust score</strong> that uses <em>only</em> the training distribution. It needs no samples from the requested composition, runs on off-the-shelf pretrained models, and yields a scalar we can threshold for filtering, ranking, and <span class="term" data-note="declining to return a sample (or halting its generation early) when its trust score is too low, rather than emitting a confident-looking but untrustworthy output">abstention</span>.</p>
+</section>
+<section id="a-reference-free-trust-score" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="a-reference-free-trust-score">A reference-free trust score</h2>
+<p>We work in a feature space <span class="math inline">y \in \mathbb{R}^d</span> (e.g.&nbsp;an encoder embedding). A request is a tuple of attribute values <span class="math inline">a^\star = (a_1^\star,\dots,a_K^\star)</span>. The trust score is the sum of two standardized terms — global realism and attribute-wise faithfulness:</p>
+<p><span class="math display">
+T(y; a^\star) \;=\; R(y) \;+\; F(y; a^\star).
+</span></p>
+<p>The pipeline below shows how a candidate is scored end to end — and how the same score can be applied <em>during</em> generation, before an image is fully decoded.</p>
+<div class="column-page">
+<div class="paper-figure">
+<p><img src="pipeline.svg" id="fig-pipeline" class="img-fluid" alt="Two ways to score. (A) Post-generation: a candidate is denoised, decoded by the VAE, and embedded by \Phi; its features are compared against the training-feature manifold. (B) During generation: a translator maps a fixed intermediate diffusion layer h_t directly into \Phi’s feature space, bypassing the decoder chain so a sample can be scored — and abstained on — before full decoding."> <span class="source-note">Figure from the original paper (Demirel, Maiorca, Fumero, Karaletsos &amp; Locatello, 2026).</span></p>
+</div>
+</div>
+<p>The score itself is built from two terms, applied in turn:</p>
+<ol type="1">
+<li><strong>A sample with no reference.</strong> A conditional generator returns a sample <span class="math inline">y</span> for the requested composition <span class="math inline">a^\star</span>. Because that composition was never observed, there is <strong>no real target distribution</strong> to compare it against — only the training distribution.</li>
+<li><strong>Global realism <span class="math inline">R(y)</span>.</strong> Is the sample plausible <em>at all</em>? We measure a <span class="term" data-note="a covariance-aware squared distance from the real-data mean μ_real, using Σ_real⁻¹; it stretches directions the real data varies little along, so off-manifold samples score high energy">Mahalanobis energy</span> to the real-data statistics <span class="math inline">(\mu_{\text{real}}, \Sigma_{\text{real}})</span> <span class="citation" data-cites="lee2018">(<a href="#ref-lee2018" role="doc-biblioref">Lee et al. 2018</a>)</span> and standardize it. A sample far off the manifold has high energy and low realism.</li>
+<li><strong>Attribute faithfulness <span class="math inline">F(y;a^\star)</span>.</strong> Did it honor the <em>request</em>? For each attribute we compare the sample’s distance to the <strong>requested</strong> prototype <span class="math inline">\eta(t)</span> against its distance to the <strong>nearest competitor</strong> <span class="math inline">\eta(v\neq t)</span>. A sample genuinely closer to what was asked for than to any alternative is faithful — a negative gap <span class="math inline">M_k</span>.</li>
+<li><strong>Combine, then act.</strong> The trust score is <span class="math inline">T = R + F</span>: a generation must be <em>both</em> realistic and faithful — a single failure mode is enough to lose trust. Sorting by <span class="math inline">T</span> lets us <strong>rank</strong>, <strong>filter</strong> to a top fraction, or <strong>abstain</strong> on the doomed ones.</li>
+</ol>
+<div class="no-row-height column-margin column-container"><div id="ref-lee2018" class="csl-entry" role="listitem">
+Lee, Kimin, Kibok Lee, Honglak Lee, and Jinwoo Shin. 2018. <span>“A Simple Unified Framework for Detecting Out-of-Distribution Samples and Adversarial Attacks.”</span> <em>Advances in Neural Information Processing Systems</em> 31.
+</div></div><p>The two terms are defined precisely as follows. <strong>Global realism</strong> uses a Mahalanobis energy on real-data feature statistics <span class="math inline">(\mu_{\text{real}}, \Sigma_{\text{real}})</span> <span class="citation" data-cites="lee2018">(<a href="#ref-lee2018" role="doc-biblioref">Lee et al. 2018</a>)</span>, standardized to a calibrated scale:</p>
+<p><span class="math display">
+E_{\text{real}}(y) = (y-\mu_{\text{real}})^\top \Sigma_{\text{real}}^{-1}(y-\mu_{\text{real}}),
+\qquad
+R(y) = \frac{E_{\text{real}}(y) - m_R}{s_R}.
+</span></p>
+<p><strong>Attribute-wise faithfulness</strong> asks whether the sample lands closer to the <em>requested</em> attribute value than to the most plausible alternative. For attribute <span class="math inline">k</span> with prototype <span class="math inline">\eta_{k,v}</span> and a per-attribute metric <span class="math inline">P_k</span>, the gap between the requested value <span class="math inline">t</span> and the nearest competitor is</p>
+<p><span class="math display">
+d_k(y; v) = (y-\eta_{k,v})^\top P_k (y-\eta_{k,v}),
+\qquad
+M_k(y; t) = d_k(y; t) - \min_{v \neq t} d_k(y; v),
+</span></p>
+<p>and the overall faithfulness averages the standardized per-attribute gaps, <span class="math inline">F(y;a^\star) = \tfrac{1}{K}\sum_{k=1}^K F_k(y; a_k^\star)</span> with <span class="math inline">F_k = (M_k - m_{k,t})/s_{k,t}</span>. A negative <span class="math inline">M_k</span> means the sample is genuinely closer to the requested attribute than to any alternative.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p><strong>Why a sum?</strong> <span class="math inline">R</span> guards against samples that drift off the data manifold, while <span class="math inline">F</span> guards against samples that ignore the request. A good generation must satisfy <em>both</em>; a single failure mode is enough to lose trust.</p>
+</div></div><section id="when-can-a-missing-target-be-recovered" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="when-can-a-missing-target-be-recovered">When can a missing target be recovered?</h3>
+<p>The key theoretical condition is <strong>reference coverage</strong>: there exists a reference assignment <span class="math inline">\bar a</span> such that for every attribute <span class="math inline">k</span> and every value <span class="math inline">v</span>, the marginal <span class="math inline">\mathbb{P}(a_k = v,\; a_{-k} = \bar a_{-k}) &gt; 0</span>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Intuitively, each attribute value must have been observed alongside a fixed background context, so per-attribute prototypes are estimable even when the requested <em>joint</em> composition was never seen.</p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;This is far weaker than observing the joint composition itself; it only asks that each attribute appear once against a common reference, which holds in many factorial scientific designs.</p></div></div></section>
+</section>
+<section id="experiments" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="experiments">Experiments</h2>
+<p>We evaluate on a biological-imaging task and a controlled vision benchmark, scoring samples from off-the-shelf conditional diffusion models — a vanilla SiT-B/2 transformer and two representation-aligned (REPA) variants. Latent-diffusion approaches <span class="citation" data-cites="rombach2022">(<a href="#ref-rombach2022" role="doc-biblioref">Rombach et al. 2022</a>)</span> are the broader family this builds on.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-rombach2022" class="csl-entry" role="listitem">
+Rombach, Robin, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Björn Ommer. 2022. <span>“High-Resolution Image Synthesis with Latent Diffusion Models.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>.
+</div><div id="ref-carpenter2006" class="csl-entry" role="listitem">
+<span class="nocase">Carpenter, Anne E., Thouis R. Jones, Michael R. Lamprecht, et al.</span> 2006. <span>“CellProfiler: Image Analysis Software for Identifying and Quantifying Cell Phenotypes.”</span> <em>Genome Biology</em> 7 (10).
+</div></div><p><strong>RxRx1 (fluorescent microscopy).</strong> Conditions are 4 cell types <span class="math inline">\times</span> 1138 siRNA perturbations. We hold out unseen compositions and validate using CellProfiler morphology features <span class="citation" data-cites="carpenter2006">(<a href="#ref-carpenter2006" role="doc-biblioref"><span class="nocase">Carpenter et al.</span> 2006</a>)</span>. Trust-selected samples move closer to real morphology centroids — on already-seen conditions the real-spread-normalized distance drops by roughly 50–83%, with smaller but consistent gains (around 18–29%) on the harder unseen compositions — and improve downstream prediction.</p>
+<p><strong>CelebA (controlled vision).</strong> Four binary attributes (Male, Smiling, Blond, Eyeglasses) give 16 conditions; the model trains on only 5 (an all-zero reference plus single-attribute conditions) and is queried on all 16. The score ranks and filters the extrapolated generations.</p>
+<div class="paper-figure">
+<p><img src="figR1.svg" id="fig-trust" class="img-fluid" alt="CelebA stress-test (REPA-DINOv3, DINOv3 scoring): per-condition trust vs.&nbsp;\DeltaKID. Each point is one of 16 conditions. The 5 seen (single-attribute) conditions cluster at low \DeltaKID; unseen conditions with more active attributes drift further from training support and exhibit higher \DeltaKID. Trust scores track this degradation (\rho = 0.96)."> <span class="source-note">Figure from the original paper (Demirel, Maiorca, Fumero, Karaletsos &amp; Locatello, 2026).</span></p>
+</div>
+<section id="sorting-by-trust-then-choosing-where-to-cut" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="sorting-by-trust-then-choosing-where-to-cut">Sorting by trust, then choosing where to cut</h3>
+<p>Once every sample has a trust score, selection is just a threshold: keep the samples whose score clears the bar, abstain on the rest — exactly the ranked, thresholded list on the right of the teaser figure above.</p>
+<div class="column-page">
+<p>The score correlates strongly with held-out KID (where it <em>can</em> be measured), so the ordering it induces is meaningful even where the target distribution is unavailable.</p>
+</div>
+<p>Selecting by trust drives the accepted-set KID well below the unfiltered baseline on both datasets, with rank correlation <span class="math inline">\rho(T)</span> of <span class="math inline">0.96</span> (CelebA) and <span class="math inline">0.90</span> (RxRx1) against held-out KID:</p>
+<div id="tbl-results" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-results-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Accepted-set KID under trust-based selection vs.&nbsp;the unfiltered baseline, with rank correlation between the trust score and held-out KID. Lower KID is better.
+</figcaption>
+<div aria-describedby="tbl-results-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 11%">
+<col style="width: 11%">
+<col style="width: 12%">
+<col style="width: 16%">
+<col style="width: 19%">
+<col style="width: 16%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Dataset</th>
+<th style="text-align: left;">Model</th>
+<th style="text-align: right;">Accept %</th>
+<th style="text-align: right;">KID (trust)</th>
+<th style="text-align: right;">KID (baseline)</th>
+<th style="text-align: right;">Improvement</th>
+<th style="text-align: right;"><span class="math inline">\rho(T)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CelebA</td>
+<td style="text-align: left;">Vanilla</td>
+<td style="text-align: right;">58.7</td>
+<td style="text-align: right;"><strong>0.224</strong></td>
+<td style="text-align: right;">0.368</td>
+<td style="text-align: right;">+39.1 %</td>
+<td style="text-align: right;">0.96</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">RxRx1</td>
+<td style="text-align: left;">Vanilla</td>
+<td style="text-align: right;">4.4</td>
+<td style="text-align: right;"><strong>0.196</strong></td>
+<td style="text-align: right;">0.323</td>
+<td style="text-align: right;">+39.4 %</td>
+<td style="text-align: right;">0.90</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p><strong>Trust as a ranker, not just a filter.</strong> Beyond a single threshold, partitioning generated samples into class-balanced trust deciles and training a separate condition classifier on each decile shows that worse trust deciles yield both worse KID and less useful training data. On CelebA, <span class="math inline">\Delta</span>KID degrades by roughly <span class="math inline">4\times</span> from the best to the worst decile, while downstream classification accuracy drops by about 10% when training on the lowest-trust samples.</p>
+<div class="paper-figure">
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-decile-kid" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-decile-kid-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figR2a.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-decile-kid-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: CelebA <span class="math inline">\Delta</span>KID by trust decile.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-decile-down" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-decile-down-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figR2b.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-decile-down-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: CelebA downstream 16-way accuracy.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>CelebA decile binning (REPA-DINOv3 held-out, DINOv3 scoring). <span class="math inline">\Delta</span>KID increases monotonically from bin 0 (best trust) to bin 9 (worst) (<em>left</em>), and correlates with downstream classification accuracy drops (<em>right</em>). <span class="source-note">Figure from the original paper (Demirel, Maiorca, Fumero, Karaletsos &amp; Locatello, 2026).</span></p>
+</div>
+<p><strong>Biological validation in CellProfiler space.</strong> On RxRx1, the same decile ordering holds in interpretable CellProfiler morphology features — independent of the learned validation encoder — confirming that trust ordering improves downstream utility in a biologically meaningful space.</p>
+<div class="paper-figure">
+<p><img src="figR4.svg" id="fig-cp-decile" class="img-fluid" alt="Main RxRx1 CellProfiler validation (REPA-SigLIP marginal, SigLIP trust scoring). CP-space downstream classification by trust decile. Left: 4-way cell-type accuracy. Right: 50-way condition accuracy. Trust-ranked deciles correlate with classification performance."> <span class="source-note">Figure from the original paper (Demirel, Maiorca, Fumero, Karaletsos &amp; Locatello, 2026).</span></p>
+</div>
+<p><strong>Scoring during generation.</strong> Because the realism and faithfulness terms act on partially decoded features, the score can be evaluated <em>before</em> full decoding. On CelebA (250 denoising steps), scoring as early as step <span class="math inline">k \approx 83</span> already recovers a 33% KID improvement while saving roughly 67% of the denoising compute, and by step <span class="math inline">k \approx 166</span> the early score matches the post-generation result — enabling early abstention on doomed generations.</p>
+<div class="paper-figure">
+<p><img src="figR3.svg" id="fig-timestep" class="img-fluid" alt="Translator scoring across denoising (CelebA, Vanilla SiT-B/2, 250 steps). P95-real-threshold \DeltaKID improvement rises as the predicted-clean trajectory settles, matching the post-generation oracle while saving denoising compute."> <span class="source-note">Figure from the original paper (Demirel, Maiorca, Fumero, Karaletsos &amp; Locatello, 2026).</span></p>
+</div>
+</section>
+</section>
+<section id="conclusion" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Extrapolative conditional generation breaks the metrics we usually trust, because the target distribution is missing by definition. A per-sample score built from only the training distribution — realism against the data manifold plus faithfulness to the requested attributes — restores meaningful comparisons under a mild coverage condition. It needs no retraining, attaches to pretrained models, and supports filtering, ranking, and early abstention, with consistent gains on both biological imaging and controlled vision. Connections to energy-based out-of-distribution detection <span class="citation" data-cites="liu2020">(<a href="#ref-liu2020" role="doc-biblioref">Liu et al. 2020</a>)</span> and to fidelity/diversity metrics <span class="citation" data-cites="naeem2020">(<a href="#ref-naeem2020" role="doc-biblioref">Naeem et al. 2020</a>)</span> suggest the score is a general lens on conditional sample quality rather than a single benchmark trick.</p>
+
+
+<div class="no-row-height column-margin column-container"><div id="ref-liu2020" class="csl-entry" role="listitem">
+Liu, Weitang, Xiaoyun Wang, John D. Owens, and Yixuan Li. 2020. <span>“Energy-Based Out-of-Distribution Detection.”</span> <em>Advances in Neural Information Processing Systems</em> 33.
+</div><div id="ref-naeem2020" class="csl-entry" role="listitem">
+Naeem, Muhammad Ferjad, Seong Joon Oh, Youngjung Uh, Yunjey Choi, and Jaejun Yoo. 2020. <span>“Reliable Fidelity and Diversity Metrics for Generative Models.”</span> <em>International Conference on Machine Learning</em>.
+</div></div>
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{demirel2026,
+  author = {Demirel, Berker and Maiorca, Valentino and Fumero, Marco and
+    Karaletsos, Theofanis and Locatello, Francesco},
+  title = {Assessing {Sample} {Quality} in {Conditional} {Generation}
+    Under {Compositional} {Shift}},
+  journal = {arXiv preprint},
+  date = {2026-06-08}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script>
+// Topics → metadata rail. On the publications list (a Quarto `default` listing)
+// Quarto renders each paper's categories as a `.listing-categories` chip row in
+// the body, under the title — which makes every row taller. The right-hand
+// metadata rail (date + venue badge) is shorter, leaving dead vertical space.
+// Move the topics into that rail, below the date and venue badge, so the two
+// columns balance and each row gets back the height the chip row was costing.
+// Runs after assets/venue-badge.html so the badge is already in the rail and the
+// topics land beneath it.
+// Progressive enhancement: with JS off, topics stay under the title.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    // Only the body copy carries a chip row; once moved it lives in .metadata, so
+    // re-running finds nothing here — naturally idempotent.
+    var cats = post.querySelector(".body .listing-categories");
+    var metadata = post.querySelector(".metadata");
+    if (!cats || !metadata) return;
+    metadata.appendChild(cats);
+  });
+});
+</script>
+<script>
+// Click-to-expand for the home showcase teasers. Each highlighted paper's banner
+// figure (.home-highlights .thumbnail img) is wrapped by Quarto in a link to the
+// paper page — but the title already links there, so here we repurpose the figure
+// click to open the full-resolution image in a lightbox overlay instead.
+// (Styles: `.fig-lightbox` in theme/theme.scss.) Progressive enhancement: with JS
+// off, clicking the figure just follows the link to the paper.
+document.addEventListener("DOMContentLoaded", function () {
+  var figures = document.querySelectorAll(".home-highlights .quarto-post .thumbnail img");
+  if (!figures.length) return;
+
+  // One reusable overlay for every figure.
+  var overlay = document.createElement("div");
+  overlay.className = "fig-lightbox";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Expanded figure");
+
+  var closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "fig-lightbox-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.innerHTML = "&times;";
+
+  var big = document.createElement("img");
+  big.alt = "";
+
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(big);
+  document.body.appendChild(overlay);
+
+  var lastFocus = null;
+
+  function open(src, alt) {
+    big.src = src;
+    big.alt = alt || "";
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+  function close() {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    big.removeAttribute("src");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // Close on backdrop click, the × button, or Escape. A click on the image itself
+  // must not close (stop it bubbling to the backdrop).
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+  closeBtn.addEventListener("click", close);
+  big.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+
+  figures.forEach(function (img) {
+    var trigger = img.closest("a") || img;   // the link wrapper, or the image itself
+    if (trigger === img) { trigger.tabIndex = 0; trigger.setAttribute("role", "button"); }
+    trigger.setAttribute("aria-label", "Expand figure");
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();          // don't follow the link to the paper page
+      e.stopPropagation();
+      open(img.currentSrc || img.src, img.alt);
+    });
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>

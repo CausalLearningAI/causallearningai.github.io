@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#1a1a1a"/>
+  <!-- growing convective system: nested blobs from small (early) to large (max area) -->
+  <g fill="none" stroke="#026234" stroke-width="1.6" opacity="0.9">
+    <path d="M180 200 q-30 -34 6 -54 q26 -34 60 -10 q40 -18 50 22 q34 18 6 50 q-10 40 -52 28 q-44 8 -70 -36 Z"/>
+    <path d="M210 200 q-14 -16 4 -26 q12 -16 28 -5 q19 -8 24 10 q16 9 3 24 q-5 19 -25 13 q-21 4 -34 -17 Z"/>
+  </g>
+  <g fill="#fcfbf8">
+    <circle cx="228" cy="195" r="3"/>
+  </g>
+  <!-- arrow of growth -->
+  <g stroke="#74726c" stroke-width="1.4" fill="none">
+    <path d="M300 300 H470"/>
+    <path d="M462 293 L470 300 L462 307"/>
+  </g>
+  <g fill="#74726c" font-family="monospace" font-size="13">
+    <text x="300" y="328">early stage</text>
+    <text x="392" y="328">→ max area</text>
+  </g>
+</svg>
