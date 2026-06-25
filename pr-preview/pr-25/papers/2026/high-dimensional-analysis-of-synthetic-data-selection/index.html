@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Parham Rezaei">
+<meta name="author" content="Filip Kovacevic">
+<meta name="author" content="Francesco Locatello">
+<meta name="author" content="Marco Mondelli">
+<meta name="dcterms.date" content="2025-10-09">
+<meta name="description" content="Does extra synthetic data actually help train a classifier, and if so, which of its properties matter? Studying this through high-dimensional ridgeless regression, we prove that — for linear models — the test error of an augmented estimator depends on the covariance shift between target and synthetic data but, surprisingly, not on the mean shift, provided the real training set is not too small relative to the synthetic one. This implies a simple selection rule: match the synthetic covariance to the target’s. The insight transfers to deep networks and modern generators: a covariance-matching selector performs on par with, and often outperforms, recent synthetic-data-selection baselines across training paradigms, architectures, datasets, and generative models.">
+
+<title>High-dimensional Analysis of Synthetic Data Selection – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="High-dimensional Analysis of Synthetic Data Selection – CLAI Research Group">
+<meta property="og:description" content="Does extra synthetic data actually help train a classifier, and if so, which of its properties matter? Studying this through high-dimensional ridgeless regression, we prove that — for linear models — the test error of an augmented estimator depends on the covariance shift between target and synthetic data but, surprisingly, not on the mean shift, provided the real training set is not too small relative to the synthetic one. This implies a simple selection rule: match the synthetic covariance to the target’s. The insight transfers to deep networks and modern generators: a covariance-matching selector performs on par with, and often outperforms, recent synthetic-data-selection baselines across training paradigms, architectures, datasets, and generative models.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/high-dimensional-analysis-of-synthetic-data-selection/mean-underp-21.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="High-dimensional Analysis of Synthetic Data Selection – CLAI Research Group">
+<meta name="twitter:description" content="Does extra synthetic data actually help train a classifier, and if so, which of its properties matter? Studying this through high-dimensional ridgeless regression, we prove that — for linear models — the test error of an augmented estimator depends on the covariance shift between target and synthetic data but, surprisingly, not on the mean shift, provided the real training set is not too small relative to the synthetic one. This implies a simple selection rule: match the synthetic covariance to the target’s. The insight transfers to deep networks and modern generators: a covariance-matching selector performs on par with, and often outperforms, recent synthetic-data-selection baselines across training paradigms, architectures, datasets, and generative models.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/high-dimensional-analysis-of-synthetic-data-selection/mean-underp-21.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="High-dimensional Analysis of Synthetic Data Selection">
+<meta name="citation_author" content="Parham Rezaei">
+<meta name="citation_author" content="Filip Kovacevic">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_author" content="Marco Mondelli">
+<meta name="citation_publication_date" content="2025-10-09">
+<meta name="citation_cover_date" content="2025-10-09">
+<meta name="citation_year" content="2025">
+<meta name="citation_online_date" content="2025-10-09">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2026/high-dimensional-analysis-of-synthetic-data-selection/">
+<meta name="citation_doi" content="10.48550/arXiv.2510.08123">
+<meta name="citation_language" content="en">
+<meta name="citation_conference_title" content="International Conference on Learning Representations (ICLR)">
+<meta name="citation_reference" content="citation_title=Is synthetic data from generative models ready for image recognition?;,citation_author=Ruifei He;,citation_author=Shuyang Sun;,citation_author=Xin Yu;,citation_author=Chuhui Xue;,citation_author=Wenqing Zhang;,citation_author=Philip Torr;,citation_author=Song Bai;,citation_author=Xiaojuan Qi;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=Explore the power of synthetic data on few-shot object detection;,citation_author=Shaobo Lin;,citation_author=Kun Wang;,citation_author=Xingyu Zeng;,citation_author=Rui Zhao;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=DataS$^3$: Dataset subset selection for specialization;,citation_author=Neha Hulkund;,citation_author=Alaa Maalouf;,citation_author=Levi Cai;,citation_author=Daniel Yang;,citation_author=Tsun-Hsuan Wang;,citation_author=Abigail O’Neil;,citation_author=Timm Haucke;,citation_author=Sandeep Mukherjee;,citation_author=Vikram Ramaswamy;,citation_author=Judy Hansen Shen;,citation_author=others;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_journal_title=arXiv preprint arXiv:2504.16277;">
+<meta name="citation_reference" content="citation_title=Training generative adversarial networks with limited data;,citation_author=Tero Karras;,citation_author=Miika Aittala;,citation_author=Janne Hellsten;,citation_author=Samuli Laine;,citation_author=Jaakko Lehtinen;,citation_author=Timo Aila;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=33;,citation_journal_title=Advances in Neural Information Processing Systems;">
+<meta name="citation_reference" content="citation_title=A style-based generator architecture for generative adversarial networks;,citation_author=Tero Karras;,citation_author=Samuli Laine;,citation_author=Timo Aila;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Precise high-dimensional asymptotics for quantifying heterogeneous transfers;,citation_author=Fan Yang;,citation_author=Hongyang R. Zhang;,citation_author=Sen Wu;,citation_author=Christopher Re;,citation_author=Weijie J. Su;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_issue=113;,citation_volume=26;,citation_journal_title=Journal of Machine Learning Research;">
+<meta name="citation_reference" content="citation_title=Surprises in high-dimensional ridgeless least squares interpolation;,citation_author=Trevor Hastie;,citation_author=Andrea Montanari;,citation_author=Saharon Rosset;,citation_author=Ryan J. Tibshirani;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_issue=2;,citation_volume=50;,citation_journal_title=Annals of Statistics;">
+<meta name="citation_reference" content="citation_title=Generalization error of min-norm interpolators in transfer learning;,citation_author=Yanke Song;,citation_author=Sohom Bhattacharya;,citation_author=Pragya Sur;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_journal_title=arXiv preprint arXiv:2406.13944;">
+<meta name="citation_reference" content="citation_title=AI models collapse when trained on recursively generated data;,citation_author=Ilia Shumailov;,citation_author=Zakhar Shumaylov;,citation_author=Yiren Zhao;,citation_author=Nicolas Papernot;,citation_author=Ross Anderson;,citation_author=Yarin Gal;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_issue=8022;,citation_volume=631;,citation_journal_title=Nature;,citation_publisher=Nature Publishing Group UK London;">
+<meta name="citation_reference" content="citation_title=Rxrx1: A dataset for evaluating experimental batch correction methods;,citation_author=Maciej Sypetkowski;,citation_author=Morteza Rezanejad;,citation_author=Saber Saberian;,citation_author=Oren Kraus;,citation_author=John Urbanik;,citation_author=James Taylor;,citation_author=Ben Mabey;,citation_author=Mason Victors;,citation_author=Jason Yosinski;,citation_author=Alborz Rezazadeh Sereshkeh;,citation_author=others;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Deep residual learning for image recognition;,citation_author=Kaiming He;,citation_author=Xiangyu Zhang;,citation_author=Shaoqing Ren;,citation_author=Jian Sun;,citation_publication_date=2016;,citation_cover_date=2016;,citation_year=2016;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Distilling the knowledge in a neural network;,citation_author=Geoffrey Hinton;,citation_author=Oriol Vinyals;,citation_author=Jeff Dean;,citation_publication_date=2015;,citation_cover_date=2015;,citation_year=2015;,citation_journal_title=arXiv preprint arXiv:1503.02531;">
+<meta name="citation_reference" content="citation_title=SANA 1.5: Efficient scaling of training-time and inference-time compute in linear diffusion transformer;,citation_author=Enze Xie;,citation_author=Junsong Chen;,citation_author=Yuyang Zhao;,citation_author=Jincheng Yu;,citation_author=Ligeng Zhu;,citation_author=Yujun Lin;,citation_author=Zhekai Zhang;,citation_author=Muyang Li;,citation_author=Junyu Chen;,citation_author=Han Cai;,citation_author=others;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_conference_title=International conference on machine learning;">
+<meta name="citation_reference" content="citation_title=PixArt-$\alpha$: Fast training of diffusion transformer for photorealistic text-to-image synthesis;,citation_author=Junsong Chen;,citation_author=Jincheng Yu;,citation_author=Chongjian Ge;,citation_author=Lewei Yao;,citation_author=Enze Xie;,citation_author=Zhongdao Wang;,citation_author=James Kwok;,citation_author=Ping Luo;,citation_author=Huchuan Lu;,citation_author=Zhenguo Li;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=High-resolution image synthesis with latent diffusion models;,citation_author=Robin Rombach;,citation_author=Andreas Blattmann;,citation_author=Dominik Lorenz;,citation_author=Patrick Esser;,citation_author=Björn Ommer;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Image retrieval outperforms diffusion models on data augmentation;,citation_author=Max F. Burg;,citation_author=Florian Wenzel;,citation_author=Dominik Zietlow;,citation_author=Max Horn;,citation_author=Osama Makansi;,citation_author=Francesco Locatello;,citation_author=Chris Russell;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_journal_title=Transactions on Machine Learning Research;">
+<meta name="citation_reference" content="citation_title=Scaling laws of synthetic images for model training... For now;,citation_author=Lijie Fan;,citation_author=Kaifeng Chen;,citation_author=Dilip Krishnan;,citation_author=Dina Katabi;,citation_author=Phillip Isola;,citation_author=Yonglong Tian;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-question" id="toc-the-question" class="nav-link active" data-scroll-target="#the-question">The question</a></li>
+  <li><a href="#setup" id="toc-setup" class="nav-link" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#the-surprising-theory" id="toc-the-surprising-theory" class="nav-link" data-scroll-target="#the-surprising-theory">The surprising theory</a></li>
+  <li><a href="#from-theory-to-practice" id="toc-from-theory-to-practice" class="nav-link" data-scroll-target="#from-theory-to-practice">From theory to practice</a></li>
+  <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">High-dimensional Analysis of Synthetic Data Selection</h1>
+<p class="subtitle lead">When you augment with generated data, match the covariance — not the mean</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Theory</div>
+    <div class="quarto-category">Representation Learning</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Does extra synthetic data actually help train a classifier, and if so, which of its properties matter? Studying this through high-dimensional ridgeless regression, we prove that — for linear models — the test error of an augmented estimator depends on the covariance shift between target and synthetic data but, surprisingly, not on the mean shift, provided the real training set is not too small relative to the synthetic one. This implies a simple selection rule: match the synthetic covariance to the target’s. The insight transfers to deep networks and modern generators: a covariance-matching selector performs on par with, and often outperforms, recent synthetic-data-selection baselines across training paradigms, architectures, datasets, and generative models.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Parham Rezaei <a href="mailto:parhamix@gmail.com" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Filip Kovacevic <a href="mailto:filip.kovacevic@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello <a href="mailto:francesco.locatello@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Marco Mondelli <a href="mailto:marco.mondelli@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 9, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-iclr">
+<span class="venue-name">ICLR 2026</span><span class="venue-modifier">Oral</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2510.08123" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://openreview.net/forum?id=Y54P2BBPPh" target="_blank" rel="noopener"><i class="bi bi-card-text" aria-hidden="true"></i> OpenReview</a><a class="paper-link" href="https://github.com/Rezaei-Parham/Synthetic-Selection" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
+<section id="the-question" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-question">The question</h2>
+<div class="page-columns page-full"><p>Modern generative models can produce an essentially unlimited supply of synthetic training images, which is appealing whenever real data is scarce, private, or expensive to label. Yet the empirical record is mixed: some works find that generated data helps, others that simply retrieving more real data does at least as well <span class="citation" data-cites="burgimage fan2024scaling">(<a href="#ref-burgimage" role="doc-biblioref">Burg et al. 2023</a>; <a href="#ref-fan2024scaling" role="doc-biblioref">Fan et al. 2024</a>)</span>, and some warn that training on generated data can even trigger model collapse <span class="citation" data-cites="shumailov2024ai">(<a href="#ref-shumailov2024ai" role="doc-biblioref">Shumailov et al. 2024</a>)</span>. Beyond folklore rules like <em>“synthetic data should be close to the real distribution,”</em> it is unclear <em>which</em> properties of the synthetic distribution actually drive generalization. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">The paper frames everything around one concrete question: given a real training set, how should one select the synthetic set to minimize test error?</span></div></div>
+<div class="no-row-height column-margin column-container"><div id="ref-burgimage" class="csl-entry" role="listitem">
+Burg, Max F., Florian Wenzel, Dominik Zietlow, et al. 2023. <span>“Image Retrieval Outperforms Diffusion Models on Data Augmentation.”</span> <em>Transactions on Machine Learning Research</em>.
+</div><div id="ref-fan2024scaling" class="csl-entry" role="listitem">
+Fan, Lijie, Kaifeng Chen, Dilip Krishnan, Dina Katabi, Phillip Isola, and Yonglong Tian. 2024. <span>“Scaling Laws of Synthetic Images for Model Training... For Now.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 7382–92.
+</div><div id="ref-shumailov2024ai" class="csl-entry" role="listitem">
+Shumailov, Ilia, Zakhar Shumaylov, Yiren Zhao, Nicolas Papernot, Ross Anderson, and Yarin Gal. 2024. <span>“AI Models Collapse When Trained on Recursively Generated Data.”</span> <em>Nature</em> 631 (8022): 755–59.
+</div></div><p>This paper studies that question through the lens of high-dimensional regression, turning a vague heuristic into a precise — and actionable — selection rule.</p>
+</section>
+<section id="setup" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="setup">Setup</h2>
+<p>We have a real training set <span class="math inline">(X_t, y_t)</span> drawn from the target distribution and an additional <em>synthetic</em> set <span class="math inline">(X_s, y_s)</span> from a different distribution (the output of a generative model). Empirical risk minimization is run on the augmentation <span class="math inline">\big((X_t, X_s), (y_t, y_s)\big)</span>, and the model is evaluated on a fresh sample from the <em>target</em> distribution. For tractable theory, each class is treated in isolation as a linear model <span class="math inline">y_t = X_t\beta + \varepsilon_t</span> and <span class="math inline">y_s = X_s\beta + \varepsilon_s</span>, with the rows of <span class="math inline">X_t</span> having mean <span class="math inline">\mu_t</span> and covariance <span class="math inline">\Sigma_t</span>, and the rows of <span class="math inline">X_s</span> having mean <span class="math inline">\mu_s</span> and covariance <span class="math inline">\Sigma_s</span>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The discrepancy between the two distributions is thus captured by a <strong>mean shift</strong> (<span class="math inline">\mu_t \neq \mu_s</span>) and a <strong>covariance shift</strong> (<span class="math inline">\Sigma_t \neq \Sigma_s</span>). The estimator analyzed is the min-norm (ridgeless) least-squares interpolator <span class="math inline">\hat\beta</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The theory treats a single class, fitting a regression to the label and ignoring cross-class interactions — a deliberate simplification for mathematical tractability. The resulting selection rule is then tested extensively in genuine multi-class classification settings.</p></div></div></section>
+<section id="the-surprising-theory" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-surprising-theory">The surprising theory</h2>
+<p>The central result is a <em>deterministic equivalent</em> for the excess risk of <span class="math inline">\hat\beta</span> in the high-dimensional limit (where the dimensions of <span class="math inline">\beta</span>, <span class="math inline">y_t</span>, and <span class="math inline">y_s</span> grow proportionally). In the under-parameterized regime, with <span class="math inline">M = \Sigma_s^{1/2}\Sigma_t^{-1/2}</span> and <span class="math inline">\lambda_1 \ge \dots \ge \lambda_p</span> the eigenvalues of <span class="math inline">M^\top M</span>, the risk concentrates around</p>
+<p><span class="math display">
+R_X(\hat\beta;\beta) \;\to\; \frac{\sigma^2}{n}\,
+\operatorname{Tr}\!\left[\left(\alpha_1 M^\top M + \alpha_2 I_p\right)^{-1}\right],
+</span></p>
+<p>where <span class="math inline">\alpha_1, \alpha_2</span> solve a coupled fixed-point system. The striking feature is what is <em>absent</em>: this limit depends <strong>only on the covariances</strong> <span class="math inline">\Sigma_t,
+\Sigma_s</span> (through <span class="math inline">M</span>) and <strong>not on the means</strong> <span class="math inline">\mu_t, \mu_s</span>.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>This holds as long as the real training set is <em>not too small</em> relative to the synthetic set. It is genuinely surprising: when training on synthetic data <strong>alone</strong>, the paper shows the mean shift <em>does</em> enter the risk — so it is the presence of real data that washes the mean shift out.</p>
+</div></div><p>So the mean shift, the very thing the <em>“stay close to the real distribution”</em> heuristic most naturally targets, drops out of the asymptotic risk. The covariance shift is what remains — and it can be optimized. The authors prove that, subject to a trace normalization <span class="math inline">\operatorname{Tr}[M^\top M] = p</span>, the limit risk is minimized exactly when all eigenvalues of <span class="math inline">M</span> are equal to one — i.e.&nbsp;when <span class="math inline">\Sigma_s \propto
+\Sigma_t</span>. They call this <strong>covariance matching</strong>, and establish its optimality in both the under- and over-parameterized regimes (the latter for isotropic <span class="math inline">\Sigma_t = I_p</span>).</p>
+<p>The three panels below are simulations from the paper that illustrate the theory: the risk is flat as the means are aligned, but decreases as the synthetic covariance is brought toward the target’s (and as its scale grows).</p>
+<div class="column-page">
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div id="fig-mean" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-mean-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="mean-underp-21.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-mean-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Aligning the means leaves the excess risk unchanged — the mean shift does not matter once real data is present.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div id="fig-growth" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-growth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="growth-underp-21.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-growth-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Bringing <span class="math inline">\Sigma_s</span> closer to <span class="math inline">\Sigma_t</span> (larger <span class="math inline">\rho_s</span>) lowers the excess risk.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div id="fig-scale" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-scale-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="scale-underp-21.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-scale-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Scaling up the synthetic covariance further reduces the risk.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Excess risk with real data from <span class="math inline">\mathcal{N}(\mu_t,\Sigma_t)</span> and synthetic data from <span class="math inline">\mathcal{N}(\mu_s,\Sigma_s)</span>, where <span class="math inline">\Sigma_t,\Sigma_s</span> are Kac–Murdock–Szegö matrices with decay parameters <span class="math inline">\rho_t,\rho_s</span> (here <span class="math inline">\rho_t = 0.9</span>, <span class="math inline">p = 600</span>, <span class="math inline">n_t = n_s = 1200</span>); solid lines are theory, markers are 100-trial empirical means with <span class="math inline">\pm 1</span> s.d. bands.</p>
+</div>
+</section>
+<section id="from-theory-to-practice" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="from-theory-to-practice">From theory to practice</h2>
+<p>The selection rule that falls out is disarmingly simple. Given a pool of generated images, greedily build the synthetic set <span class="math inline">S</span> by repeatedly adding the sample that most reduces <span class="math inline">\lVert \widehat\Sigma(S \cup \{x\}) - \widehat\Sigma_t \rVert_F</span>, where the covariances are computed over CLIP features (in a 32-dimensional PCA space for speed). No access to means, labels, or the generator internals is needed.</p>
+<p>The authors compare this against a battery of recent selectors — including <em>Center matching</em> <span class="citation" data-cites="he2022synthetic">(<a href="#ref-he2022synthetic" role="doc-biblioref">He et al. 2023</a>)</span>, <em>Center sampling</em>, <em>K-means</em>, <em>Text matching</em> <span class="citation" data-cites="lin2023explore">(<a href="#ref-lin2023explore" role="doc-biblioref">Lin et al. 2023</a>)</span>, and <em>DS³</em> <span class="citation" data-cites="hulkund2025datas">(<a href="#ref-hulkund2025datas" role="doc-biblioref"><span class="nocase">Hulkund et al.</span> 2025</a>)</span> — across three CIFAR-10 training paradigms (training from scratch, distilling a ResNet-50, and fine-tuning an ImageNet-pretrained backbone), using <span class="math inline">n_t = 200</span> real and <span class="math inline">n_s = 800</span> synthetic images per class.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<div class="no-row-height column-margin column-container"><div id="fn2"><p><sup>2</sup>&nbsp;All CIFAR-10 results are averaged over 10 random seeds and reported as mean <span class="math inline">\pm</span> one standard deviation; <em>No synthetic</em> uses only the <span class="math inline">n_t</span> real images, and <em>Real upper bound</em> replaces the synthetic images with held-out real ones.</p></div><div id="ref-Karras2020ada" class="csl-entry" role="listitem">
+Karras, Tero, Miika Aittala, Janne Hellsten, Samuli Laine, Jaakko Lehtinen, and Timo Aila. 2020. <span>“Training Generative Adversarial Networks with Limited Data.”</span> <em>Advances in Neural Information Processing Systems</em> 33: 12104–14.
+</div><div id="ref-karras2019style" class="csl-entry" role="listitem">
+Karras, Tero, Samuli Laine, and Timo Aila. 2019. <span>“A Style-Based Generator Architecture for Generative Adversarial Networks.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 4401–10.
+</div></div><p>When the synthetic pool comes from truncated StyleGAN2-Ada models <span class="citation" data-cites="Karras2020ada karras2019style">(<a href="#ref-Karras2020ada" role="doc-biblioref">Karras et al. 2020</a>, <a href="#ref-karras2019style" role="doc-biblioref">2019</a>)</span>, covariance matching is best in every paradigm:</p>
+<div id="tbl-stylegan" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-stylegan-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: CIFAR-10 test accuracy (%) across three training paradigms, with synthetic data from five truncated StyleGAN2-Ada models.
+</figcaption>
+<div aria-describedby="tbl-stylegan-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 41%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: right;">Scratch</th>
+<th style="text-align: right;">Distillation</th>
+<th style="text-align: right;">Pretrained</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">No synthetic</td>
+<td style="text-align: right;">44.36 ± 1.51</td>
+<td style="text-align: right;">47.33 ± 0.57</td>
+<td style="text-align: right;">63.40 ± 1.33</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Center matching <span class="citation" data-cites="he2022synthetic">(<a href="#ref-he2022synthetic" role="doc-biblioref">He et al. 2023</a>)</span></td>
+<td style="text-align: right;">50.04 ± 2.84</td>
+<td style="text-align: right;">53.83 ± 0.59</td>
+<td style="text-align: right;">67.01 ± 0.89</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Center sampling <span class="citation" data-cites="lin2023explore">(<a href="#ref-lin2023explore" role="doc-biblioref">Lin et al. 2023</a>)</span></td>
+<td style="text-align: right;">50.48 ± 2.03</td>
+<td style="text-align: right;">54.91 ± 1.07</td>
+<td style="text-align: right;">67.71 ± 0.90</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DS³ <span class="citation" data-cites="hulkund2025datas">(<a href="#ref-hulkund2025datas" role="doc-biblioref"><span class="nocase">Hulkund et al.</span> 2025</a>)</span></td>
+<td style="text-align: right;">52.83 ± 2.19</td>
+<td style="text-align: right;">58.32 ± 0.43</td>
+<td style="text-align: right;">68.21 ± 0.66</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">K-means <span class="citation" data-cites="lin2023explore">(<a href="#ref-lin2023explore" role="doc-biblioref">Lin et al. 2023</a>)</span></td>
+<td style="text-align: right;">50.74 ± 1.77</td>
+<td style="text-align: right;">56.06 ± 0.68</td>
+<td style="text-align: right;">66.50 ± 1.11</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Random</td>
+<td style="text-align: right;">49.38 ± 2.43</td>
+<td style="text-align: right;">54.89 ± 0.91</td>
+<td style="text-align: right;">67.65 ± 0.77</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Text matching <span class="citation" data-cites="lin2023explore">(<a href="#ref-lin2023explore" role="doc-biblioref">Lin et al. 2023</a>)</span></td>
+<td style="text-align: right;">50.94 ± 1.40</td>
+<td style="text-align: right;">55.17 ± 0.57</td>
+<td style="text-align: right;">67.81 ± 0.76</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Text sampling <span class="citation" data-cites="lin2023explore">(<a href="#ref-lin2023explore" role="doc-biblioref">Lin et al. 2023</a>)</span></td>
+<td style="text-align: right;">50.28 ± 1.18</td>
+<td style="text-align: right;">54.82 ± 0.72</td>
+<td style="text-align: right;">67.45 ± 1.02</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Covariance matching (ours)</strong></td>
+<td style="text-align: right;"><strong>54.00 ± 1.89</strong></td>
+<td style="text-align: right;"><strong>59.77 ± 0.61</strong></td>
+<td style="text-align: right;"><strong>69.20 ± 0.56</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Real upper bound</td>
+<td style="text-align: right;">61.08 ± 2.54</td>
+<td style="text-align: right;">65.38 ± 0.51</td>
+<td style="text-align: right;">74.35 ± 0.56</td>
+</tr>
+</tbody>
+</table>
+<div class="no-row-height column-margin column-container"><div id="ref-he2022synthetic" class="csl-entry" role="listitem">
+He, Ruifei, Shuyang Sun, Xin Yu, et al. 2023. <span>“Is Synthetic Data from Generative Models Ready for Image Recognition?”</span> <em>International Conference on Learning Representations</em>.
+</div><div id="ref-lin2023explore" class="csl-entry" role="listitem">
+Lin, Shaobo, Kun Wang, Xingyu Zeng, and Rui Zhao. 2023. <span>“Explore the Power of Synthetic Data on Few-Shot Object Detection.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 638–47.
+</div><div id="ref-hulkund2025datas" class="csl-entry" role="listitem">
+<span class="nocase">Hulkund, Neha, Alaa Maalouf, Levi Cai, et al.</span> 2025. <span>“<span>DataS<span class="math inline">^3</span></span>: Dataset Subset Selection for Specialization.”</span> <em>arXiv Preprint arXiv:2504.16277</em>.
+</div></div></div>
+</figure>
+</div>
+<p>The gains persist when the pool is instead drawn from text-to-image diffusion models (SANA-1.5 <span class="citation" data-cites="xie2025sana">(<a href="#ref-xie2025sana" role="doc-biblioref"><span class="nocase">Xie et al.</span> 2025</a>)</span>, PixArt-<span class="math inline">\alpha</span> <span class="citation" data-cites="chen2023pixart">(<a href="#ref-chen2023pixart" role="doc-biblioref">Chen et al. 2024</a>)</span>, and StableDiffusion1.4 <span class="citation" data-cites="rombach2022high">(<a href="#ref-rombach2022high" role="doc-biblioref">Rombach et al. 2022</a>)</span>), where covariance matching stays on par with the strongest baseline; on a broader dataset (ImageNet-100, with a ResNet-18 trained from scratch <span class="citation" data-cites="he2016deep">(<a href="#ref-he2016deep" role="doc-biblioref">He et al. 2016</a>)</span>) and a specialized one (the RxRx1 fluorescence-microscopy benchmark <span class="citation" data-cites="sypetkowski2023rxrx1">(<a href="#ref-sypetkowski2023rxrx1" role="doc-biblioref"><span class="nocase">Sypetkowski et al.</span> 2023</a>)</span>), it again matches the best baselines. The improvements appear to come from selecting <em>more diverse</em> samples rather than merely high-fidelity ones.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-xie2025sana" class="csl-entry" role="listitem">
+<span class="nocase">Xie, Enze, Junsong Chen, Yuyang Zhao, et al.</span> 2025. <span>“<span>SANA 1.5</span>: Efficient Scaling of Training-Time and Inference-Time Compute in Linear Diffusion Transformer.”</span> <em>International Conference on Machine Learning</em>.
+</div><div id="ref-chen2023pixart" class="csl-entry" role="listitem">
+Chen, Junsong, Jincheng Yu, Chongjian Ge, et al. 2024. <span>“<span>PixArt-<span class="math inline">\alpha</span></span>: Fast Training of Diffusion Transformer for Photorealistic Text-to-Image Synthesis.”</span> <em>International Conference on Learning Representations</em>.
+</div><div id="ref-rombach2022high" class="csl-entry" role="listitem">
+Rombach, Robin, Andreas Blattmann, Dominik Lorenz, Patrick Esser, and Björn Ommer. 2022. <span>“High-Resolution Image Synthesis with Latent Diffusion Models.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 10684–95.
+</div><div id="ref-he2016deep" class="csl-entry" role="listitem">
+He, Kaiming, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. 2016. <span>“Deep Residual Learning for Image Recognition.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 770–78.
+</div><div id="ref-sypetkowski2023rxrx1" class="csl-entry" role="listitem">
+<span class="nocase">Sypetkowski, Maciej, Morteza Rezanejad, Saber Saberian, et al.</span> 2023. <span>“Rxrx1: A Dataset for Evaluating Experimental Batch Correction Methods.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 4285–94.
+</div></div><p>A controlled “leak” experiment makes the mechanism vivid. Real images from the target distribution (disjoint from the <span class="math inline">n_t = 200</span> references) are mixed into a pool of StableDiffusion1.4 images, and each selector is scored by what fraction of its picks are the leaked real images — which an ideal selector should prefer, since replacing synthetic with real augmentations gives the best accuracy. Covariance matching recovers the largest share with CLIP features, well ahead of every competing method.</p>
+<div class="column-page">
+<div class="quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-clip-leak" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-clip-leak-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="clip-leak.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-clip-leak-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Selectors built on CLIP features.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div id="fig-dino-leak" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-dino-leak-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="dino-leak.svg" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dino-leak-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: Selectors built on DINO features.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<p>Fraction of each method’s <span class="math inline">n_s = 800</span> selections that are leaked real images, from a pool of 4K StableDiffusion1.4 images plus 1K leaked target-distribution images. Covariance matching prioritizes the real samples most reliably.</p>
+</div>
+</section>
+<section id="takeaways" class="level2">
+<h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
+<p>The paper draws a clean line from theory to a usable recipe. In high dimensions, when real data anchors the fit, the <em>mean</em> of the synthetic distribution is irrelevant to generalization and only the <em>covariance shift</em> matters — so the right thing to do is match the synthetic covariance to the target’s, and ignore the mean entirely. This single principle, validated across training paradigms, architectures, datasets, and a range of GAN and diffusion generators, performs on par with or better than a variety of more elaborate selection schemes.</p>
+
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@inproceedings{rezaei2025,
+  author = {Rezaei, Parham and Kovacevic, Filip and Locatello, Francesco
+    and Mondelli, Marco},
+  title = {High-Dimensional {Analysis} of {Synthetic} {Data}
+    {Selection}},
+  booktitle = {International Conference on Learning Representations
+    (ICLR)},
+  date = {2025-10-09},
+  doi = {10.48550/arXiv.2510.08123}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script>
+// Topics → metadata rail. On the publications list (a Quarto `default` listing)
+// Quarto renders each paper's categories as a `.listing-categories` chip row in
+// the body, under the title — which makes every row taller. The right-hand
+// metadata rail (date + venue badge) is shorter, leaving dead vertical space.
+// Move the topics into that rail, below the date and venue badge, so the two
+// columns balance and each row gets back the height the chip row was costing.
+// Runs after assets/venue-badge.html so the badge is already in the rail and the
+// topics land beneath it.
+// Progressive enhancement: with JS off, topics stay under the title.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    // Only the body copy carries a chip row; once moved it lives in .metadata, so
+    // re-running finds nothing here — naturally idempotent.
+    var cats = post.querySelector(".body .listing-categories");
+    var metadata = post.querySelector(".metadata");
+    if (!cats || !metadata) return;
+    metadata.appendChild(cats);
+  });
+});
+</script>
+<script>
+// Click-to-expand for the home showcase teasers. Each highlighted paper's banner
+// figure (.home-highlights .thumbnail img) is wrapped by Quarto in a link to the
+// paper page — but the title already links there, so here we repurpose the figure
+// click to open the full-resolution image in a lightbox overlay instead.
+// (Styles: `.fig-lightbox` in theme/theme.scss.) Progressive enhancement: with JS
+// off, clicking the figure just follows the link to the paper.
+document.addEventListener("DOMContentLoaded", function () {
+  var figures = document.querySelectorAll(".home-highlights .quarto-post .thumbnail img");
+  if (!figures.length) return;
+
+  // One reusable overlay for every figure.
+  var overlay = document.createElement("div");
+  overlay.className = "fig-lightbox";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Expanded figure");
+
+  var closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "fig-lightbox-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.innerHTML = "&times;";
+
+  var big = document.createElement("img");
+  big.alt = "";
+
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(big);
+  document.body.appendChild(overlay);
+
+  var lastFocus = null;
+
+  function open(src, alt) {
+    big.src = src;
+    big.alt = alt || "";
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+  function close() {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    big.removeAttribute("src");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // Close on backdrop click, the × button, or Escape. A click on the image itself
+  // must not close (stop it bubbling to the backdrop).
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+  closeBtn.addEventListener("click", close);
+  big.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+
+  figures.forEach(function (img) {
+    var trigger = img.closest("a") || img;   // the link wrapper, or the image itself
+    if (trigger === img) { trigger.tabIndex = 0; trigger.setAttribute("role", "button"); }
+    trigger.setAttribute("aria-label", "Expand figure");
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();          // don't follow the link to the paper page
+      e.stopPropagation();
+      open(img.currentSrc || img.src, img.alt);
+    });
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
