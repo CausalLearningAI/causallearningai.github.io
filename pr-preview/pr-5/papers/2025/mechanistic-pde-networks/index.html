@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Adeel Pervez">
+<meta name="author" content="Efstratios Gavves">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2025-02-25">
+<meta name="description" content="We present Mechanistic PDE Networks, a model for discovery of governing partial differential equations from data. The method represents spatio-temporal data as space-time dependent linear partial differential equations in neural network hidden representations, which are then solved and decoded for specific tasks. Solving these PDE representations in a compute- and memory-efficient way is the central challenge: we develop NeuRLP-PDE, a native, GPU-capable, parallel, sparse, and differentiable multigrid solver specialized for linear PDEs that acts as a module inside the network. Leveraging the solver, we propose a discovery architecture that can recover nonlinear PDEs in complex settings while remaining robust to noise. We validate discovery on a range of PDEs, including reaction-diffusion and Navier-Stokes equations.">
+
+<title>Mechanistic PDE Networks for Discovery of Governing Equations – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Mechanistic PDE Networks for Discovery of Governing Equations – CLAI Research Group">
+<meta property="og:description" content="We present Mechanistic PDE Networks, a model for discovery of governing partial differential equations from data. The method represents spatio-temporal data as space-time dependent linear partial differential equations in neural network hidden representations, which are then solved and decoded for specific tasks. Solving these PDE representations in a compute- and memory-efficient way is the central challenge: we develop NeuRLP-PDE, a native, GPU-capable, parallel, sparse, and differentiable multigrid solver specialized for linear PDEs that acts as a module inside the network. Leveraging the solver, we propose a discovery architecture that can recover nonlinear PDEs in complex settings while remaining robust to noise. We validate discovery on a range of PDEs, including reaction-diffusion and Navier-Stokes equations.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2025/mechanistic-pde-networks/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="Mechanistic PDE Networks for Discovery of Governing Equations – CLAI Research Group">
+<meta name="twitter:description" content="We present Mechanistic PDE Networks, a model for discovery of governing partial differential equations from data. The method represents spatio-temporal data as space-time dependent linear partial differential equations in neural network hidden representations, which are then solved and decoded for specific tasks. Solving these PDE representations in a compute- and memory-efficient way is the central challenge: we develop NeuRLP-PDE, a native, GPU-capable, parallel, sparse, and differentiable multigrid solver specialized for linear PDEs that acts as a module inside the network. Leveraging the solver, we propose a discovery architecture that can recover nonlinear PDEs in complex settings while remaining robust to noise. We validate discovery on a range of PDEs, including reaction-diffusion and Navier-Stokes equations.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2025/mechanistic-pde-networks/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Mechanistic PDE Networks for Discovery of Governing Equations">
+<meta name="citation_author" content="Adeel Pervez">
+<meta name="citation_author" content="Efstratios Gavves">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2025-02-25">
+<meta name="citation_cover_date" content="2025-02-25">
+<meta name="citation_year" content="2025">
+<meta name="citation_online_date" content="2025-02-25">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2025/mechanistic-pde-networks/">
+<meta name="citation_doi" content="10.48550/arXiv.2502.18377">
+<meta name="citation_language" content="en">
+<meta name="citation_conference_title" content="Proceedings of the 42nd International Conference on Machine Learning (ICML)">
+<meta name="citation_reference" content="citation_title=Mechanistic neural networks for scientific machine learning;,citation_author=Adeel Pervez;,citation_author=Francesco Locatello;,citation_author=Stratis Gavves;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=Forty-first international conference on machine learning (ICML);">
+<meta name="citation_reference" content="citation_title=Scalable mechanistic neural networks;,citation_author=Jiale Chen;,citation_author=Dingling Yao;,citation_author=Adeel Pervez;,citation_author=Dan Alistarh;,citation_author=Francesco Locatello;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_conference_title=International conference on learning representations (ICLR);">
+<meta name="citation_reference" content="citation_title=Marrying causal representation learning with dynamical systems for science;,citation_author=Dingling Yao;,citation_author=Caroline Muller;,citation_author=Francesco Locatello;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=Advances in neural information processing systems (NeurIPS);">
+<meta name="citation_reference" content="citation_title=Discovering governing equations from data by sparse identification of nonlinear dynamical systems;,citation_author=Steven L. Brunton;,citation_author=Joshua L. Proctor;,citation_author=J. Nathan Kutz;,citation_publication_date=2016;,citation_cover_date=2016;,citation_year=2016;,citation_issue=15;,citation_volume=113;,citation_journal_title=Proceedings of the National Academy of Sciences;">
+<meta name="citation_reference" content="citation_title=Machine learning for fluid mechanics;,citation_author=Steven L. Brunton;,citation_author=Bernd R. Noack;,citation_author=Petros Koumoutsakos;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_issue=1;,citation_volume=52;,citation_journal_title=Annual Review of Fluid Mechanics;">
+<meta name="citation_reference" content="citation_title=Learning partial differential equations for biological transport models from noisy spatio-temporal data;,citation_author=John H. Lagergren;,citation_author=John T. Nardini;,citation_author=G. Michael Lavigne;,citation_author=Erica M. Rutter;,citation_author=Kevin B. Flores;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_issue=2234;,citation_volume=476;,citation_journal_title=Proceedings of the Royal Society A;">
+<meta name="citation_reference" content="citation_title=Data-driven discovery of partial differential equations;,citation_author=Samuel H. Rudy;,citation_author=Steven L. Brunton;,citation_author=Joshua L. Proctor;,citation_author=J. Nathan Kutz;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_issue=4;,citation_volume=3;,citation_journal_title=Science Advances;">
+<meta name="citation_reference" content="citation_title=Using noisy or incomplete data to discover models of spatiotemporal dynamics;,citation_author=Patrick A. K. Reinbold;,citation_author=Daniel R. Gurevich;,citation_author=Roman O. Grigoriev;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_issue=1;,citation_volume=101;,citation_journal_title=Physical Review E;">
+<meta name="citation_reference" content="citation_title=Weak SINDy for partial differential equations;,citation_author=Daniel A. Messenger;,citation_author=David M. Bortz;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_volume=443;,citation_journal_title=Journal of Computational Physics;">
+<meta name="citation_reference" content="citation_title=PySINDy: A python package for the sparse identification of nonlinear dynamical systems from data;,citation_author=Brian Silva;,citation_author=Kathleen Champion;,citation_author=Markus Quade;,citation_author=Jean-Christophe Loiseau;,citation_author=J. Nathan Kutz;,citation_author=Steven Brunton;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=5;,citation_conference_title=Journal of Open Source Software;">
+<meta name="citation_reference" content="citation_title=OptNet: Differentiable optimization as a layer in neural networks;,citation_author=Brandon Amos;,citation_author=J. Zico Kolter;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_conference_title=International conference on machine learning (ICML);">
+<meta name="citation_reference" content="citation_title=GMRES: A generalized minimal residual algorithm for solving nonsymmetric linear systems;,citation_author=Youcef Saad;,citation_author=Martin H. Schultz;,citation_publication_date=1986;,citation_cover_date=1986;,citation_year=1986;,citation_issue=3;,citation_volume=7;,citation_journal_title=SIAM Journal on Scientific and Statistical Computing;">
+<meta name="citation_reference" content="citation_title=Iterative methods for sparse linear systems;,citation_author=Yousef Saad;,citation_publication_date=2003;,citation_cover_date=2003;,citation_year=2003;">
+<meta name="citation_reference" content="citation_title=A multigrid tutorial;,citation_author=William L. Briggs;,citation_author=Van Emden Henson;,citation_author=Steve F. McCormick;,citation_publication_date=2000;,citation_cover_date=2000;,citation_year=2000;">
+<meta name="citation_reference" content="citation_title=Physics-informed neural networks: A deep learning framework for solving forward and inverse problems involving nonlinear partial differential equations;,citation_author=Maziar Raissi;,citation_author=Paris Perdikaris;,citation_author=George E. Karniadakis;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_volume=378;,citation_journal_title=Journal of Computational Physics;">
+<meta name="citation_reference" content="citation_title=Universal differential equations for scientific machine learning;,citation_author=Christopher Rackauckas;,citation_author=Yingbo Ma;,citation_author=Julius Martensen;,citation_author=Collin Warner;,citation_author=Kirill Zubov;,citation_author=Rohit Supekar;,citation_author=Dominic Skinner;,citation_author=Ali Ramadhan;,citation_author=Alan Edelman;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_journal_title=arXiv preprint arXiv:2001.04385;">
+<meta name="citation_reference" content="citation_title=The chemical basis of morphogenesis;,citation_author=Alan Turing;,citation_publication_date=1952;,citation_cover_date=1952;,citation_year=1952;,citation_issue=641;,citation_volume=237;,citation_journal_title=Philosophical Transactions of the Royal Society of London. Series B, Biological Sciences;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#mechanistic-pde-networks" id="toc-mechanistic-pde-networks" class="nav-link" data-scroll-target="#mechanistic-pde-networks">Mechanistic PDE Networks</a>
+  <ul class="collapse">
+  <li><a href="#solving-linear-pdes-by-differentiable-optimization" id="toc-solving-linear-pdes-by-differentiable-optimization" class="nav-link" data-scroll-target="#solving-linear-pdes-by-differentiable-optimization">Solving linear PDEs by differentiable optimization</a></li>
+  <li><a href="#an-iterative-sparse-multigrid-solver" id="toc-an-iterative-sparse-multigrid-solver" class="nav-link" data-scroll-target="#an-iterative-sparse-multigrid-solver">An iterative sparse multigrid solver</a></li>
+  </ul></li>
+  <li><a href="#discovery" id="toc-discovery" class="nav-link" data-scroll-target="#discovery">Discovery</a></li>
+  <li><a href="#experiments" id="toc-experiments" class="nav-link" data-scroll-target="#experiments">Experiments</a>
+  <ul class="collapse">
+  <li><a href="#reaction-diffusion" id="toc-reaction-diffusion" class="nav-link" data-scroll-target="#reaction-diffusion">Reaction-diffusion</a></li>
+  <li><a href="#navier-stokes" id="toc-navier-stokes" class="nav-link" data-scroll-target="#navier-stokes">Navier-Stokes</a></li>
+  <li><a href="#beyond-fixed-basis-functions" id="toc-beyond-fixed-basis-functions" class="nav-link" data-scroll-target="#beyond-fixed-basis-functions">Beyond fixed basis functions</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Mechanistic PDE Networks for Discovery of Governing Equations</h1>
+<p class="subtitle lead">A differentiable, GPU-parallel multigrid PDE solver embedded in a network that discovers nonlinear governing equations from noisy data</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">AI for Science</div>
+    <div class="quarto-category">Dynamical Systems</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>We present Mechanistic PDE Networks, a model for discovery of governing partial differential equations from data. The method represents spatio-temporal data as space-time dependent linear partial differential equations in neural network hidden representations, which are then solved and decoded for specific tasks. Solving these PDE representations in a compute- and memory-efficient way is the central challenge: we develop NeuRLP-PDE, a native, GPU-capable, parallel, sparse, and differentiable multigrid solver specialized for linear PDEs that acts as a module inside the network. Leveraging the solver, we propose a discovery architecture that can recover nonlinear PDEs in complex settings while remaining robust to noise. We validate discovery on a range of PDEs, including reaction-diffusion and Navier-Stokes equations.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Adeel Pervez <a href="mailto:Adeel.Pervez@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Efstratios Gavves </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            University of Amsterdam
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 25, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-icml">
+<span class="venue-name">ICML 2025</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2502.18377" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://proceedings.mlr.press/v267/pervez25a.html" target="_blank" rel="noopener"><i class="bi bi-card-text" aria-hidden="true"></i> Proceedings</a><a class="paper-link" href="https://github.com/alpz/mech-nn-discovery-pde" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
+<section id="introduction" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>Partial differential equations (PDEs) are the standard interpretable, analytical language for spatio-temporal dynamics across science <span class="citation" data-cites="turing1952chemical">(<a href="#ref-turing1952chemical" role="doc-biblioref">Turing 1952</a>)</span>. Yet <em>developing</em> a PDE model is still largely a manual task done by domain experts inspecting experimental data, and the explosion of experimental and simulation data has sharpened the need for machine-learning methods that <em>discover</em> governing equations directly <span class="citation" data-cites="brunton2020machine">(<a href="#ref-brunton2020machine" role="doc-biblioref">Brunton et al. 2020</a>)</span>. Building such models so that they are flexible, handle complex nonlinear data, account for missing physics, and stay robust to noise and missing data remains an open problem.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-turing1952chemical" class="csl-entry" role="listitem">
+Turing, Alan. 1952. <span>“The Chemical Basis of Morphogenesis.”</span> <em>Philosophical Transactions of the Royal Society of London. Series B, Biological Sciences</em> 237 (641): 37–72.
+</div><div id="ref-brunton2020machine" class="csl-entry" role="listitem">
+Brunton, Steven L., Bernd R. Noack, and Petros Koumoutsakos. 2020. <span>“Machine Learning for Fluid Mechanics.”</span> <em>Annual Review of Fluid Mechanics</em> 52 (1): 477–508.
+</div><div id="ref-pervezmechanistic" class="csl-entry" role="listitem">
+Pervez, Adeel, Francesco Locatello, and Stratis Gavves. 2024. <span>“Mechanistic Neural Networks for Scientific Machine Learning.”</span> <em>Forty-First International Conference on Machine Learning (ICML)</em>.
+</div><div id="ref-chen2024scalable" class="csl-entry" role="listitem">
+Chen, Jiale, Dingling Yao, Adeel Pervez, Dan Alistarh, and Francesco Locatello. 2025. <span>“Scalable Mechanistic Neural Networks.”</span> <em>International Conference on Learning Representations (ICLR)</em>.
+</div></div><div class="page-columns page-full"><p>This work extends the <em>solver-in-network</em> idea of Mechanistic Neural Networks — which embedded a parallel ODE solver in a network for ordinary differential equations <span class="citation" data-cites="pervezmechanistic chen2024scalable">(<a href="#ref-pervezmechanistic" role="doc-biblioref">Pervez et al. 2024</a>; <a href="#ref-chen2024scalable" role="doc-biblioref">Chen et al. 2025</a>)</span> — to the much harder setting of <em>partial</em> differential equations.  We develop <strong>NeuRLP-PDE</strong>, a solver for parallel, native, differentiable solution of <em>linear</em> PDEs over several spatial dimensions in addition to time, and embed it in a discovery architecture, <strong>MechNN-PDE</strong>, that learns governing PDEs from data.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">Scaling is the crux: unlike ODEs, PDE memory requirements grow exponentially with dimension and become excessive even for mid-sized grids.</span></div></div>
+<p>The synthesis has four stated advantages: derivatives are never taken directly on the data and are computed only internally by the solver; PDEs may contain arbitrary differentiable functions, going beyond generalized-linear forms; numerical solving combined with neural networks confers robustness to noise and missing data; and PDE solving is memory-efficient and batch-parallel on GPU via a sparse multigrid-preconditioned iterative solver.</p>
+</section>
+<section id="mechanistic-pde-networks" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="mechanistic-pde-networks">Mechanistic PDE Networks</h2>
+<p>A Mechanistic PDE Network has three parts: a <strong>mechanistic encoder</strong> <span class="math inline">f_{Enc}</span>, a <strong>differentiable solver</strong> NeuRLP-PDE specialized for linear PDEs, and an optional <strong>decoder</strong> <span class="math inline">f_{Dec}</span>. Given spatio-temporal input <span class="math inline">u_{\text{data}}(t, x_1, \ldots, x_{n_d})</span>, the encoder produces a set of linear PDEs of predefined size. For a single PDE for a function <span class="math inline">u(t,x)</span>, the general form is</p>
+<p><span id="eq-linear-pde"><span class="math display">
+\sum_{m\in\mathcal{M}} c_m(t,x;\, u_{\text{data}})\, u_m \;=\; b(t,x;\, u_{\text{data}}),
+\tag{1}</span></span></p>
+<p>where <span class="math inline">\mathcal{M}</span> is a multi-index set collecting the partial-derivative indices, the <span class="math inline">u_m</span> are partial derivatives, and the coefficients <span class="math inline">c_m, b</span> vary over space and time. The encoder also emits boundary parameters and step sizes; all of these — coefficients, initial/boundary conditions, and step sizes — are differentiable.</p>
+
+<div class="no-row-height column-margin column-container"><div class="">
+<p>The coefficients in <a href="#eq-linear-pde" class="quarto-xref">Equation&nbsp;1</a> are <em>space-time varying</em>, which is what makes these linear PDE representations expressive enough to model complex dynamics. Boundary conditions may be Dirichlet, Neumann, or mixed, and in fact any linear constraint subject to well-posedness.</p>
+</div></div><p>Although the represented PDEs are linear, the network is <strong>not</strong> restricted to linear PDEs: nonlinearity enters through nonlinear basis functions applied either to the input data or to learned functions of <span class="math inline">u</span>. The discovery architecture exploits exactly this.</p>
+<div class="page-columns page-full">
+<div id="fig-architecture" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-architecture-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="architecture.png" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-architecture-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: PDE expression building and the discovery architecture. Spatio-temporal data is transformed by a neural network into <span class="math inline">\tilde{u}</span> and its derivatives, which are combined through a small tree of elementary functions (here a learnable exponent <span class="math inline">\epsilon</span>) into a PDE expression that is then handed to the solver. The depicted expression is <span class="math inline">u_t = \tilde{u}^{\,\epsilon}\,\tilde{u}_x</span> with <span class="math inline">\epsilon</span> the learnable exponent.
+</figcaption>
+</figure>
+</div>
+</div>
+<p><span class="source-note">From the original paper (Pervez, Gavves &amp; Locatello, 2025).</span></p>
+<section id="solving-linear-pdes-by-differentiable-optimization" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="solving-linear-pdes-by-differentiable-optimization">Solving linear PDEs by differentiable optimization</h3>
+<p>NeuRLP-PDE reduces PDE solution on a discretized space-time grid to a relaxed, differentiable constrained optimization <span class="citation" data-cites="amos2017optnet">(<a href="#ref-amos2017optnet" role="doc-biblioref">Amos and Kolter 2017</a>)</span>. The constraints state that (1) the discretized PDE holds at every grid point, (2) the initial/boundary conditions hold, and (3) the solution is smooth (enforced by per-point Taylor expansions); derivatives are computed by central differences — five-point in practice, with forward/backward differences at the edges. Collecting the variables into a vector <span class="math inline">z</span>, the constraints take matrix form <span class="math inline">Az = d</span> and are solved in the least-squares sense via the normal equations <span class="math inline">A^\top A z = A^\top d</span>. To obtain the dual variables needed for differentiation, the solver uses the saddle-point (KKT) formulation of least squares, which lets gradients flow back to the PDE coefficients through the optimization layer <span class="citation" data-cites="amos2017optnet">(<a href="#ref-amos2017optnet" role="doc-biblioref">Amos and Kolter 2017</a>)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-amos2017optnet" class="csl-entry" role="listitem">
+Amos, Brandon, and J. Zico Kolter. 2017. <span>“OptNet: Differentiable Optimization as a Layer in Neural Networks.”</span> <em>International Conference on Machine Learning (ICML)</em>, 136–45.
+</div></div><div class="page-columns page-full"><p>The difficulty is scale. The constraint systems grow rapidly with grid size: the paper notes that a PDE on a <span class="math inline">32\times32</span> grid already has <span class="math inline">5{,}120</span> variables and <span class="math inline">9{,}212</span> constraints (about <span class="math inline">377</span> MB in dense double precision), while a <span class="math inline">32\times32\times32</span> grid ($$220k variables, 420k constraints) would need roughly <span class="math inline">780</span> GB, and <span class="math inline">64\times64\times64</span> around <span class="math inline">50{,}000</span> GB — far beyond GPU memory for dense methods.  The authors therefore solve 1D PDEs with a dense solver (memory stays bounded for small grids) but switch to a sparse iterative solver in two or more spatial dimensions.</p><div class="no-row-height column-margin column-container"><span class="margin-aside">The systems are extremely sparse — about <span class="math inline">99.9\%</span> zeros for a <span class="math inline">32\times32</span> matrix and <span class="math inline">99.999\%</span> zeros at <span class="math inline">64^3</span> — which is what makes a sparse iterative approach viable.</span></div></div>
+</section>
+<section id="an-iterative-sparse-multigrid-solver" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="an-iterative-sparse-multigrid-solver">An iterative sparse multigrid solver</h3>
+<p>For larger and higher-dimensional grids, NeuRLP-PDE solves the normal equations with <strong>FGMRES</strong>, the flexible variant of the Krylov solver GMRES <span class="citation" data-cites="saad1986gmres">(<a href="#ref-saad1986gmres" role="doc-biblioref">Saad and Schultz 1986</a>)</span>, preconditioned by a <strong>multigrid V-cycle</strong> <span class="citation" data-cites="saad2003iterative briggs2000multigrid">(<a href="#ref-saad2003iterative" role="doc-biblioref">Saad 2003</a>; <a href="#ref-briggs2000multigrid" role="doc-biblioref">Briggs et al. 2000</a>)</span>. A V-cycle works the residual down a sequence of coarse-to-fine grids, taking a few Gauss-Seidel relaxation steps at each level, solving exactly on the coarsest grid, and prolonging the correction back up. The implementation uses Gauss-Seidel relaxation, linear interpolation for restriction and prolongation, power-of-two grid sizes halved per dimension down to a coarsest size of <span class="math inline">8</span> per dimension, and applies the preconditioned FGMRES to the normal-equation matrix <span class="math inline">A^\top A</span>. General-purpose preconditioners such as incomplete LU/Cholesky are not used because of their memory cost and lack of GPU implementations. The result is an entirely sparse, batch-parallel GPU solver suitable for higher-dimensional PDEs.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-saad1986gmres" class="csl-entry" role="listitem">
+Saad, Youcef, and Martin H. Schultz. 1986. <span>“GMRES: A Generalized Minimal Residual Algorithm for Solving Nonsymmetric Linear Systems.”</span> <em>SIAM Journal on Scientific and Statistical Computing</em> 7 (3): 856–69.
+</div><div id="ref-saad2003iterative" class="csl-entry" role="listitem">
+Saad, Yousef. 2003. <em>Iterative Methods for Sparse Linear Systems</em>. SIAM.
+</div><div id="ref-briggs2000multigrid" class="csl-entry" role="listitem">
+Briggs, William L., Van Emden Henson, and Steve F. McCormick. 2000. <em>A Multigrid Tutorial</em>. SIAM.
+</div></div></section>
+</section>
+<section id="discovery" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="discovery">Discovery</h2>
+<p>Governing-equation discovery seeks PDEs that describe the data while being <strong>simple</strong> (built from elementary functions) and <strong>concise</strong> (as few terms as possible) <span class="citation" data-cites="brunton2016discovering">(<a href="#ref-brunton2016discovering" role="doc-biblioref">Brunton et al. 2016</a>)</span>. MechNN-PDE restricts the PDE expressions to small tree structures whose nodes are elementary functions with learnable weights — for example, polynomial basis functions up to a fixed degree — but, unlike methods limited to linear combinations of fixed bases, it can represent richer expressions by composing <span class="math inline">u</span>, its derivatives, and learnable parameters differentiably.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-brunton2016discovering" class="csl-entry" role="listitem">
+Brunton, Steven L., Joshua L. Proctor, and J. Nathan Kutz. 2016. <span>“Discovering Governing Equations from Data by Sparse Identification of Nonlinear Dynamical Systems.”</span> <em>Proceedings of the National Academy of Sciences</em> 113 (15): 3932–37.
+</div></div><p>A key design choice is to parameterize the <em>input</em> to the PDE expression with a neural network: the data is transformed as <span class="math inline">\tilde{u} = \mathrm{NN}(u_{\text{data}})</span>, and the expression is computed on <span class="math inline">\tilde{u}</span> rather than the raw data. This makes the optimization smoother and more robust to noise, with an added loss term keeping <span class="math inline">\tilde{u}</span> close to the solution <span class="math inline">u</span> at convergence. The total objective sums a data-fit loss, the parameterization-consistency loss, and an <span class="math inline">L_1</span> sparsity penalty on the basis parameters; a concise PDE is then read off by thresholding small coefficients to zero.</p>
+</section>
+<section id="experiments" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="experiments">Experiments</h2>
+<p>The method is demonstrated on a range of PDEs in one and two spatial dimensions (plus time). The governing equations used are listed below.</p>
+<div id="tbl-pdes" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-pdes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: PDEs used to demonstrate discovery, with their general forms (reproduced from the original paper).
+</figcaption>
+<div aria-describedby="tbl-pdes-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 77%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">PDE</th>
+<th style="text-align: left;">General form</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Diffusion</td>
+<td style="text-align: left;"><span class="math inline">u_t = \nu\, u_{xx}</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Viscous Burgers</td>
+<td style="text-align: left;"><span class="math inline">u_t + u\,u_x = \nu\, u_{xx}</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Inviscid Burgers</td>
+<td style="text-align: left;"><span class="math inline">u_t + u\,u_x = 0</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Porous medium</td>
+<td style="text-align: left;"><span class="math inline">u_t = \nabla^2(u^m)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Ginzburg-Landau</td>
+<td style="text-align: left;"><span class="math inline">\partial_t A = A + \nabla^2 A - (1+i\beta)\,\lvert A\rvert^2 A</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Navier-Stokes</td>
+<td style="text-align: left;"><span class="math inline">\partial_t U + U\cdot\nabla U + \nabla p = \nu\,\nabla^2 U</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p><strong>Setup and baselines.</strong> Noise is added as Gaussian noise whose standard deviation is a ratio <span class="math inline">\sigma_{NR}\in[0,1]</span> of the data RMS value, reported as a percentage <span class="math inline">\sigma_{NR}\cdot 100\%</span> <span class="citation" data-cites="messenger2021weak">(<a href="#ref-messenger2021weak" role="doc-biblioref">Messenger and Bortz 2021</a>)</span>. Two metrics evaluate a discovered equation: the <strong>true positive ratio</strong> <span class="math inline">\mathrm{TPR} = \mathrm{TP}/(\mathrm{TP}+\mathrm{FN}+\mathrm{FP})</span>, measuring how many terms are correctly identified <span class="citation" data-cites="lagergren2020learning">(<a href="#ref-lagergren2020learning" role="doc-biblioref">Lagergren et al. 2020</a>)</span>, and the maximum relative coefficient error <span class="math inline">E_\infty(\xi) = \max_{j:\hat{\xi}^*_j\neq 0} |\xi_j - \hat{\xi}^*_j|/|\xi_j|</span> <span class="citation" data-cites="messenger2021weak">(<a href="#ref-messenger2021weak" role="doc-biblioref">Messenger and Bortz 2021</a>)</span>. The baselines are <strong>PDEFIND</strong> <span class="citation" data-cites="rudy2017data">(<a href="#ref-rudy2017data" role="doc-biblioref">Rudy et al. 2017</a>)</span> and <strong>WeakSINDy</strong> <span class="citation" data-cites="reinbold2020using">(<a href="#ref-reinbold2020using" role="doc-biblioref">Reinbold et al. 2020</a>)</span>, both via the PySINDy implementations <span class="citation" data-cites="de2020pysindy">(<a href="#ref-de2020pysindy" role="doc-biblioref">Silva et al. 2020</a>)</span> and both known to be robust to noise in many settings.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-messenger2021weak" class="csl-entry" role="listitem">
+Messenger, Daniel A., and David M. Bortz. 2021. <span>“Weak SINDy for Partial Differential Equations.”</span> <em>Journal of Computational Physics</em> 443: 110525.
+</div><div id="ref-lagergren2020learning" class="csl-entry" role="listitem">
+Lagergren, John H., John T. Nardini, G. Michael Lavigne, Erica M. Rutter, and Kevin B. Flores. 2020. <span>“Learning Partial Differential Equations for Biological Transport Models from Noisy Spatio-Temporal Data.”</span> <em>Proceedings of the Royal Society A</em> 476 (2234): 20190800.
+</div><div id="ref-rudy2017data" class="csl-entry" role="listitem">
+Rudy, Samuel H., Steven L. Brunton, Joshua L. Proctor, and J. Nathan Kutz. 2017. <span>“Data-Driven Discovery of Partial Differential Equations.”</span> <em>Science Advances</em> 3 (4): e1602614.
+</div><div id="ref-reinbold2020using" class="csl-entry" role="listitem">
+Reinbold, Patrick A. K., Daniel R. Gurevich, and Roman O. Grigoriev. 2020. <span>“Using Noisy or Incomplete Data to Discover Models of Spatiotemporal Dynamics.”</span> <em>Physical Review E</em> 101 (1): 010203.
+</div><div id="ref-de2020pysindy" class="csl-entry" role="listitem">
+Silva, Brian de, Kathleen Champion, Markus Quade, Jean-Christophe Loiseau, J. Nathan Kutz, and Steven Brunton. 2020. <span>“PySINDy: A Python Package for the Sparse Identification of Nonlinear Dynamical Systems from Data.”</span> <em>Journal of Open Source Software</em> 5: 1–4.
+</div></div><p><strong>Solver sanity check.</strong> On the 2D Laplace equation <span class="math inline">\nabla^2 u = 0</span> at <span class="math inline">32\times32</span>, <span class="math inline">64\times64</span>, and <span class="math inline">128\times128</span> resolutions, the multigrid solver reaches <span class="math inline">L_2</span> errors of order <span class="math inline">10^{-1}</span>, <span class="math inline">5\times10^{-2}</span>, and <span class="math inline">10^{-2}</span> respectively against a reference finite-difference implementation — errors that shrink with resolution, confirming accuracy comparable to traditional libraries while parallelizing across GPUs.</p>
+<div class="column-page">
+<p><img src="burgers_inviscid.png" id="fig-fluid-data" class="img-fluid" style="width:49.0%" alt="Examples of the fluid data used for discovery. Left: the inviscid Burgers’ equation, where discontinuous shocks are visible. Right: the vorticity field \nabla\times U from an incompressible Navier-Stokes equation."> <img src="vorticity.png" class="img-fluid" style="width:39.0%"></p>
+</div>
+<p><span class="source-note">From the original paper (Pervez, Gavves &amp; Locatello, 2025).</span></p>
+<section id="reaction-diffusion" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="reaction-diffusion">Reaction-diffusion</h3>
+<p>The 2D Ginzburg-Landau reaction-diffusion system is tested in two settings: an <em>easy</em> single-spiral dataset (spatial resolution <span class="math inline">64\times64</span>, <span class="math inline">128</span> time steps of size <span class="math inline">0.05</span>, generated by a spectral method with <span class="math inline">D_1=D_2=0.1</span>, <span class="math inline">\beta=1</span>), where the baselines also do well; and a <em>harder</em> dataset with much more complex patterns (resolution <span class="math inline">256\times256</span>, generated with the Basilisk solver from a random initial condition, <span class="math inline">D_1=D_2=1</span>, <span class="math inline">\beta=1.5</span>). Both use the same training setup: ResNet parameterizations of the two scalar fields, third-degree polynomial expressions, learned Dirichlet boundary conditions, an <span class="math inline">L_1</span> loss with a sparsity weight of <span class="math inline">10^{-4}</span>, and Adam at a fixed learning rate of <span class="math inline">10^{-5}</span> with a single training cycle (no thresholding-and-refitting).</p>
+<div class="column-page">
+<p><img src="gl_simple_tpr.png" id="fig-rdiff-tpr" class="img-fluid" style="width:49.0%" alt="True positive ratio versus noise for the reaction-diffusion experiments — easy single-spiral case (left) and harder complex-pattern case (right) — comparing MechNN-PDE, WeakSINDy, and PDEFIND."> <img src="gl_tpr.png" class="img-fluid" style="width:49.0%"></p>
+</div>
+<p><span class="source-note">From the original paper (Pervez, Gavves &amp; Locatello, 2025).</span></p>
+<p>On clean easy data, all methods recover the non-zero terms with TPR <span class="math inline">=1</span> and small error. As noise grows, <strong>PDEFIND degrades the most</strong>, its TPR dropping to roughly <span class="math inline">0</span>–<span class="math inline">0.2</span> on the easy case while the error grows large; <strong>WeakSINDy</strong> holds up much better and is broadly comparable to MechNN-PDE on the easy case, with a slight edge in error at <span class="math inline">80\%</span> noise. The <strong>harder</strong> case is where the methods separate: <strong>neither PDEFIND nor WeakSINDy recovers any significant non-zero terms even on clean data</strong>, whereas MechNN-PDE sustains a high TPR through <span class="math inline">40\%</span> noise and only drops to about <span class="math inline">0.6</span> at <span class="math inline">80\%</span> noise.</p>
+</section>
+<section id="navier-stokes" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="navier-stokes">Navier-Stokes</h3>
+<div class="page-columns page-full"><p>For the incompressible Navier-Stokes example, discovery targets the first velocity component, <span class="math inline">{U_1}_t + U\cdot\nabla U_1 + p_x = \nu\,\nabla^2 U_1</span>, with the pressure gradient supplied and a small viscosity <span class="math inline">\nu = 0.001</span>. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">The viscosity is so small that residual terms of its order can register as false positives, holding the TPR just below <span class="math inline">1</span> even though the viscosity and non-zero terms are accurately recovered.</span></div></div>
+<div class="column-page">
+<p><img src="ns_tpr.png" id="fig-ns" class="img-fluid" style="width:49.0%" alt="True positive ratio (left) and maximum relative coefficient error E_\infty (right) for the Navier-Stokes dataset, comparing MechNN-PDE with WeakSINDy."> <img src="ns_error_max.png" class="img-fluid" style="width:49.0%"></p>
+</div>
+<p><span class="source-note">From the original paper (Pervez, Gavves &amp; Locatello, 2025).</span></p>
+<p>WeakSINDy is unable to discover the system; MechNN-PDE recovers the equation, although its TPR stays below <span class="math inline">1</span> at low noise because of the small-coefficient false positives noted above.</p>
+</section>
+<section id="beyond-fixed-basis-functions" class="level3">
+<h3 class="anchored" data-anchor-id="beyond-fixed-basis-functions">Beyond fixed basis functions</h3>
+<p>A distinctive capability is discovery of PDEs that <strong>cannot</strong> be written as a linear combination of fixed basis functions. For the porous-medium equation <span class="math inline">u_t = \nabla^2(u^m)</span>, the task is to recover the real exponent <span class="math inline">m</span> — impossible for fixed polynomial bases. Building the PDE expression with a learnable exponent and a neural-network-parameterized gradient, the method recovers <span class="math inline">m = 2.64 \pm 0.03</span> from clean data, close to the true value <span class="math inline">2.675</span>.</p>
+<p>For the 1D diffusion and Burgers’ equations (degree-4 polynomial coefficients for the <span class="math inline">u_x</span> and <span class="math inline">u_{xx}</span> terms), the method discovers the true equation in every noise-free case, including the inviscid Burgers’ equation whose shocks are discontinuous; under noise on viscous Burgers’, MechNN-PDE and WeakSINDy are on par.</p>
+</section>
+</section>
+<section id="conclusion" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>Mechanistic PDE Networks pair a specialized, parallel, differentiable multigrid PDE solver with a discovery architecture, learning concise governing PDEs from data while remaining robust to noise and extending the class of equations machine-learning methods can model — including expressions, like the porous-medium exponent, that lie outside fixed basis libraries. The authors flag scalability of grid-based PDE methods as the main limitation (a possible remedy being a mix of grid-based and mesh-free techniques), note that the method sometimes trades accuracy for speed, and leave the <em>identifiability</em> of discovered PDEs — the conditions under which discovery is possible — to future work, suggesting an extension of <span class="citation" data-cites="yao2024marrying">Yao et al. (<a href="#ref-yao2024marrying" role="doc-biblioref">2024</a>)</span> as a starting point. Full references appear in the margin and are collected below.</p>
+
+
+<div class="no-row-height column-margin column-container"><div id="ref-yao2024marrying" class="csl-entry" role="listitem">
+Yao, Dingling, Caroline Muller, and Francesco Locatello. 2024. <span>“Marrying Causal Representation Learning with Dynamical Systems for Science.”</span> <em>Advances in Neural Information Processing Systems (NeurIPS)</em>.
+</div></div>
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@inproceedings{pervez2025,
+  author = {Pervez, Adeel and Gavves, Efstratios and Locatello,
+    Francesco},
+  title = {Mechanistic {PDE} {Networks} for {Discovery} of {Governing}
+    {Equations}},
+  booktitle = {Proceedings of the 42nd International Conference on
+    Machine Learning (ICML)},
+  date = {2025-02-25},
+  doi = {10.48550/arXiv.2502.18377}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script>
+// Topics → metadata rail. On the publications list (a Quarto `default` listing)
+// Quarto renders each paper's categories as a `.listing-categories` chip row in
+// the body, under the title — which makes every row taller. The right-hand
+// metadata rail (date + venue badge) is shorter, leaving dead vertical space.
+// Move the topics into that rail, below the date and venue badge, so the two
+// columns balance and each row gets back the height the chip row was costing.
+// Runs after assets/venue-badge.html so the badge is already in the rail and the
+// topics land beneath it.
+// Progressive enhancement: with JS off, topics stay under the title.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    // Only the body copy carries a chip row; once moved it lives in .metadata, so
+    // re-running finds nothing here — naturally idempotent.
+    var cats = post.querySelector(".body .listing-categories");
+    var metadata = post.querySelector(".metadata");
+    if (!cats || !metadata) return;
+    metadata.appendChild(cats);
+  });
+});
+</script>
+<script>
+// Click-to-expand for the home showcase teasers. Each highlighted paper's banner
+// figure (.home-highlights .thumbnail img) is wrapped by Quarto in a link to the
+// paper page — but the title already links there, so here we repurpose the figure
+// click to open the full-resolution image in a lightbox overlay instead.
+// (Styles: `.fig-lightbox` in theme/theme.scss.) Progressive enhancement: with JS
+// off, clicking the figure just follows the link to the paper.
+document.addEventListener("DOMContentLoaded", function () {
+  var figures = document.querySelectorAll(".home-highlights .quarto-post .thumbnail img");
+  if (!figures.length) return;
+
+  // One reusable overlay for every figure.
+  var overlay = document.createElement("div");
+  overlay.className = "fig-lightbox";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Expanded figure");
+
+  var closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "fig-lightbox-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.innerHTML = "&times;";
+
+  var big = document.createElement("img");
+  big.alt = "";
+
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(big);
+  document.body.appendChild(overlay);
+
+  var lastFocus = null;
+
+  function open(src, alt) {
+    big.src = src;
+    big.alt = alt || "";
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+  function close() {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    big.removeAttribute("src");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // Close on backdrop click, the × button, or Escape. A click on the image itself
+  // must not close (stop it bubbling to the backdrop).
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+  closeBtn.addEventListener("click", close);
+  big.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+
+  figures.forEach(function (img) {
+    var trigger = img.closest("a") || img;   // the link wrapper, or the image itself
+    if (trigger === img) { trigger.tabIndex = 0; trigger.setAttribute("role", "button"); }
+    trigger.setAttribute("aria-label", "Expand figure");
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();          // don't follow the link to the paper page
+      e.stopPropagation();
+      open(img.currentSrc || img.src, img.alt);
+    });
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
