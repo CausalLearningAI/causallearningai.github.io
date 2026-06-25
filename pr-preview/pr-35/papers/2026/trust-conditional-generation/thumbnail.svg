@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- real-data manifold (closed contour) -->
+  <path d="M120 220 Q180 110 320 130 Q470 150 470 240 Q450 320 300 320 Q150 320 120 220 Z"
+        fill="none" stroke="#6f6f78" stroke-width="1.5" opacity="0.7"/>
+  <path d="M165 220 Q210 150 320 165 Q420 178 420 240 Q405 290 305 290 Q185 290 165 220 Z"
+        fill="none" stroke="#6f6f78" stroke-width="1" opacity="0.45"/>
+  <!-- requested attribute prototypes -->
+  <g fill="#026234">
+    <circle cx="300" cy="225" r="4"/>
+    <circle cx="245" cy="200" r="3"/>
+    <circle cx="360" cy="245" r="3"/>
+  </g>
+  <!-- trusted samples (inside, near prototype) -->
+  <g fill="#fbfaf7">
+    <circle cx="290" cy="215" r="3"/>
+    <circle cx="312" cy="232" r="3"/>
+    <circle cx="278" cy="238" r="3"/>
+  </g>
+  <!-- rejected sample (outside manifold) -->
+  <g stroke="#fbfaf7" stroke-width="1.2" fill="none" opacity="0.85">
+    <circle cx="510" cy="120" r="5"/>
+    <line x1="505" y1="115" x2="515" y2="125"/>
+    <line x1="515" y1="115" x2="505" y2="125"/>
+  </g>
+  <!-- trust arrow from prototype to trusted cluster -->
+  <path d="M300 225 L295 222" stroke="#026234" stroke-width="1"/>
+</svg>
