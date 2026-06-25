@@ -1,0 +1,1602 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.9.38">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Berker Demirel">
+<meta name="author" content="Marco Fumero">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2025-10-01">
+<meta name="description" content="We propose ORA, a post-hoc out-of-distribution detection score that measures the angle between a feature representation and its projection onto a decision boundary, computed from the reference frame of the mean of in-distribution features. Centering on the ID mean folds in-distribution statistics into the score and makes it translation- and scale-invariant. ORA is hyperparameter-free and model-agnostic: across nine ImageNet-pretrained backbones and twelve baselines it attains the best average FPR95, ranks in the top three for every model, and is best on five of nine. Its scale invariance also lets confidence scores from different models be ensembled by simple summation.">
+
+<title>Out-of-Distribution Detection with Relative Angles – CLAI Research Group</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../../">
+<link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Out-of-Distribution Detection with Relative Angles – CLAI Research Group">
+<meta property="og:description" content="We propose ORA, a post-hoc out-of-distribution detection score that measures the angle between a feature representation and its projection onto a decision boundary, computed from the reference frame of the mean of in-distribution features. Centering on the ID mean folds in-distribution statistics into the score and makes it translation- and scale-invariant. ORA is hyperparameter-free and model-agnostic: across nine ImageNet-pretrained backbones and twelve baselines it attains the best average FPR95, ranks in the top three for every model, and is best on five of nine. Its scale invariance also lets confidence scores from different models be ensembled by simple summation.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2025/out-of-distribution-detection-with-relative-angles/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="Out-of-Distribution Detection with Relative Angles – CLAI Research Group">
+<meta name="twitter:description" content="We propose ORA, a post-hoc out-of-distribution detection score that measures the angle between a feature representation and its projection onto a decision boundary, computed from the reference frame of the mean of in-distribution features. Centering on the ID mean folds in-distribution statistics into the score and makes it translation- and scale-invariant. ORA is hyperparameter-free and model-agnostic: across nine ImageNet-pretrained backbones and twelve baselines it attains the best average FPR95, ranks in the top three for every model, and is best on five of nine. Its scale invariance also lets confidence scores from different models be ensembled by simple summation.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2025/out-of-distribution-detection-with-relative-angles/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Out-of-Distribution Detection with Relative Angles">
+<meta name="citation_author" content="Berker Demirel">
+<meta name="citation_author" content="Marco Fumero">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2025-10-01">
+<meta name="citation_cover_date" content="2025-10-01">
+<meta name="citation_year" content="2025">
+<meta name="citation_online_date" content="2025-10-01">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2025/out-of-distribution-detection-with-relative-angles/">
+<meta name="citation_doi" content="10.48550/arXiv.2410.04525">
+<meta name="citation_language" content="en">
+<meta name="citation_conference_title" content="Advances in Neural Information Processing Systems">
+<meta name="citation_reference" content="citation_title=Fast decision boundary based out-of-distribution detector;,citation_author=Litian Liu;,citation_author=Yao Qin;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://openreview.net/forum?id=eQaOb4r6YC;,citation_conference_title=Forty-first international conference on machine learning;">
+<meta name="citation_reference" content="citation_title=Out-of-distribution detection with deep nearest neighbors;,citation_author=Yiyou Sun;,citation_author=Yifei Ming;,citation_author=Xiaojin Zhu;,citation_author=Yixuan Li;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_conference_title=International conference on machine learning;,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=A baseline for detecting misclassified and out-of-distribution examples in neural networks;,citation_author=Dan Hendrycks;,citation_author=Kevin Gimpel;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=Energy-based out-of-distribution detection;,citation_author=Weitang Liu;,citation_author=Xiaoyun Wang;,citation_author=John Owens;,citation_author=Yixuan Li;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=33;,citation_journal_title=Advances in Neural Information Processing Systems;">
+<meta name="citation_reference" content="citation_title=Relative representations enable zero-shot latent space communication;,citation_author=Luca Moschella;,citation_author=Valentino Maiorca;,citation_author=Marco Fumero;,citation_author=Antonio Norelli;,citation_author=Francesco Locatello;,citation_author=Emanuele Rodolà;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_fulltext_html_url=https://openreview.net/forum?id=SrC-nwieGJ;,citation_conference_title=The eleventh international conference on learning representations;">
+<meta name="citation_reference" content="citation_title=React: Out-of-distribution detection with rectified activations;,citation_author=Yiyou Sun;,citation_author=Chuan Guo;,citation_author=Yixuan Li;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://openreview.net/forum?id=IBVBtz_sRSm;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Extremely simple activation shaping for out-of-distribution detection;,citation_author=Andrija Djurisic;,citation_author=Nebojsa Bozanic;,citation_author=Arjun Ashok;,citation_author=Rosanne Liu;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_fulltext_html_url=https://openreview.net/forum?id=ndYXTEL6cZz;,citation_conference_title=The eleventh international conference on learning representations;">
+<meta name="citation_reference" content="citation_title=Scaling for training time and post-hoc out-of-distribution detection enhancement;,citation_author=Kai Xu;,citation_author=Rongyu Chen;,citation_author=Gianni Franchi;,citation_author=Angela Yao;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://openreview.net/forum?id=RDSTjtnqCg;,citation_conference_title=The twelfth international conference on learning representations;">
+<meta name="citation_reference" content="citation_title=A simple fix to mahalanobis distance for improving near-ood detection;,citation_author=Jie Ren;,citation_author=Stanislav Fort;,citation_author=Jeremiah Liu;,citation_author=Abhijit Guha Roy;,citation_author=Shreyas Padhy;,citation_author=Balaji Lakshminarayanan;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_conference_title=arXiv preprint arXiv:2106.09022;">
+<meta name="citation_reference" content="citation_title=Nearest neighbor guidance for out-of-distribution detection;,citation_author=Jaewoo Park;,citation_author=Yoon Gyo Jung;,citation_author=Andrew Beng Jin Teoh;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=Proceedings of the IEEE/CVF international conference on computer vision;">
+<meta name="citation_reference" content="citation_title=A framework for benchmarking class-out-of-distribution detection and its application to imagenet;,citation_author=Ido Galil;,citation_author=Mohammed Dabbah;,citation_author=Ran El-Yaniv;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=The eleventh international conference on learning representations;">
+<meta name="citation_reference" content="citation_title=In or out? Fixing imagenet out-of-distribution detection evaluation;,citation_author=Julian Bitterwolf;,citation_author=Maximilian Müller;,citation_author=Matthias Hein;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=Proceedings of the 40th international conference on machine learning;">
+<meta name="citation_reference" content="citation_title=Supervised contrastive learning;,citation_author=Prannay Khosla;,citation_author=Piotr Teterwak;,citation_author=Chen Wang;,citation_author=Aaron Sarna;,citation_author=Yonglong Tian;,citation_author=Phillip Isola;,citation_author=Aaron Maschinot;,citation_author=Ce Liu;,citation_author=Dilip Krishnan;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_volume=33;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Learning transferable visual models from natural language supervision;,citation_author=Alec Radford;,citation_author=Jong Wook Kim;,citation_author=Chris Hallacy;,citation_author=Aditya Ramesh;,citation_author=Gabriel Goh;,citation_author=Sandhini Agarwal;,citation_author=Girish Sastry;,citation_author=Amanda Askell;,citation_author=Pamela Mishkin;,citation_author=Jack Clark;,citation_author=others;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_conference_title=International conference on machine learning;,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=Imagenet: A large-scale hierarchical image database;,citation_author=Jia Deng;,citation_author=Wei Dong;,citation_author=Richard Socher;,citation_author=Li-Jia Li;,citation_author=Kai Li;,citation_author=Li Fei-Fei;,citation_publication_date=2009;,citation_cover_date=2009;,citation_year=2009;,citation_conference_title=2009 IEEE conference on computer vision and pattern recognition;,citation_conference=IEEE;">
+<meta name="citation_reference" content="citation_title=A convnet for the 2020s;,citation_author=Zhuang Liu;,citation_author=Hanzi Mao;,citation_author=Chao-Yuan Wu;,citation_author=Christoph Feichtenhofer;,citation_author=Trevor Darrell;,citation_author=Saining Xie;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Swin transformer: Hierarchical vision transformer using shifted windows;,citation_author=Ze Liu;,citation_author=Yutong Lin;,citation_author=Yue Cao;,citation_author=Han Hu;,citation_author=Yixuan Wei;,citation_author=Zheng Zhang;,citation_author=Stephen Lin;,citation_author=Baining Guo;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_conference_title=Proceedings of the IEEE/CVF international conference on computer vision;">
+<meta name="citation_reference" content="citation_title=Training data-efficient image transformers &amp;amp;amp; distillation through attention;,citation_author=Hugo Touvron;,citation_author=Matthieu Cord;,citation_author=Matthijs Douze;,citation_author=Francisco Massa;,citation_author=Alexandre Sablayrolles;,citation_author=Hervé Jégou;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_conference_title=International conference on machine learning;,citation_conference=PMLR;">
+<meta name="citation_reference" content="citation_title=Eva: Exploring the limits of masked visual representation learning at scale;,citation_author=Yuxin Fang;,citation_author=Wen Wang;,citation_author=Binhui Xie;,citation_author=Quan Sun;,citation_author=Ledell Wu;,citation_author=Xinggang Wang;,citation_author=Tiejun Huang;,citation_author=Xinlong Wang;,citation_author=Yue Cao;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Deep residual learning for image recognition;,citation_author=Kaiming He;,citation_author=Xiangyu Zhang;,citation_author=Shaoqing Ren;,citation_author=Jian Sun;,citation_publication_date=2016;,citation_cover_date=2016;,citation_year=2016;,citation_conference_title=Proceedings of the IEEE conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Learning multiple layers of features from tiny images;,citation_author=Alex Krizhevsky;,citation_publication_date=2009;,citation_cover_date=2009;,citation_year=2009;,citation_technical_report_institution=University of Toronto;">
+<meta name="citation_reference" content="citation_title=Describing textures in the wild;,citation_author=Mircea Cimpoi;,citation_author=Subhransu Maji;,citation_author=Iasonas Kokkinos;,citation_author=Sammy Mohamed;,citation_author=Andrea Vedaldi;,citation_publication_date=2014;,citation_cover_date=2014;,citation_year=2014;,citation_conference_title=Proceedings of the IEEE conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=The inaturalist species classification and detection dataset;,citation_author=Grant Van Horn;,citation_author=Oisin Mac Aodha;,citation_author=Yang Song;,citation_author=Yin Cui;,citation_author=Chen Sun;,citation_author=Alex Shepard;,citation_author=Hartwig Adam;,citation_author=Pietro Perona;,citation_author=Serge Belongie;,citation_publication_date=2018;,citation_cover_date=2018;,citation_year=2018;,citation_conference_title=Proceedings of the IEEE conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=Generalized out-of-distribution detection: A survey;,citation_author=Jingkang Yang;,citation_author=Kaiyang Zhou;,citation_author=Yixuan Li;,citation_author=Ziwei Liu;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_journal_title=International Journal of Computer Vision;">
+</head>
+
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+    const toggleBodyColorMode = (bsSheetEl) => {
+      const mode = bsSheetEl.getAttribute("data-mode");
+      const bodyEl = window.document.querySelector("body");
+      if (mode === "dark") {
+        bodyEl.classList.add("quarto-dark");
+        bodyEl.classList.remove("quarto-light");
+      } else {
+        bodyEl.classList.add("quarto-light");
+        bodyEl.classList.remove("quarto-dark");
+      }
+    }
+    const toggleBodyColorPrimary = () => {
+      const bsSheetEl = window.document.querySelector("link#quarto-bootstrap:not([rel=disabled-stylesheet])");
+      if (bsSheetEl) {
+        toggleBodyColorMode(bsSheetEl);
+      }
+    }
+    const setColorSchemeToggle = (alternate) => {
+      const toggles = window.document.querySelectorAll('.quarto-color-scheme-toggle');
+      for (let i=0; i < toggles.length; i++) {
+        const toggle = toggles[i];
+        if (toggle) {
+          if (alternate) {
+            toggle.classList.add("alternate");
+          } else {
+            toggle.classList.remove("alternate");
+          }
+        }
+      }
+    };
+    const toggleColorMode = (alternate) => {
+      // Switch the stylesheets
+      const primaryStylesheets = window.document.querySelectorAll('link.quarto-color-scheme:not(.quarto-color-alternate)');
+      const alternateStylesheets = window.document.querySelectorAll('link.quarto-color-scheme.quarto-color-alternate');
+      manageTransitions('#quarto-margin-sidebar .nav-link', false);
+      if (alternate) {
+        // note: dark is layered on light, we don't disable primary!
+        enableStylesheet(alternateStylesheets);
+        for (const sheetNode of alternateStylesheets) {
+          if (sheetNode.id === "quarto-bootstrap") {
+            toggleBodyColorMode(sheetNode);
+          }
+        }
+      } else {
+        disableStylesheet(alternateStylesheets);
+        enableStylesheet(primaryStylesheets)
+        toggleBodyColorPrimary();
+      }
+      manageTransitions('#quarto-margin-sidebar .nav-link', true);
+      // Switch the toggles
+      setColorSchemeToggle(alternate)
+      // Hack to workaround the fact that safari doesn't
+      // properly recolor the scrollbar when toggling (#1455)
+      if (navigator.userAgent.indexOf('Safari') > 0 && navigator.userAgent.indexOf('Chrome') == -1) {
+        manageTransitions("body", false);
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+          manageTransitions("body", true);
+        }, 40);
+      }
+    }
+    const disableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        stylesheet.rel = 'disabled-stylesheet';
+      }
+    }
+    const enableStylesheet = (stylesheets) => {
+      for (let i=0; i < stylesheets.length; i++) {
+        const stylesheet = stylesheets[i];
+        if(stylesheet.rel !== 'stylesheet') { // for Chrome, which will still FOUC without this check
+          stylesheet.rel = 'stylesheet';
+        }
+      }
+    }
+    const manageTransitions = (selector, allowTransitions) => {
+      const els = window.document.querySelectorAll(selector);
+      for (let i=0; i < els.length; i++) {
+        const el = els[i];
+        if (allowTransitions) {
+          el.classList.remove('notransition');
+        } else {
+          el.classList.add('notransition');
+        }
+      }
+    }
+    const isFileUrl = () => {
+      return window.location.protocol === 'file:';
+    }
+    const hasAlternateSentinel = () => {
+      let styleSentinel = getColorSchemeSentinel();
+      if (styleSentinel !== null) {
+        return styleSentinel === "alternate";
+      } else {
+        return false;
+      }
+    }
+    const setStyleSentinel = (alternate) => {
+      const value = alternate ? "alternate" : "default";
+      if (!isFileUrl()) {
+        window.localStorage.setItem("quarto-color-scheme", value);
+      } else {
+        localAlternateSentinel = value;
+      }
+    }
+    const getColorSchemeSentinel = () => {
+      if (!isFileUrl()) {
+        const storageValue = window.localStorage.getItem("quarto-color-scheme");
+        return storageValue != null ? storageValue : localAlternateSentinel;
+      } else {
+        return localAlternateSentinel;
+      }
+    }
+    const toggleGiscusIfUsed = (isAlternate, darkModeDefault) => {
+      const baseTheme = document.querySelector('#giscus-base-theme')?.value ?? 'light';
+      const alternateTheme = document.querySelector('#giscus-alt-theme')?.value ?? 'dark';
+      let newTheme = '';
+      if(authorPrefersDark) {
+        newTheme = isAlternate ? baseTheme : alternateTheme;
+      } else {
+        newTheme = isAlternate ? alternateTheme : baseTheme;
+      }
+      const changeGiscusTheme = () => {
+        // From: https://github.com/giscus/giscus/issues/336
+        const sendMessage = (message) => {
+          const iframe = document.querySelector('iframe.giscus-frame');
+          if (!iframe) return;
+          iframe.contentWindow.postMessage({ giscus: message }, 'https://giscus.app');
+        }
+        sendMessage({
+          setConfig: {
+            theme: newTheme
+          }
+        });
+      }
+      const isGiscussLoaded = window.document.querySelector('iframe.giscus-frame') !== null;
+      if (isGiscussLoaded) {
+        changeGiscusTheme();
+      }
+    };
+    const authorPrefersDark = false;
+    const darkModeDefault = authorPrefersDark;
+      document.querySelector('link#quarto-text-highlighting-styles.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+      document.querySelector('link#quarto-bootstrap.quarto-color-scheme-extra').rel = 'disabled-stylesheet';
+    let localAlternateSentinel = darkModeDefault ? 'alternate' : 'default';
+    // Dark / light mode switch
+    window.quartoToggleColorScheme = () => {
+      // Read the current dark / light value
+      let toAlternate = !hasAlternateSentinel();
+      toggleColorMode(toAlternate);
+      setStyleSentinel(toAlternate);
+      toggleGiscusIfUsed(toAlternate, darkModeDefault);
+      window.dispatchEvent(new Event('resize'));
+    };
+    // Switch to dark mode if need be
+    if (hasAlternateSentinel()) {
+      toggleColorMode(true);
+    } else {
+      toggleColorMode(false);
+    }
+  </script>
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../../../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo light-content">
+    <img src="../../../assets/lab-logo-light.svg" alt="Causal Learning and AI" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../../papers/index.html"> 
+<span class="menu-text">Papers</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../team/index.html"> 
+<span class="menu-text">Team</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../news/index.html"> 
+<span class="menu-text">News</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../../../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/CausalLearningAI"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+  <a href="" class="quarto-color-scheme-toggle quarto-navigation-tool  px-1" onclick="window.quartoToggleColorScheme(); return false;" title="Toggle dark mode"><i class="bi"></i></a>
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem" id="toc-the-problem" class="nav-link active" data-scroll-target="#the-problem">The problem</a></li>
+  <li><a href="#the-idea-a-relative-angle" id="toc-the-idea-a-relative-angle" class="nav-link" data-scroll-target="#the-idea-a-relative-angle">The idea: a relative angle</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a></li>
+  <li><a href="#takeaway" id="toc-takeaway" class="nav-link" data-scroll-target="#takeaway">Takeaway</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Out-of-Distribution Detection with Relative Angles</h1>
+<p class="subtitle lead">A hyperparameter-free, scale-invariant OOD score built on the angle between a feature and a decision boundary, viewed from the in-distribution mean</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Robustness &amp; OOD</div>
+    <div class="quarto-category">Representation Learning</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>We propose ORA, a post-hoc out-of-distribution detection score that measures the angle between a feature representation and its projection onto a decision boundary, computed from the reference frame of the mean of in-distribution features. Centering on the ID mean folds in-distribution statistics into the score and makes it translation- and scale-invariant. ORA is hyperparameter-free and model-agnostic: across nine ImageNet-pretrained backbones and twelve baselines it attains the best average FPR95, ranks in the top three for every model, and is best on five of nine. Its scale invariance also lets confidence scores from different models be ensembled by simple summation.</p>
+  </div>
+</div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliation</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Berker Demirel <a href="mailto:berker.demirel@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Marco Fumero <a href="mailto:marco.fumero@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello <a href="mailto:francesco.locatello@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 1, 2025</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-neurips">
+<span class="venue-name">NeurIPS 2025</span>
+</div>
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2410.04525" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://openreview.net/forum?id=ul5mlXrLZb" target="_blank" rel="noopener"><i class="bi bi-card-text" aria-hidden="true"></i> OpenReview</a><a class="paper-link" href="https://github.com/berkerdemirel/ORA-OOD-Detection-with-Relative-Angles" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
+<section id="the-problem" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-problem">The problem</h2>
+<p>A trustworthy classifier should recognize when an input does not belong to the distribution it was trained on, and ideally abstain instead of forcing a prediction. This is the <em>out-of-distribution</em> (OOD) detection problem: drawing a line between what the model knows and what it does not <span class="citation" data-cites="yang2024generalized">(<a href="#ref-yang2024generalized" role="doc-biblioref">Yang et al. 2024</a>)</span>. <em>Post-hoc</em> methods are attractive because they wrap a pre-trained model with a score function and need no retraining <span class="citation" data-cites="MSPhendrycks2022baseline Energyliu2020">(<a href="#ref-MSPhendrycks2022baseline" role="doc-biblioref">Hendrycks and Gimpel 2022</a>; <a href="#ref-Energyliu2020" role="doc-biblioref">Liu et al. 2020</a>)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-yang2024generalized" class="csl-entry" role="listitem">
+Yang, Jingkang, Kaiyang Zhou, Yixuan Li, and Ziwei Liu. 2024. <span>“Generalized Out-of-Distribution Detection: A Survey.”</span> <em>International Journal of Computer Vision</em>, 1–28.
+</div></div><div class="page-columns page-full"><p>Recent post-hoc scores fall into two families: logit-based scores, which inherit the overconfidence of neural networks, and feature-distance scores such as nearest-neighbor distance <span class="citation" data-cites="KNNsun2022out">(<a href="#ref-KNNsun2022out" role="doc-biblioref">Sun et al. 2022</a>)</span> or distance to a decision boundary <span class="citation" data-cites="FDBDliu2024">(<a href="#ref-FDBDliu2024" role="doc-biblioref">Liu and Qin 2024</a>)</span>, which read the geometry of the latent space instead. ORA stays in the feature space but replaces a distance with an <em>angle</em>. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">The authors note that the fDBD score <span class="citation" data-cites="FDBDliu2024">(<a href="#ref-FDBDliu2024" role="doc-biblioref">Liu and Qin 2024</a>)</span> carries a regularization term that, by their derivation, does not correlate with ID/OOD separation and ultimately hinders its performance.</span></div><div class="no-row-height column-margin column-container"></div></div>
+</section>
+<section id="the-idea-a-relative-angle" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-idea-a-relative-angle">The idea: a relative angle</h2>
+<p>ORA reads three points in the penultimate feature space: a sample’s representation <span class="math inline">\mathbf{z}</span>, its projection <span class="math inline">\mathbf{z}_{db}</span> onto a decision boundary, and the mean <span class="math inline">\bm{\mu}_{\text{ID}}</span> of the in-distribution features. Centering on <span class="math inline">\bm{\mu}_{\text{ID}}</span> shifts the origin to the ID mean, so these three points form a triangle. Rather than the raw distance between <span class="math inline">\mathbf{z}</span> and <span class="math inline">\mathbf{z}_{db}</span>, ORA uses the angle at the ID-mean vertex.</p>
+<div class="page-columns page-full">
+<div id="fig-teaser" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-teaser-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<img src="teaser.png" class="img-fluid figure-img column-page">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-teaser-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: An in-distribution sample sits well inside its class region, so the relative angle <span class="math inline">\theta_{\text{ID}}</span> — measured at the in-distribution mean, between the centered feature and its projection onto the decision boundary — is large; out-of-distribution samples lie nearer the boundary and give systematically smaller angles. This relative angle is the discriminative factor.
+</figcaption>
+</figure>
+</div>
+</div>
+<p>Concretely, for two classes <span class="math inline">y_1, y_2</span> the decision boundary is the hyperplane <span class="math inline">(\mathbf{w}_{y_1} - \mathbf{w}_{y_2})^\top \mathbf{z} + b_{y_1} - b_{y_2} = 0</span>, and the projection onto it is</p>
+<p><span class="math display">
+\mathbf{z}_{db} = \mathbf{z} - \frac{(\mathbf{w}_{y_1} - \mathbf{w}_{y_2})^\top \mathbf{z} + (b_{y_1} - b_{y_2})}{\|\mathbf{w}_{y_1} - \mathbf{w}_{y_2}\|^2}\,(\mathbf{w}_{y_1} - \mathbf{w}_{y_2}).
+</span></p>
+<p>The relative angle, taken from the ID-mean reference frame, is</p>
+<p><span class="math display">
+\theta_{y_1, y_2}(\mathbf{z}) = \arccos\!\left(\frac{\langle \mathbf{z} - \bm{\mu}_{\text{ID}},\; \mathbf{z}_{db} - \bm{\mu}_{\text{ID}}\rangle}{\|\mathbf{z} - \bm{\mu}_{\text{ID}}\|\,\|\mathbf{z}_{db} - \bm{\mu}_{\text{ID}}\|}\right),
+</span></p>
+<p>and the ORA score takes the <em>maximum</em> such angle over all boundaries between the predicted class <span class="math inline">\hat{y}</span> and every other class <span class="math inline">y'</span>:</p>
+<p><span class="math display">
+\tilde{s}(\mathbf{z}) = \max_{y' \in \mathcal{Y},\, y' \neq \hat{y}}\; \theta_{\hat{y}, y'}(\mathbf{z}).
+</span></p>
+<p>This packs four properties into one score: it is a <em>confidence</em> proxy (a larger angle means more cost to flip the label), it is <em>ID-aware</em> (the mean folds in in-distribution statistics), it picks the <em>furthest</em> class (the maximum), and it is <em>scale-invariant</em> — angles are unchanged if the feature space is rescaled, which makes scores comparable across different models.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The authors connect ORA to the state-of-the-art fDBD score <span class="citation" data-cites="FDBDliu2024">(<a href="#ref-FDBDliu2024" role="doc-biblioref">Liu and Qin 2024</a>)</span> through the law of sines: fDBD equals <span class="math inline">\sin\theta / \sin\alpha</span>, where <span class="math inline">\alpha</span> is a second angle of the same triangle. They argue <span class="math inline">\alpha</span> tracks the feature’s magnitude relative to the ID mean and is not informative for ID/OOD separation, so dropping that denominator is what gives ORA its edge.</p><div id="ref-FDBDliu2024" class="csl-entry" role="listitem">
+Liu, Litian, and Yao Qin. 2024. <span>“Fast Decision Boundary Based Out-of-Distribution Detector.”</span> <em>Forty-First International Conference on Machine Learning</em>. <a href="https://openreview.net/forum?id=eQaOb4r6YC">https://openreview.net/forum?id=eQaOb4r6YC</a>.
+</div></div></div></section>
+<section id="results" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<p>The authors evaluate on the ImageNet OOD benchmark <span class="citation" data-cites="imagenetdeng2009">(<a href="#ref-imagenetdeng2009" role="doc-biblioref">Deng et al. 2009</a>)</span> across nine backbones — including ConvNeXt <span class="citation" data-cites="convnextliu2022">(<a href="#ref-convnextliu2022" role="doc-biblioref">Liu et al. 2022</a>)</span>, Swin <span class="citation" data-cites="swinliu2021">(<a href="#ref-swinliu2021" role="doc-biblioref">Liu et al. 2021</a>)</span>, DeiT <span class="citation" data-cites="deittouvron2021training">(<a href="#ref-deittouvron2021training" role="doc-biblioref">Touvron et al. 2021</a>)</span>, EVA <span class="citation" data-cites="evafang2023">(<a href="#ref-evafang2023" role="doc-biblioref">Fang et al. 2023</a>)</span> and ResNet-50 <span class="citation" data-cites="resnethe2016deep">(<a href="#ref-resnethe2016deep" role="doc-biblioref">He et al. 2016</a>)</span>, with ImageNet-21k pretrained variants where available — against twelve scoring methods. A 50,000-image ImageNet validation set sets the ID scores and the threshold; the OOD sets are iNaturalist <span class="citation" data-cites="inatvan2018inaturalist">(<a href="#ref-inatvan2018inaturalist" role="doc-biblioref">Van Horn et al. 2018</a>)</span>, SUN, Places365 and Texture <span class="citation" data-cites="dtdcimpoi2014describing">(<a href="#ref-dtdcimpoi2014describing" role="doc-biblioref">Cimpoi et al. 2014</a>)</span>. Performance is reported as FPR95 (false-positive rate at 95% true-positive rate; lower is better) and AUROC (higher is better).</p>
+<div class="no-row-height column-margin column-container"><div id="ref-imagenetdeng2009" class="csl-entry" role="listitem">
+Deng, Jia, Wei Dong, Richard Socher, Li-Jia Li, Kai Li, and Li Fei-Fei. 2009. <span>“Imagenet: A Large-Scale Hierarchical Image Database.”</span> <em>2009 IEEE Conference on Computer Vision and Pattern Recognition</em>, 248–55.
+</div><div id="ref-convnextliu2022" class="csl-entry" role="listitem">
+Liu, Zhuang, Hanzi Mao, Chao-Yuan Wu, Christoph Feichtenhofer, Trevor Darrell, and Saining Xie. 2022. <span>“A Convnet for the 2020s.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 11976–86.
+</div><div id="ref-swinliu2021" class="csl-entry" role="listitem">
+Liu, Ze, Yutong Lin, Yue Cao, et al. 2021. <span>“Swin Transformer: Hierarchical Vision Transformer Using Shifted Windows.”</span> <em>Proceedings of the IEEE/CVF International Conference on Computer Vision</em>, 10012–22.
+</div><div id="ref-deittouvron2021training" class="csl-entry" role="listitem">
+Touvron, Hugo, Matthieu Cord, Matthijs Douze, Francisco Massa, Alexandre Sablayrolles, and Hervé Jégou. 2021. <span>“Training Data-Efficient Image Transformers &amp; Distillation Through Attention.”</span> <em>International Conference on Machine Learning</em>, 10347–57.
+</div><div id="ref-evafang2023" class="csl-entry" role="listitem">
+Fang, Yuxin, Wen Wang, Binhui Xie, et al. 2023. <span>“Eva: Exploring the Limits of Masked Visual Representation Learning at Scale.”</span> <em>Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition</em>, 19358–69.
+</div><div id="ref-resnethe2016deep" class="csl-entry" role="listitem">
+He, Kaiming, Xiangyu Zhang, Shaoqing Ren, and Jian Sun. 2016. <span>“Deep Residual Learning for Image Recognition.”</span> <em>Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</em>, 770–78.
+</div><div id="ref-inatvan2018inaturalist" class="csl-entry" role="listitem">
+Van Horn, Grant, Oisin Mac Aodha, Yang Song, et al. 2018. <span>“The Inaturalist Species Classification and Detection Dataset.”</span> <em>Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</em>, 8769–78.
+</div><div id="ref-dtdcimpoi2014describing" class="csl-entry" role="listitem">
+Cimpoi, Mircea, Subhransu Maji, Iasonas Kokkinos, Sammy Mohamed, and Andrea Vedaldi. 2014. <span>“Describing Textures in the Wild.”</span> <em>Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition</em>, 3606–13.
+</div><div id="ref-supconkhosla2020supervised" class="csl-entry" role="listitem">
+Khosla, Prannay, Piotr Teterwak, Chen Wang, et al. 2020. <span>“Supervised Contrastive Learning.”</span> <em>Advances in Neural Information Processing Systems</em> 33: 18661–73.
+</div></div><p>ORA attains the best <strong>average FPR95 of 38.34%</strong> across the nine backbones, ahead of the second-best method by 3.18 points; it is the single best method on 5 of 9 backbones and stays within the top three on all nine. Its single best result is <strong>25.04% FPR95</strong> on a ResNet-50 trained with supervised contrastive loss <span class="citation" data-cites="supconkhosla2020supervised">(<a href="#ref-supconkhosla2020supervised" role="doc-biblioref">Khosla et al. 2020</a>)</span>.</p>
+<div id="tbl-imagenet" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-imagenet-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Average FPR95 (%) on the ImageNet OOD benchmark, averaged over nine model backbones; lower is better. A subset of the twelve compared methods is shown.
+</figcaption>
+<div aria-describedby="tbl-imagenet-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: right;">Average FPR95 (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Energy <span class="citation" data-cites="Energyliu2020">(<a href="#ref-Energyliu2020" role="doc-biblioref">Liu et al. 2020</a>)</span></td>
+<td style="text-align: right;">62.18</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MaxLogit</td>
+<td style="text-align: right;">57.52</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NNGuide <span class="citation" data-cites="nnguidepark2023">(<a href="#ref-nnguidepark2023" role="doc-biblioref">Park et al. 2023</a>)</span></td>
+<td style="text-align: right;">56.75</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MSP <span class="citation" data-cites="MSPhendrycks2022baseline">(<a href="#ref-MSPhendrycks2022baseline" role="doc-biblioref">Hendrycks and Gimpel 2022</a>)</span></td>
+<td style="text-align: right;">54.78</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">KNN+ <span class="citation" data-cites="KNNsun2022out">(<a href="#ref-KNNsun2022out" role="doc-biblioref">Sun et al. 2022</a>)</span></td>
+<td style="text-align: right;">52.43</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">R-Mahalanobis <span class="citation" data-cites="rmahren2021simple">(<a href="#ref-rmahren2021simple" role="doc-biblioref">Ren et al. 2021</a>)</span></td>
+<td style="text-align: right;">49.50</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">fDBD <span class="citation" data-cites="FDBDliu2024">(<a href="#ref-FDBDliu2024" role="doc-biblioref">Liu and Qin 2024</a>)</span></td>
+<td style="text-align: right;">43.90</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">R-Cos</td>
+<td style="text-align: right;">42.98</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Maha+</td>
+<td style="text-align: right;">42.64</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">P-Cos <span class="citation" data-cites="pcosgalilframework">(<a href="#ref-pcosgalilframework" role="doc-biblioref">Galil et al. 2023</a>)</span></td>
+<td style="text-align: right;">41.52</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>ORA (ours)</strong></td>
+<td style="text-align: right;"><strong>38.34</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="no-row-height column-margin column-container"><div id="ref-Energyliu2020" class="csl-entry" role="listitem">
+Liu, Weitang, Xiaoyun Wang, John Owens, and Yixuan Li. 2020. <span>“Energy-Based Out-of-Distribution Detection.”</span> <em>Advances in Neural Information Processing Systems</em> 33: 21464–75.
+</div><div id="ref-nnguidepark2023" class="csl-entry" role="listitem">
+Park, Jaewoo, Yoon Gyo Jung, and Andrew Beng Jin Teoh. 2023. <span>“Nearest Neighbor Guidance for Out-of-Distribution Detection.”</span> <em>Proceedings of the IEEE/CVF International Conference on Computer Vision</em>, 1686–95.
+</div><div id="ref-MSPhendrycks2022baseline" class="csl-entry" role="listitem">
+Hendrycks, Dan, and Kevin Gimpel. 2022. <span>“A Baseline for Detecting Misclassified and Out-of-Distribution Examples in Neural Networks.”</span> <em>International Conference on Learning Representations</em>.
+</div><div id="ref-KNNsun2022out" class="csl-entry" role="listitem">
+Sun, Yiyou, Yifei Ming, Xiaojin Zhu, and Yixuan Li. 2022. <span>“Out-of-Distribution Detection with Deep Nearest Neighbors.”</span> <em>International Conference on Machine Learning</em>, 20827–40.
+</div><div id="ref-rmahren2021simple" class="csl-entry" role="listitem">
+Ren, Jie, Stanislav Fort, Jeremiah Liu, Abhijit Guha Roy, Shreyas Padhy, and Balaji Lakshminarayanan. 2021. <span>“A Simple Fix to Mahalanobis Distance for Improving Near-Ood Detection.”</span> <em>arXiv Preprint arXiv:2106.09022</em>.
+</div><div id="ref-pcosgalilframework" class="csl-entry" role="listitem">
+Galil, Ido, Mohammed Dabbah, and Ran El-Yaniv. 2023. <span>“A Framework for Benchmarking Class-Out-of-Distribution Detection and Its Application to Imagenet.”</span> <em>The Eleventh International Conference on Learning Representations</em>.
+</div></div></div>
+</figure>
+</div>
+<p>The score separates ID from OOD cleanly in feature space. On ImageNet (ID) versus iNaturalist (OOD), the ORA scores of the two populations form two largely disjoint distributions:</p>
+<div id="fig-hist" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-hist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="hist-imagenet-inat.png" class="img-fluid figure-img" style="width:70.0%">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-hist-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Histogram of ORA scores for ImageNet (ID, blue) and iNaturalist (OOD, orange) samples; ID samples carry systematically larger scores.
+</figcaption>
+</figure>
+</div>
+<p><strong>Contrastive features help.</strong> ORA benefits from the geometry that contrastive training imposes on the representation space. On SCL checkpoints it cuts the previous best average FPR95 from 11.85% to <strong>10.97%</strong> on CIFAR-10 <span class="citation" data-cites="cifarkrizhevsky2009learning">(<a href="#ref-cifarkrizhevsky2009learning" role="doc-biblioref">Krizhevsky 2009</a>)</span> (ResNet-18) and from 32.78% to <strong>25.04%</strong> on ImageNet (ResNet-50). With CLIP <span class="citation" data-cites="clipradford2021learning">(<a href="#ref-clipradford2021learning" role="doc-biblioref"><span class="nocase">Radford et al.</span> 2021</a>)</span> it reaches <strong>23.94%</strong> FPR95 under linear probing and <strong>25.85%</strong> in a zero-shot setting that defines decision boundaries from text embeddings.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-cifarkrizhevsky2009learning" class="csl-entry" role="listitem">
+Krizhevsky, Alex. 2009. <em>Learning Multiple Layers of Features from Tiny Images</em>. University of Toronto.
+</div><div id="ref-clipradford2021learning" class="csl-entry" role="listitem">
+<span class="nocase">Radford, Alec, Jong Wook Kim, Chris Hallacy, et al.</span> 2021. <span>“Learning Transferable Visual Models from Natural Language Supervision.”</span> <em>International Conference on Machine Learning</em>, 8748–63.
+</div><div id="ref-reactsun2021" class="csl-entry" role="listitem">
+Sun, Yiyou, Chuan Guo, and Yixuan Li. 2021. <span>“React: Out-of-Distribution Detection with Rectified Activations.”</span> <em>Advances in Neural Information Processing Systems</em>. <a href="https://openreview.net/forum?id=IBVBtz_sRSm">https://openreview.net/forum?id=IBVBtz_sRSm</a>.
+</div><div id="ref-ASHdjurisic2023extremely" class="csl-entry" role="listitem">
+Djurisic, Andrija, Nebojsa Bozanic, Arjun Ashok, and Rosanne Liu. 2023. <span>“Extremely Simple Activation Shaping for Out-of-Distribution Detection.”</span> <em>The Eleventh International Conference on Learning Representations</em>. <a href="https://openreview.net/forum?id=ndYXTEL6cZz">https://openreview.net/forum?id=ndYXTEL6cZz</a>.
+</div><div id="ref-Scalexu" class="csl-entry" role="listitem">
+Xu, Kai, Rongyu Chen, Gianni Franchi, and Angela Yao. 2024. <span>“Scaling for Training Time and Post-Hoc Out-of-Distribution Detection Enhancement.”</span> <em>The Twelfth International Conference on Learning Representations</em>. <a href="https://openreview.net/forum?id=RDSTjtnqCg">https://openreview.net/forum?id=RDSTjtnqCg</a>.
+</div></div><p><strong>Ensembling for free.</strong> Because the score is scale-invariant, confidence from different models can be aggregated by simply summing their ORA scores. An ensemble of ResNet-50, ResNet-50 (SCL) and ViT-B/16 reaches <strong>22.53% FPR95</strong> and <strong>96.41% AUROC</strong> on the ImageNet benchmark, improving on the best single member by 2.51 and 2.15 points respectively. ORA also stacks on top of activation-shaping methods: combined with ReAct <span class="citation" data-cites="reactsun2021">(<a href="#ref-reactsun2021" role="doc-biblioref">Sun et al. 2021</a>)</span> it drops from 25.04% to <strong>20.36%</strong> FPR95, and it pairs likewise with ASH <span class="citation" data-cites="ASHdjurisic2023extremely">(<a href="#ref-ASHdjurisic2023extremely" role="doc-biblioref">Djurisic et al. 2023</a>)</span> and Scale <span class="citation" data-cites="Scalexu">(<a href="#ref-Scalexu" role="doc-biblioref">Xu et al. 2024</a>)</span>.</p>
+<p>Ablations support the two design choices. Centering on the ID mean <span class="math inline">\bm{\mu}_{\text{ID}}</span> beats centering on predicted- or target-class centroids, and aggregating with the <em>maximum</em> angle across classes beats mean or min aggregation — on ImageNet the max improves FPR95 by 7.72 points over the second-best aggregation. The idea of comparing scale-invariant representations across models follows earlier work on relative representations <span class="citation" data-cites="relativemoschella">(<a href="#ref-relativemoschella" role="doc-biblioref">Moschella et al. 2023</a>)</span>.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-relativemoschella" class="csl-entry" role="listitem">
+Moschella, Luca, Valentino Maiorca, Marco Fumero, Antonio Norelli, Francesco Locatello, and Emanuele Rodolà. 2023. <span>“Relative Representations Enable Zero-Shot Latent Space Communication.”</span> <em>The Eleventh International Conference on Learning Representations</em>. <a href="https://openreview.net/forum?id=SrC-nwieGJ">https://openreview.net/forum?id=SrC-nwieGJ</a>.
+</div></div></section>
+<section id="takeaway" class="level2">
+<h2 class="anchored" data-anchor-id="takeaway">Takeaway</h2>
+<p>Reading model confidence as a <em>relative angle</em> — feature to decision boundary, seen from the in-distribution mean — yields a post-hoc OOD score that is hyperparameter-free, model-agnostic and scale-invariant. That scale invariance is what makes the score both portable across architectures and summable into an ensemble. The authors note one limitation: the score summarizes in-distribution structure by its mean alone, and suggest combining several relative angles to capture more of that structure as future work.</p>
+
+
+
+</section>
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@inproceedings{demirel2025,
+  author = {Demirel, Berker and Fumero, Marco and Locatello, Francesco},
+  title = {Out-of-Distribution {Detection} with {Relative} {Angles}},
+  booktitle = {Advances in Neural Information Processing Systems},
+  date = {2025-10-01},
+  doi = {10.48550/arXiv.2410.04525}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
+<!--
+  Interactive component kit for paper pages. Inlined (no external request, no
+  build step, no dependencies). Styles live in theme/interactive.scss.
+  Components are activated declaratively from markdown via fenced divs:
+    .reveal · .scrolly + .scrolly-step[data-step] · .stepper + .stepper-stage
+    .morph + input.morph-range · .compare + .compare-layer · span.term[data-note]
+  All components are progressive enhancement — content is fully readable if JS is off.
+-->
+<script>
+(function () {
+  "use strict";
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function ready(fn) {
+    if (document.readyState !== "loading") fn();
+    else document.addEventListener("DOMContentLoaded", fn);
+  }
+
+  // ── .reveal — fade/rise on first scroll into view ──────────────────────────
+  function initReveal() {
+    var els = document.querySelectorAll(".reveal");
+    if (!els.length) return;
+    if (reduce || !("IntersectionObserver" in window)) {
+      els.forEach(function (el) { el.classList.add("is-visible"); });
+      return;
+    }
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("is-visible"); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.18 });
+    els.forEach(function (el) { obs.observe(el); });
+  }
+
+  // ── .scrolly — steps drive data-active on the sticky figure ────────────────
+  function initScrolly() {
+    document.querySelectorAll(".scrolly").forEach(function (scrolly) {
+      var fig = scrolly.querySelector(".scrolly-figure");
+      var steps = scrolly.querySelectorAll(".scrolly-step");
+      if (!fig || !steps.length) return;
+      function activate(step) {
+        steps.forEach(function (s) { s.classList.remove("is-active"); });
+        step.classList.add("is-active");
+        fig.setAttribute("data-active", step.getAttribute("data-step") || "1");
+      }
+      activate(steps[0]);
+      if (!("IntersectionObserver" in window)) { steps.forEach(function (s) { s.classList.add("is-active"); }); return; }
+      var obs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) activate(e.target); });
+      }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
+      steps.forEach(function (s) { obs.observe(s); });
+    });
+  }
+
+  // ── .stepper — prev/next/dots click-through ────────────────────────────────
+  function initSteppers() {
+    document.querySelectorAll(".stepper").forEach(function (stepper) {
+      var stages = Array.prototype.slice.call(stepper.querySelectorAll(".stepper-stage"));
+      if (!stages.length) return;
+      var i = 0;
+
+      var nav = document.createElement("div");
+      nav.className = "stepper-nav";
+      var prev = document.createElement("button");
+      prev.className = "stepper-btn"; prev.type = "button"; prev.textContent = "← Prev";
+      var next = document.createElement("button");
+      next.className = "stepper-btn"; next.type = "button"; next.textContent = "Next →";
+      var count = document.createElement("span"); count.className = "stepper-count";
+      var dots = document.createElement("div"); dots.className = "stepper-dots";
+
+      var dotEls = stages.map(function (_, idx) {
+        var d = document.createElement("button");
+        d.className = "stepper-dot"; d.type = "button";
+        d.setAttribute("aria-label", "Go to step " + (idx + 1));
+        d.addEventListener("click", function () { go(idx); });
+        dots.appendChild(d);
+        return d;
+      });
+
+      nav.appendChild(prev); nav.appendChild(next); nav.appendChild(count); nav.appendChild(dots);
+      var stagesWrap = stepper.querySelector(".stepper-stages") || stepper;
+      stagesWrap.parentNode.insertBefore(nav, stagesWrap.nextSibling);
+
+      function go(n) {
+        i = Math.max(0, Math.min(stages.length - 1, n));
+        stages.forEach(function (s, idx) { s.classList.toggle("is-active", idx === i); });
+        dotEls.forEach(function (d, idx) { d.classList.toggle("is-active", idx === i); });
+        prev.disabled = i === 0; next.disabled = i === stages.length - 1;
+        count.textContent = (i + 1) + " / " + stages.length;
+      }
+      prev.addEventListener("click", function () { go(i - 1); });
+      next.addEventListener("click", function () { go(i + 1); });
+      go(0);
+    });
+  }
+
+  // ── .morph — range input sets --t (0..1) and --v (raw) on its target ───────
+  function initMorph() {
+    document.querySelectorAll(".morph-range").forEach(function (range) {
+      var sel = range.getAttribute("data-target");
+      var target = sel ? document.querySelector(sel) : range.closest(".morph");
+      var readout = (range.closest(".morph") || document).querySelector(".morph-readout");
+      var unit = range.getAttribute("data-unit") || "";
+      var min = parseFloat(range.min || "0"), max = parseFloat(range.max || "100");
+      function apply() {
+        var v = parseFloat(range.value);
+        var t = (max - min) === 0 ? 0 : (v - min) / (max - min);
+        if (target) { target.style.setProperty("--t", t.toFixed(4)); target.style.setProperty("--v", v); }
+        if (readout) readout.textContent = (range.getAttribute("data-fixed") ? v.toFixed(+range.getAttribute("data-fixed")) : v) + unit;
+      }
+      range.addEventListener("input", apply);
+      apply();
+    });
+  }
+
+  // ── .compare — buttons toggle stacked layers (labels from data-label) ──────
+  function initCompare() {
+    document.querySelectorAll(".compare").forEach(function (cmp) {
+      var layers = Array.prototype.slice.call(cmp.querySelectorAll(".compare-layer"));
+      if (!layers.length) return;
+      var controls = cmp.querySelector(".compare-controls");
+      if (!controls) { controls = document.createElement("div"); controls.className = "compare-controls"; cmp.insertBefore(controls, cmp.firstChild); }
+      var btns = layers.map(function (layer, idx) {
+        var b = document.createElement("button");
+        b.className = "compare-btn"; b.type = "button";
+        b.textContent = layer.getAttribute("data-label") || ("View " + (idx + 1));
+        b.addEventListener("click", function () { select(idx); });
+        controls.appendChild(b);
+        return b;
+      });
+      function select(n) {
+        layers.forEach(function (l, idx) { l.classList.toggle("is-active", idx === n); });
+        btns.forEach(function (b, idx) { b.classList.toggle("is-active", idx === n); });
+      }
+      select(0);
+    });
+  }
+
+  // ── BibTeX citation — tint the appendix citation block ─────────────────────
+  // Quarto emits the "cite as" BibTeX as plain (untokenized) text, so we wrap
+  // its pieces in `.bib-*` spans for the palette in theme.scss / dark.scss.
+  // Wrapping only adds spans — textContent is unchanged, so the copy button
+  // still yields verbatim BibTeX. Degrades to plain text when JS is off.
+  function escHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function highlightBibtex(src) {
+    var out = "", i = 0, n = src.length, depth = 0, sawKey = false;
+    function emit(text, cls) {
+      if (!text) return;
+      out += cls ? '<span class="bib-' + cls + '">' + escHtml(text) + "</span>" : escHtml(text);
+    }
+    while (i < n) {
+      var c = src[i], j;
+      if (c === "@" && depth === 0) {                         // @article, @inproceedings, …
+        for (j = i + 1; j < n && /[A-Za-z]/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "entry"); i = j; sawKey = false; continue;
+      }
+      if (c === "{") { emit(c, "punct"); depth++; i++; continue; }
+      if (c === "}") { emit(c, "punct"); depth = Math.max(0, depth - 1); i++; continue; }
+      if (depth === 1 && !sawKey) {                           // citation key, up to the first comma
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}"; j++) {}
+        emit(src.slice(i, j), "key"); sawKey = true; i = j; continue;
+      }
+      if (depth === 1) {                                      // field names + structural punctuation
+        if (/[A-Za-z]/.test(c)) {
+          for (j = i; j < n && /[\w-]/.test(src[j]); j++) {}
+          emit(src.slice(i, j), "field"); i = j; continue;
+        }
+        if (c === "=" || c === ",") { emit(c, "punct"); i++; continue; }
+        if (/\s/.test(c)) { for (j = i; j < n && /\s/.test(src[j]); j++) {} emit(src.slice(i, j), null); i = j; continue; }
+        for (j = i; j < n && src[j] !== "," && src[j] !== "}" && !/\s/.test(src[j]); j++) {}
+        emit(src.slice(i, j), "value"); i = j; continue;      // bare value (e.g. a year)
+      }
+      for (j = i; j < n && src[j] !== "{" && src[j] !== "}"; j++) {}  // depth ≥ 2: field value text
+      emit(src.slice(i, j), "value"); i = j;
+    }
+    return out;
+  }
+  function initBibtex() {
+    document.querySelectorAll(".quarto-appendix-bibtex code, code.sourceCode.bibtex").forEach(function (code) {
+      if (code.getAttribute("data-bib-hl")) return;
+      code.setAttribute("data-bib-hl", "1");
+      code.innerHTML = highlightBibtex(code.textContent);
+    });
+  }
+
+  // ── .term — inline hover/focus popover from data-note ──────────────────────
+  function initTerms() {
+    document.querySelectorAll(".term").forEach(function (term) {
+      var note = term.getAttribute("data-note");
+      if (!note || term.querySelector(".term-pop")) return;
+      term.setAttribute("tabindex", "0");
+      var pop = document.createElement("span");
+      pop.className = "term-pop"; pop.textContent = note;
+      term.appendChild(pop);
+      term.addEventListener("click", function (e) { e.stopPropagation(); term.classList.toggle("is-open"); });
+    });
+    document.addEventListener("click", function () {
+      document.querySelectorAll(".term.is-open").forEach(function (t) { t.classList.remove("is-open"); });
+    });
+  }
+
+  // ── title-block categories — point them at the publications filter ─────────
+  // A paper belongs to several Quarto listings: the /papers list AND each
+  // co-author's team page (whose profile embeds a publications listing). On load
+  // Quarto's activateCategories() turns the title-block category chips into links
+  // to "the listing this paper belongs to" — but its resolver is defeated by the
+  // project subpath and falls back to the first listing in listings.json, which is
+  // usually a co-author's profile, so a category click jumps to a person's page.
+  // We override those links to target the publications listing, filtered by tag.
+  // Scoped to paper pages (body.paper) so news-post categories still hit /news.
+  function initCategoryLinks() {
+    if (!document.body.classList.contains("paper")) return;
+    var cats = document.querySelectorAll("header.quarto-title-block .quarto-category");
+    if (!cats.length) return;
+    var offsetEl = document.querySelector('meta[name="quarto:offset"]');
+    var root = offsetEl ? offsetEl.getAttribute("content") : "";
+    function fix() {
+      cats.forEach(function (cat) {
+        var a = cat.querySelector("a");          // the <a> Quarto injects
+        if (!a) return;
+        var text = (a.textContent || cat.textContent || "").trim();
+        if (text) a.setAttribute("href", root + "papers/index.html#category=" + encodeURIComponent(text));
+      });
+    }
+    // Quarto wraps the chips in <a> asynchronously (it first fetches listings.json),
+    // so watch for those insertions and correct each href as it appears.
+    var obs = new MutationObserver(fix);
+    cats.forEach(function (cat) { obs.observe(cat, { childList: true }); });
+    fix();
+    setTimeout(function () { fix(); obs.disconnect(); }, 3000);
+  }
+
+  ready(function () {
+    initReveal(); initScrolly(); initSteppers(); initMorph(); initCompare(); initTerms(); initBibtex();
+    initCategoryLinks();
+  });
+})();
+</script>
+<script>
+// Publication-venue badge for listing rows (the /papers list and each team
+// member's Publications list). Both are Quarto `default` listings, so the
+// `venue` / `year` / `modifier` fields render as plain `.listing-*` values in
+// the right-hand metadata rail. Here we lift those three into a single
+//   [ VENUE YEAR ]  [★ MODIFIER ]
+// badge that sits with the date in the metadata column — the same `.paper-venue`
+// markup theme/venue-badge.lua emits on the paper page itself, so one set of CSS
+// styles both.
+// Progressive enhancement: with JS off, the raw values stay visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".paper-venue")) return;            // idempotent
+
+    var venueEl = post.querySelector(".listing-venue");
+    var venue = venueEl && venueEl.textContent.trim();
+    if (!venue) return;                                        // preprint: no badge
+
+    var yearEl = post.querySelector(".listing-year");
+    var modifierEl = post.querySelector(".listing-modifier");
+    var year = yearEl && yearEl.textContent.trim();
+    var modifier = modifierEl && modifierEl.textContent.trim();
+
+    var badge = document.createElement("div");
+    // Per-venue colour class (e.g. "ICML" → venue-icml); CSS maps it to an accent.
+    badge.className = "paper-venue venue-" + venue.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+    // Carry the raw venue/year so assets/venue-filter.html can filter the list by
+    // them (the matching List.js values are captured before we strip the rail).
+    badge.dataset.venue = venue;
+    if (year) badge.dataset.year = year;
+
+    // On the publications list, the chip is a filter control: clicking it sets the
+    // Venue dropdown (wired up in assets/listing-filter-bar.html).
+    if (document.getElementById("listing-papers")) {
+      badge.classList.add("venue-clickable");
+      badge.setAttribute("role", "button");
+      badge.tabIndex = 0;
+      badge.setAttribute("aria-label",
+        "Filter publications by " + (year ? venue + " " + year : venue));
+    }
+
+    var name = document.createElement("span");
+    name.className = "venue-name";
+    name.textContent = year ? venue + " " + year : venue;
+    badge.appendChild(name);
+
+    if (modifier) {
+      var mod = document.createElement("span");
+      mod.className = "venue-modifier";
+      mod.textContent = modifier;
+      badge.appendChild(mod);
+    }
+
+    // Sit it with the date, in the metadata column. The date lives inside an
+    // <a> wrapper there; append to the column itself (after that anchor) so the
+    // badge keeps its own colours and isn't swallowed into the link. Fall back
+    // to just under the title if a row has no metadata column.
+    var metadata = post.querySelector(".metadata");
+    if (metadata) {
+      metadata.appendChild(badge);
+    } else {
+      var title = post.querySelector(".listing-title");
+      var body = post.querySelector(".body") || post;
+      if (title && title.parentNode === body) {
+        title.insertAdjacentElement("afterend", badge);
+      } else {
+        body.insertBefore(badge, body.firstChild);
+      }
+    }
+
+    // Drop the now-duplicated raw values from the metadata rail.
+    [venueEl, yearEl, modifierEl].forEach(function (el) { if (el) el.remove(); });
+  });
+});
+</script>
+<!-- Generated by scripts/gen-author-members.py — do not edit by hand. -->
+<!-- Maps author display name -> team-member slug so author-line.html can
+     link names to /team/members/<slug>/ profiles. -->
+<script>window.__claiAuthorMembers = {
+  "Adeel Pervez": "adeel-pervez",
+  "Berker Demirel": "berker-demirel",
+  "Christine Francois": "christine-francois",
+  "Clémentine Dominé": "clementine-domine",
+  "Dario Rancati": "dario-rancati",
+  "Dingling Yao": "dingling-yao",
+  "Francesco Locatello": "francesco-locatello",
+  "Francesco Montagna": "francesco-montagna",
+  "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
+  "Marco Fumero": "marco-fumero",
+  "Riccardo Cadei": "riccardo-cadei",
+  "Shimeng Huang": "shimeng-huang",
+  "Valentino Maiorca": "valentino-maiorca",
+  "Walter Nelson": "walter-nelson"
+};</script>
+<script>
+// Author line for publication listing rows. Quarto renders the `author` field as
+// a plain `.listing-author` value in the left metadata rail — but that rail is
+// styled as a mono UPPERCASE label (see `.quarto-post .metadata` in theme.scss),
+// which mangles names and wraps badly in the narrow column. Here we lift it into
+// the body, just under the title (and venue badge), as a quiet secondary line —
+// the same progressive-enhancement pattern as assets/venue-badge.html.
+// With JS off, the raw author value stays visible in the rail.
+document.addEventListener("DOMContentLoaded", function () {
+  // Author name -> team-member slug, built at render time from each paper's
+  // front matter (see scripts/gen-author-members.py). Names found here are
+  // linked to their /team/members/<slug>/ profile.
+  var members = window.__claiAuthorMembers || {};
+
+  // Relative path to the site root, read off Quarto's navbar brand link (e.g.
+  // "../../../index.html" on a deep page). Lets profile links resolve correctly
+  // whatever the page depth or deploy sub-path. Falls back to "" (same dir).
+  var root = "";
+  var brand = document.querySelector("a.navbar-brand[href]");
+  if (brand) root = brand.getAttribute("href").replace(/index\.html?$/, "");
+
+  // Append a name to `parent`, as a profile link when we know the member.
+  function appendName(parent, name) {
+    var slug = members[name];
+    if (slug) {
+      var a = document.createElement("a");
+      a.className = "author-link";
+      a.href = root + "team/members/" + slug + "/";
+      a.textContent = name;
+      parent.appendChild(a);
+    } else {
+      parent.appendChild(document.createTextNode(name));
+    }
+  }
+
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    if (post.querySelector(".body-author")) return;            // idempotent
+
+    var authorEl = post.querySelector(".metadata .listing-author");
+    if (!authorEl) return;                                      // listing without author field
+
+    var names = authorEl.textContent.split(",")
+      .map(function (s) { return s.trim(); })
+      .filter(Boolean);
+    if (!names.length) { authorEl.remove(); return; }
+
+    // Keep long lists compact but honest: first 6 + … + last author (the PI
+    // usually sits last), only when there are more than 8 names.
+    var shown = names.length > 8
+      ? names.slice(0, 6).concat(["…", names[names.length - 1]])
+      : names;
+
+    var line = document.createElement("div");
+    line.className = "listing-author body-author";
+    shown.forEach(function (name, i) {
+      if (i) line.appendChild(document.createTextNode(", "));
+      if (name === "…") line.appendChild(document.createTextNode("…"));
+      else appendName(line, name);
+    });
+
+    // Sit it under the venue badge if present, else under the title.
+    var title = post.querySelector(".listing-title");
+    var badge = post.querySelector(".paper-venue");
+    var body = post.querySelector(".body") || post;
+    var anchor = badge || title;
+    if (anchor && anchor.closest(".body") === body) {
+      anchor.insertAdjacentElement("afterend", line);
+    } else {
+      body.appendChild(line);
+    }
+
+    authorEl.remove();                                          // drop the duplicate in the rail
+  });
+});
+</script>
+<script>
+// Topics → metadata rail. On the publications list (a Quarto `default` listing)
+// Quarto renders each paper's categories as a `.listing-categories` chip row in
+// the body, under the title — which makes every row taller. The right-hand
+// metadata rail (date + venue badge) is shorter, leaving dead vertical space.
+// Move the topics into that rail, below the date and venue badge, so the two
+// columns balance and each row gets back the height the chip row was costing.
+// Runs after assets/venue-badge.html so the badge is already in the rail and the
+// topics land beneath it.
+// Progressive enhancement: with JS off, topics stay under the title.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".quarto-listing .quarto-post").forEach(function (post) {
+    // Only the body copy carries a chip row; once moved it lives in .metadata, so
+    // re-running finds nothing here — naturally idempotent.
+    var cats = post.querySelector(".body .listing-categories");
+    var metadata = post.querySelector(".metadata");
+    if (!cats || !metadata) return;
+    metadata.appendChild(cats);
+  });
+});
+</script>
+<script>
+// Click-to-expand for the home showcase teasers. Each highlighted paper's banner
+// figure (.home-highlights .thumbnail img) is wrapped by Quarto in a link to the
+// paper page — but the title already links there, so here we repurpose the figure
+// click to open the full-resolution image in a lightbox overlay instead.
+// (Styles: `.fig-lightbox` in theme/theme.scss.) Progressive enhancement: with JS
+// off, clicking the figure just follows the link to the paper.
+document.addEventListener("DOMContentLoaded", function () {
+  var figures = document.querySelectorAll(".home-highlights .quarto-post .thumbnail img");
+  if (!figures.length) return;
+
+  // One reusable overlay for every figure.
+  var overlay = document.createElement("div");
+  overlay.className = "fig-lightbox";
+  overlay.setAttribute("role", "dialog");
+  overlay.setAttribute("aria-modal", "true");
+  overlay.setAttribute("aria-label", "Expanded figure");
+
+  var closeBtn = document.createElement("button");
+  closeBtn.type = "button";
+  closeBtn.className = "fig-lightbox-close";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.innerHTML = "&times;";
+
+  var big = document.createElement("img");
+  big.alt = "";
+
+  overlay.appendChild(closeBtn);
+  overlay.appendChild(big);
+  document.body.appendChild(overlay);
+
+  var lastFocus = null;
+
+  function open(src, alt) {
+    big.src = src;
+    big.alt = alt || "";
+    lastFocus = document.activeElement;
+    overlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+    closeBtn.focus();
+  }
+  function close() {
+    overlay.classList.remove("open");
+    document.body.style.overflow = "";
+    big.removeAttribute("src");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  // Close on backdrop click, the × button, or Escape. A click on the image itself
+  // must not close (stop it bubbling to the backdrop).
+  overlay.addEventListener("click", function (e) { if (e.target === overlay) close(); });
+  closeBtn.addEventListener("click", close);
+  big.addEventListener("click", function (e) { e.stopPropagation(); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && overlay.classList.contains("open")) close();
+  });
+
+  figures.forEach(function (img) {
+    var trigger = img.closest("a") || img;   // the link wrapper, or the image itself
+    if (trigger === img) { trigger.tabIndex = 0; trigger.setAttribute("role", "button"); }
+    trigger.setAttribute("aria-label", "Expand figure");
+    trigger.addEventListener("click", function (e) {
+      e.preventDefault();          // don't follow the link to the paper page
+      e.stopPropagation();
+      open(img.currentSrc || img.src, img.alt);
+    });
+  });
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    // Ensure there is a toggle, if there isn't float one in the top right
+    if (window.document.querySelector('.quarto-color-scheme-toggle') === null) {
+      const a = window.document.createElement('a');
+      a.classList.add('top-right');
+      a.classList.add('quarto-color-scheme-toggle');
+      a.href = "";
+      a.onclick = function() { try { window.quartoToggleColorScheme(); } catch {} return false; };
+      const i = window.document.createElement("i");
+      i.classList.add('bi');
+      a.appendChild(i);
+      window.document.body.appendChild(a);
+    }
+    setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 CLAI Research Group</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+<p>Built with <a href="https://quarto.org">Quarto</a>.</p>
+</div>
+  </div>
+</footer>
+
+
+
+
+</body></html>
