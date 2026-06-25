@@ -90,7 +90,7 @@ ul.task-list li input[type="checkbox"] {
     const options = {
       valueNames: ['listing-image','listing-date','listing-title','listing-author','listing-description','listing-venue','listing-year','listing-modifier',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
       
-      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description"],
+      searchColumns: [],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -468,108 +468,7 @@ window.Quarto = {
 </section>
 <div id="listing-highlighted-papers" class="quarto-listing quarto-listing-container-default">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="SW50ZXJwcmV0YWJpbGl0eSUyQ0ZvdW5kYXRpb24lMjBNb2RlbHM=" data-listing-date-sort="1761264000000" data-listing-file-modified-sort="1782322908960" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="10" data-listing-word-count-sort="1925">
-<div class="thumbnail"><a href="./papers/2025/head-pursuit/index.html" class="no-external">
 
-<img loading="lazy" src="./papers/2025/head-pursuit/method-overview.svg" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./papers/2025/head-pursuit/index.html" class="no-external">Head Pursuit: Probing Attention Specialization in Multimodal Transformers</a>
-</h3>
-<div class="delink listing-description"><a href="./papers/2025/head-pursuit/index.html" class="no-external">
-<p>Individual attention heads in generative language and vision-language models specialize in narrow semantic or visual attributes. Recasting the Logit Lens as a step of sparse signal recovery, Head Pursuit uses Simultaneous Orthogonal Matching Pursuit over the model’s unembedding matrix to rank heads by their relevance to a target concept. Editing as few as 1% of the heads reliably suppresses or enhances the targeted concept across question answering, toxicity mitigation, image classification, and image captioning.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./papers/2025/head-pursuit/index.html" class="no-external">
-<div class="listing-date">
-Oct 24, 2025
-</div>
-<div class="listing-author">
-Lorenzo Basile, Valentino Maiorca, Diego Doimo, Francesco Locatello, Alberto Cazzaniga
-</div>
-<div class="metadata-value listing-venue">
-NeurIPS
-</div>
-<div class="metadata-value listing-year">
-2025
-</div>
-<div class="metadata-value listing-modifier">
-Spotlight
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="Q2F1c2FsJTIwSW5mZXJlbmNlJTJDSW50ZXJwcmV0YWJpbGl0eSUyQ0ZvdW5kYXRpb24lMjBNb2RlbHM=" data-listing-date-sort="1760486400000" data-listing-file-modified-sort="1782322909047" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1420">
-<div class="thumbnail"><a href="./papers/2026/exploratory-causal-inference-in-saence/index.html" class="no-external">
-
-<img loading="lazy" src="./papers/2026/exploratory-causal-inference-in-saence/pipeline.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./papers/2026/exploratory-causal-inference-in-saence/index.html" class="no-external">Exploratory Causal Inference in SAEnce</a>
-</h3>
-<div class="delink listing-description"><a href="./papers/2026/exploratory-causal-inference-in-saence/index.html" class="no-external">
-<p>Randomized controlled trials rely on hand-crafted hypotheses, which limits causal effect estimation at scale and risks anchoring on popular yet incomplete questions. This paper proposes to discover the unknown effects of a treatment directly from data: unstructured trial measurements are turned into interpretable representations with a pretrained foundation model and a sparse autoencoder, then scanned for treatment effects. Because such codes are only approximately monosemantic, naive multiple testing collapses — the “paradox of exploratory causal inference.” The authors introduce Neural Effect Search, a recursive stratification procedure that disentangles leaked effects, and demonstrate the first unsupervised causal effect identification on a real-world ecological trial.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./papers/2026/exploratory-causal-inference-in-saence/index.html" class="no-external">
-<div class="listing-date">
-Oct 15, 2025
-</div>
-<div class="listing-author">
-Tommaso Mencattini, Riccardo Cadei, Francesco Locatello
-</div>
-<div class="metadata-value listing-venue">
-ICLR
-</div>
-<div class="metadata-value listing-year">
-2026
-</div>
-<div class="metadata-value listing-modifier">
-Oral
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="2" data-categories="UmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ0R5bmFtaWNhbCUyMFN5c3RlbXMlMkNJbnRlcnByZXRhYmlsaXR5" data-listing-date-sort="1748390400000" data-listing-file-modified-sort="1782322909072" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1279">
-<div class="thumbnail"><a href="./papers/2026/navigating-latent-space-dynamics/index.html" class="no-external">
-
-<img loading="lazy" src="./papers/2026/navigating-latent-space-dynamics/seed_fields.png" class="thumbnail-image">
-
-</a></div>
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="./papers/2026/navigating-latent-space-dynamics/index.html" class="no-external">Navigating the Latent Space Dynamics of Neural Models</a>
-</h3>
-<div class="delink listing-description"><a href="./papers/2026/navigating-latent-space-dynamics/index.html" class="no-external">
-<p>Neural networks compress data into compact latent representations. This paper reads any autoencoder as a dynamical system on its latent manifold: iterating the encode–decode map, with no extra training, induces a latent vector field whose trajectories and fixed points expose properties of both the model and the data. Standard training biases the map toward local contraction, so attractors emerge naturally. Treating these attractors as a representation of the network enables analyzing the memorization–generalization spectrum throughout training, probing the knowledge stored in a model’s weights without any input data, and flagging out-of-distribution samples from their trajectories — validated on vision foundation models including Stable Diffusion’s autoencoder and ViT-MAE.</p>
-</a></div>
-</div>
-<div class="metadata">
-<a href="./papers/2026/navigating-latent-space-dynamics/index.html" class="no-external">
-<div class="listing-date">
-May 28, 2025
-</div>
-<div class="listing-author">
-Marco Fumero, Luca Moschella, Emanuele Rodolà, Francesco Locatello
-</div>
-<div class="metadata-value listing-venue">
-ICLR
-</div>
-<div class="metadata-value listing-year">
-2026
-</div>
-<div class="metadata-value listing-modifier">
-Oral
-</div>
-</a>
-</div>
-</div>
 </div>
 <div class="listing-no-matching d-none">No matching items</div>
 </div>
