@@ -918,6 +918,24 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 </script>
+<script>
+// Reassemble the email links that scripts/cloak-emails.py cloaked at build time.
+// That post-render step strips every `href="mailto:..."` down to a base64
+// `data-cloak` attribute so the plaintext address never ships in the static
+// HTML (defeats non-JS email harvesters). Here we decode it back into a working
+// mailto link for real visitors, the instant the page loads.
+// Progressive enhancement: with JS off the link is inert, but the address was
+// never visible anyway (paper authors are an envelope icon, team links say
+// "Email"), so nothing readable is lost.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("a[data-cloak]").forEach(function (a) {
+    try {
+      a.setAttribute("href", "mailto:" + atob(a.getAttribute("data-cloak")));
+      a.removeAttribute("data-cloak");                          // idempotent
+    } catch (e) {}
+  });
+});
+</script>
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     // Ensure there is a toggle, if there isn't float one in the top right

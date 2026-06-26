@@ -382,7 +382,7 @@ window.Quarto = {
   </div>
 </header>
     <div class="about-links">
-  <a href="mailto:Berker.Demirel@ist.ac.at" class="about-link" rel="" target="">
+  <a data-cloak="QmVya2VyLkRlbWlyZWxAaXN0LmFjLmF0" class="about-link" rel="" target="">
     <i class="bi bi-envelope"></i>
      <span class="about-link-text">Email</span>
   </a>
@@ -906,6 +906,24 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       open(img.currentSrc || img.src, img.alt);
     });
+  });
+});
+</script>
+<script>
+// Reassemble the email links that scripts/cloak-emails.py cloaked at build time.
+// That post-render step strips every `href="mailto:..."` down to a base64
+// `data-cloak` attribute so the plaintext address never ships in the static
+// HTML (defeats non-JS email harvesters). Here we decode it back into a working
+// mailto link for real visitors, the instant the page loads.
+// Progressive enhancement: with JS off the link is inert, but the address was
+// never visible anyway (paper authors are an envelope icon, team links say
+// "Email"), so nothing readable is lost.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("a[data-cloak]").forEach(function (a) {
+    try {
+      a.setAttribute("href", "mailto:" + atob(a.getAttribute("data-cloak")));
+      a.removeAttribute("data-cloak");                          // idempotent
+    } catch (e) {}
   });
 });
 </script>
