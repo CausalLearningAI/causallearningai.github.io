@@ -90,7 +90,7 @@ ul.task-list li input[type="checkbox"] {
     const options = {
       valueNames: ['listing-date','listing-title','listing-author','listing-description','listing-categories','listing-venue','listing-year','listing-modifier',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] }],
       
-      searchColumns: [],
+      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -434,7 +434,41 @@ window.Quarto = {
     </div>
 </div>
 <div class="list quarto-listing-default">
+<div class="quarto-post image-right" data-index="0" data-categories="QUklMjBmb3IlMjBTY2llbmNlJTJDRHluYW1pY2FsJTIwU3lzdGVtcyUyQ1RoZW9yeQ==" data-listing-date-sort="1778284800000" data-listing-file-modified-sort="1782818639477" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1235">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">Controlling Transient Amplification Improves Long-horizon Rollouts</a>
+</h3>
+<div class="listing-categories">
 
+<div class="listing-category" onclick="window.quartoListingCategory('QUklMjBmb3IlMjBTY2llbmNl'); return false;">AI for Science</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('RHluYW1pY2FsJTIwU3lzdGVtcw=='); return false;">Dynamical Systems</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('VGhlb3J5'); return false;">Theory</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">
+<p>Autoregressive neural simulators match classical solvers on short-horizon prediction but degrade rapidly over long rollouts. This work identifies transient amplification of perturbations along rollout trajectories as a structural driver of that error: when the Jacobians along an autoregressive trajectory are non-normal and non-commuting, errors are amplified transiently even when the system is asymptotically stable. The authors propose commutativity regularization — a commutator penalty and a normality penalty, both estimated with Jacobian-vector products and carrying no inference-time cost — and prove a propagator bound that replaces the per-step spectral-norm decay rate with the shared spectral radius under approximate commutativity and normality. On UNet and FNO variants across the 1D KdV equation, the 2D barotropic vorticity equation, sea-surface temperature, and fine-tuning of FourCastNet on ERA5, the method sustains long-horizon rollouts over thousands of steps, with the largest gains out-of-distribution.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">
+<div class="listing-date">
+May 9, 2026
+</div>
+<div class="listing-author">
+Adeel Pervez, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+arXiv
+</div>
+<div class="metadata-value listing-year">
+2026
+</div>
+</a>
+</div>
+</div>
 </div>
 <div class="listing-no-matching d-none">No matching items</div>
 </div>
