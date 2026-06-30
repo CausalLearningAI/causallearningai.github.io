@@ -69,7 +69,7 @@ div.csl-indent {
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-a208a425cdc81fcf85dda97472dc73c1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
@@ -397,9 +397,9 @@ window.Quarto = {
    
   <ul>
   <li><a href="#the-gap-between-one-step-and-many" id="toc-the-gap-between-one-step-and-many" class="nav-link active" data-scroll-target="#the-gap-between-one-step-and-many">The gap between one step and many</a></li>
-  <li><a href="#transient-amplification-as-the-mechanism" id="toc-transient-amplification-as-the-mechanism" class="nav-link" data-scroll-target="#transient-amplification-as-the-mechanism">Transient amplification as the mechanism</a></li>
-  <li><a href="#commutativity-regularization" id="toc-commutativity-regularization" class="nav-link" data-scroll-target="#commutativity-regularization">Commutativity regularization</a></li>
-  <li><a href="#what-the-method-buys-at-long-horizons" id="toc-what-the-method-buys-at-long-horizons" class="nav-link" data-scroll-target="#what-the-method-buys-at-long-horizons">What the method buys at long horizons</a></li>
+  <li><a href="#transient-amplification" id="toc-transient-amplification" class="nav-link" data-scroll-target="#transient-amplification">Transient amplification</a></li>
+  <li><a href="#from-dynamical-systems-to-neural-networks" id="toc-from-dynamical-systems-to-neural-networks" class="nav-link" data-scroll-target="#from-dynamical-systems-to-neural-networks">From dynamical systems to neural networks</a></li>
+  <li><a href="#long-horizon-rollouts-in-practice" id="toc-long-horizon-rollouts-in-practice" class="nav-link" data-scroll-target="#long-horizon-rollouts-in-practice">Long-horizon rollouts in practice</a></li>
   <li><a href="#takeaways" id="toc-takeaways" class="nav-link" data-scroll-target="#takeaways">Takeaways</a></li>
   </ul>
 </nav>
@@ -430,7 +430,7 @@ window.Quarto = {
   <div class="quarto-title-meta-heading">Affiliation</div>
   
     <div class="quarto-title-meta-contents">
-    <p class="author">Adeel Pervez <a href="mailto:Adeel.Pervez@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+    <p class="author">Adeel Pervez <a data-cloak="QWRlZWwuUGVydmV6QGlzdC5hYy5hdA==" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
   </div>
   <div class="quarto-title-meta-contents">
         <p class="affiliation">
@@ -438,7 +438,7 @@ window.Quarto = {
           </p>
       </div>
     <div class="quarto-title-meta-contents">
-    <p class="author">Francesco Locatello <a href="mailto:Francesco.Locatello@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+    <p class="author">Francesco Locatello <a data-cloak="RnJhbmNlc2NvLkxvY2F0ZWxsb0Bpc3QuYWMuYXQ=" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
   </div>
   <div class="quarto-title-meta-contents">
         <p class="affiliation">
@@ -471,54 +471,73 @@ window.Quarto = {
 <div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2605.08856" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a></div>
 <section id="the-gap-between-one-step-and-many" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="the-gap-between-one-step-and-many">The gap between one step and many</h2>
-<p>Neural networks that advance a physical state one step at a time have become remarkably capable. Models such as FourCastNet <span class="citation" data-cites="pathak2022fourcastnet">(<a href="#ref-pathak2022fourcastnet" role="doc-biblioref">Pathak et al. 2022</a>)</span>, GraphCast <span class="citation" data-cites="lam2023graphcast">(<a href="#ref-lam2023graphcast" role="doc-biblioref">Lam et al. 2023</a>)</span>, Pangu-Weather <span class="citation" data-cites="bi2023pangu">(<a href="#ref-bi2023pangu" role="doc-biblioref">Bi et al. 2023</a>)</span>, NeuralGCM <span class="citation" data-cites="kochkov2024neuralgcm">(<a href="#ref-kochkov2024neuralgcm" role="doc-biblioref">Kochkov et al. 2024</a>)</span>, and the diffusion-based GenCast <span class="citation" data-cites="price2025gencast">(<a href="#ref-price2025gencast" role="doc-biblioref">Price et al. 2025</a>)</span> now match or surpass operational numerical weather prediction at lead times of five to seven days, with parallel progress in fluid dynamics <span class="citation" data-cites="sanchezgonzalez2020gns">(<a href="#ref-sanchezgonzalez2020gns" role="doc-biblioref">Sanchez-Gonzalez et al. 2020</a>)</span> using Fourier Neural Operators <span class="citation" data-cites="li2021fno">(<a href="#ref-li2021fno" role="doc-biblioref">Li et al. 2021</a>)</span> and U-Nets <span class="citation" data-cites="ronneberger2015unet">(<a href="#ref-ronneberger2015unet" role="doc-biblioref">Ronneberger et al. 2015</a>)</span>. Yet the <em>same</em> models, run iteratively for many steps, degrade far faster than their single-step accuracy would suggest: predictions that match the ground truth at one step can drift or diverge within tens of steps on complex systems <span class="citation" data-cites="lippe2023pderefiner">(<a href="#ref-lippe2023pderefiner" role="doc-biblioref">Lippe et al. 2023</a>)</span>. Closing this gap is the central open problem for neural simulators of physical dynamics.</p>
+<p>Neural networks are increasingly used to simulate physical systems — the weather, ocean currents, turbulent fluids, molecules. The common recipe is to train a network to take one small step forward in time: given the state of the system now, predict what it looks like a moment later. To forecast far into the future, you simply run the network in a loop, feeding each prediction back in as the next input. Trained this way, these models have become remarkably accurate and often run orders of magnitude faster than the classical solvers they imitate <span class="citation" data-cites="pathak2022fourcastnet lam2023graphcast kochkov2024neuralgcm sanchezgonzalez2020gns">(<a href="#ref-pathak2022fourcastnet" role="doc-biblioref">Pathak et al. 2022</a>; <a href="#ref-lam2023graphcast" role="doc-biblioref">Lam et al. 2023</a>; <a href="#ref-kochkov2024neuralgcm" role="doc-biblioref">Kochkov et al. 2024</a>; <a href="#ref-sanchezgonzalez2020gns" role="doc-biblioref">Sanchez-Gonzalez et al. 2020</a>)</span>.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-lam2023graphcast" class="csl-entry" role="listitem">
 Lam, Remi, Alvaro Sanchez-Gonzalez, Matthew Willson, et al. 2023. <span>“Learning Skillful Medium-Range Global Weather Forecasting.”</span> <em>Science</em> 382 (6677). <a href="https://doi.org/10.1126/science.adi2336">https://doi.org/10.1126/science.adi2336</a>.
-</div><div id="ref-bi2023pangu" class="csl-entry" role="listitem">
-Bi, Kaifeng, Lingxi Xie, Hengheng Zhang, Xin Chen, Xiaotian Gu, and Qi Tian. 2023. <span>“Accurate Medium-Range Global Weather Forecasting with <span>3D</span> Neural Networks.”</span> <em>Nature</em> 619: 533–38. <a href="https://doi.org/10.1038/s41586-023-06185-3">https://doi.org/10.1038/s41586-023-06185-3</a>.
 </div><div id="ref-kochkov2024neuralgcm" class="csl-entry" role="listitem">
 Kochkov, Dmitrii, Janni Yuval, Ian Langmore, et al. 2024. <span>“Neural General Circulation Models for Weather and Climate.”</span> <em>Nature</em> 632: 1060–66.
-</div><div id="ref-price2025gencast" class="csl-entry" role="listitem">
-Price, Ilan, Alvaro Sanchez-Gonzalez, Ferran Alet, et al. 2025. <span>“Probabilistic Weather Forecasting with Machine Learning.”</span> <em>Nature</em> 637: 84–90.
 </div><div id="ref-sanchezgonzalez2020gns" class="csl-entry" role="listitem">
 Sanchez-Gonzalez, Alvaro, Jonathan Godwin, Tobias Pfaff, Rex Ying, Jure Leskovec, and Peter W. Battaglia. 2020. <span>“Learning to Simulate Complex Physics with Graph Networks.”</span> <em>International Conference on Machine Learning (ICML)</em>.
-</div><div id="ref-li2021fno" class="csl-entry" role="listitem">
-Li, Zongyi, Nikola Kovachki, Kamyar Azizzadenesheli, et al. 2021. <span>“Fourier Neural Operator for Parametric Partial Differential Equations.”</span> <em>International Conference on Learning Representations (ICLR)</em>. <a href="https://arxiv.org/abs/2010.08895">https://arxiv.org/abs/2010.08895</a>.
-</div><div id="ref-ronneberger2015unet" class="csl-entry" role="listitem">
-Ronneberger, Olaf, Philipp Fischer, and Thomas Brox. 2015. <span>“<span>U-Net</span>: Convolutional Networks for Biomedical Image Segmentation.”</span> <em>Medical Image Computing and Computer-Assisted Intervention (MICCAI)</em>, 234–41. <a href="https://doi.org/10.1007/978-3-319-24574-4_28">https://doi.org/10.1007/978-3-319-24574-4_28</a>.
+</div></div><p>The trouble is the loop itself. Each prediction carries a small error, and as the model consumes its own output step after step, accuracy degrades far faster than the single-step error would suggest: a model that nearly matches the ground truth after one step can drift or blow up within tens of steps <span class="citation" data-cites="lippe2023pderefiner">(<a href="#ref-lippe2023pderefiner" role="doc-biblioref">Lippe et al. 2023</a>)</span>. Closing this gap between one step and many is the central open problem for neural simulators of dynamics.</p>
+<div class="page-columns page-full"><p>The usual explanation is <strong>distributional shift</strong> — the model trains on clean data but rolls out on its own imperfect outputs, which slowly wander off the training distribution. Methods that expose the model to its own errors during training <span class="citation" data-cites="lippe2023pderefiner">(<a href="#ref-lippe2023pderefiner" role="doc-biblioref">Lippe et al. 2023</a>)</span> or correct predictions at inference <span class="citation" data-cites="kohl2024diffusion">(<a href="#ref-kohl2024diffusion" role="doc-biblioref">Kohl et al. 2026</a>)</span> help, but they treat drift as a <em>data</em> or <em>inference</em> problem. They do not explain the structural mechanism that makes a small error grow in the first place. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">This work is complementary to those methods, not a replacement: it targets the structural component of error growth, and the two should combine.</span></div></div>
+<div class="no-row-height column-margin column-container"><div id="ref-lippe2023pderefiner" class="csl-entry" role="listitem">
+Lippe, Phillip, Bastiaan S. Veeling, Paris Perdikaris, Richard E. Turner, and Johannes Brandstetter. 2023. <span>“<span>PDE</span>-Refiner: Achieving Accurate Long Rollouts with Neural <span>PDE</span> Solvers.”</span> <em>Thirty-Seventh Conference on Neural Information Processing Systems (NeurIPS)</em>. <a href="https://openreview.net/forum?id=Qv6468llWS">https://openreview.net/forum?id=Qv6468llWS</a>.
 </div><div id="ref-kohl2024diffusion" class="csl-entry" role="listitem">
 Kohl, Georg, Li-Wei Chen, and Nils Thuerey. 2026. <span>“Benchmarking Autoregressive Conditional Diffusion Models for Turbulent Flow Simulation.”</span> <em>Neural Networks</em> 199: 108641. <a href="https://doi.org/10.1016/j.neunet.2026.108641">https://doi.org/10.1016/j.neunet.2026.108641</a>.
-</div></div><div class="page-columns page-full"><p>The standard explanation is <strong>distributional shift</strong> — at training the model sees clean ground-truth inputs, but at rollout it consumes its own imperfect predictions, which progressively leave the training distribution. Methods that expose the model to its own errors during training <span class="citation" data-cites="lippe2023pderefiner">(<a href="#ref-lippe2023pderefiner" role="doc-biblioref">Lippe et al. 2023</a>)</span> or apply iterative corrections at inference <span class="citation" data-cites="kohl2024diffusion">(<a href="#ref-kohl2024diffusion" role="doc-biblioref">Kohl et al. 2026</a>)</span> are often effective, but they treat rollout drift as a <em>data or inference</em> problem and do not identify the structural mechanism behind error growth. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">This paper is complementary to those methods, not a replacement — it targets the structural component of error growth, and the authors expect the strongest results from combining the two.</span></div></div>
-</section>
-<section id="transient-amplification-as-the-mechanism" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="transient-amplification-as-the-mechanism">Transient amplification as the mechanism</h2>
-<p>Linearize the one-step map <span class="math inline">F_\theta</span> around its predicted trajectory. Writing the prediction error at step <span class="math inline">t</span> as <span class="math inline">\varepsilon_t = x_t - \hat{x}_t</span>, the error evolves under a sequence of local Jacobians,</p>
-<p><span class="math display">
-\varepsilon_{t+1} \approx J_t\,\varepsilon_t,
-\qquad
-J_t = \frac{\partial F_\theta}{\partial x}\Bigr|_{\hat{x}_t},
-</span></p>
-<p>so after <span class="math inline">T</span> steps <span class="math inline">\varepsilon_T \approx \Phi_T\,\varepsilon_0</span> with the <strong>propagator</strong> <span class="math inline">\Phi_T = J_{T-1}J_{T-2}\cdots J_0</span>. If every step is contractive, <span class="math inline">\|J_t\|_2 \le \alpha &lt; 1</span>, submultiplicativity gives <span class="math inline">\|\Phi_T\|_2 \le \alpha^T</span>. That bound, however, conceals the problem: for <strong>non-normal</strong> Jacobians the <em>intermediate</em> propagator norm <span class="math inline">\sup_{t \le T}\|\Phi_t\|_2</span> can greatly exceed <span class="math inline">\|\Phi_T\|_2</span>, due to ordering effects between non-commuting factors — growth that occurs even when each factor is contractive and the system is asymptotically stable <span class="citation" data-cites="trefethen2005spectra">(<a href="#ref-trefethen2005spectra" role="doc-biblioref">Trefethen and Embree 2005</a>)</span>. A matrix <span class="math inline">A</span> is normal when <span class="math inline">A^\top A = A A^\top</span>; normal matrices have orthonormal eigenvectors, their spectral radius equals their spectral norm, and they admit no transient growth.</p>
-<div class="no-row-height column-margin column-container"><div id="ref-trefethen2005spectra" class="csl-entry" role="listitem">
-Trefethen, Lloyd N., and Mark Embree. 2005. <em>Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators</em>. Princeton University Press.
-</div></div><div class="page-columns page-full">
-<div id="fig-transient" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-transient-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="figures/non-normal-transient.png" class="img-fluid figure-img column-page">
+</div></div></section>
+<section id="transient-amplification" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="transient-amplification">Transient amplification</h2>
+<p>The mechanism we point to is a classical phenomenon from dynamical systems called <strong>transient amplification</strong>. The idea is best seen on a simple stable system perturbed away from equilibrium. Asymptotic stability only guarantees that the perturbation eventually dies out — it says nothing about what happens on the way there.</p>
+<div class="column-page">
+<div class="quarto-layout-panel" data-layout-ncol="3">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div id="fig-stable" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-stable-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/stable.gif" class="img-fluid figure-img">
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-transient-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Normal versus non-normal transient growth on stable <span class="math inline">2\times2</span> systems. Both matrices have eigenvalues with negative real part, so both systems are asymptotically stable. The normal system (left) has orthogonal eigenvectors and its norm decays monotonically; the non-normal system (centre) has nearly parallel eigenvectors whose nearly-cancelling projections briefly reinforce one another, so the norm <span class="math inline">\|x(t)\|</span> grows to a peak well above its initial value before decaying (right).
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-stable-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: <strong>Stable.</strong> Orthogonal directions of decay (a <em>normal</em> system). The perturbation shrinks monotonically.
 </figcaption>
 </figure>
 </div>
 </div>
-<p>Normality of individual Jacobians is only half the story. Nonlinear models have <strong>state-dependent</strong> Jacobians whose directions of amplification rotate with time; when those directions are misaligned across steps, error components can grow even when no single step amplifies them. A sufficient condition for alignment is that the Jacobians across steps <strong>commute</strong>.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> Commuting normal maps share a common orthogonal eigenbasis, which suppresses transients at every horizon. The authors observe that unregularized networks trained on non-normal dynamics tend to learn Jacobians that are <em>both</em> non-normal and non-commuting, violating both conditions at once.</p>
-<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;For a linear time-varying system <span class="math inline">x_{t+1} = J_t x_t</span>, temporal commutativity — <span class="math inline">[J_{s}, J_{t}] \equiv J_s J_t - J_t J_s = 0</span> for all <span class="math inline">s,t</span> — is the analogue of normality for the static (time-invariant) case. Commuting Jacobians share an eigenbasis <span class="math inline">U</span>, so <span class="math inline">\Phi_T = U\,\Lambda_{T-1}\cdots\Lambda_0\,U^\top</span> and <span class="math inline">\|\Phi_T\|_2 \le \rho^T</span>, with the spectral radius <span class="math inline">\rho</span> — possibly strictly below the spectral norm <span class="math inline">\alpha</span> for non-normal matrices — controlling growth.</p></div></div></section>
-<section id="commutativity-regularization" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="commutativity-regularization">Commutativity regularization</h2>
-<p>To control transient amplification directly, the paper introduces <strong>commutativity regularization</strong>: two auxiliary training losses applied to latent-space Jacobians of a <em>latent advance map</em> <span class="math inline">G_\theta : \mathbf{z}_t \mapsto
-\mathbf{z}_{t+1}</span> (the UNet bottleneck, or the middle FNO layers). Let <span class="math inline">\mathbf{J}_t = \partial G_\theta / \partial \mathbf{z}\big|_{\mathbf{z}_t}</span>.</p>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div id="fig-transient" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-transient-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/transient.gif" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-transient-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: <strong>Transient.</strong> The same stable eigenvalues, but nearly parallel directions (a <em>non-normal</em> system). The norm first grows to a peak well above its starting value before decaying.
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 33.3%;justify-content: flex-start;">
+<div id="fig-unstable" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-unstable-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="figures/unstable.gif" class="img-fluid figure-img">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-unstable-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: <strong>Unstable.</strong> One direction genuinely grows. The perturbation diverges without bound.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+<p>All three systems above are built from the same kind of linear update; only the geometry of their directions differs. When those directions are <em>orthogonal</em> (a <strong>normal</strong> system), a perturbation simply decays. When they are nearly <em>parallel</em> (a <strong>non-normal</strong> system), their projections briefly reinforce one another and the perturbation is amplified — sometimes by a large factor — <em>before</em> it eventually decays. Crucially, the middle case is still asymptotically stable: it always returns to equilibrium, yet it transiently amplifies errors along the way <span class="citation" data-cites="trefethen2005spectra">(<a href="#ref-trefethen2005spectra" role="doc-biblioref">Trefethen and Embree 2005</a>)</span>. This is exactly the regime that matters in practice, because rollouts are judged at tens to hundreds of steps — the medium horizon where transients dominate. Enforcing stability alone does not protect against it.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-trefethen2005spectra" class="csl-entry" role="listitem">
+Trefethen, Lloyd N., and Mark Embree. 2005. <em>Spectra and Pseudospectra: The Behavior of Nonnormal Matrices and Operators</em>. Princeton University Press.
+</div></div></section>
+<section id="from-dynamical-systems-to-neural-networks" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="from-dynamical-systems-to-neural-networks">From dynamical systems to neural networks</h2>
+<p>The same picture transfers to a neural simulator through <strong>linearization</strong>. Following its prediction error from one step to the next, the error is advanced by the model’s local Jacobian — the linear map describing how the network responds to a small change in its input. Over a rollout the error is therefore passed through a <em>product</em> of these Jacobians, one per step, and it is the behavior of this product that decides whether errors stay small or amplify.</p>
+<p>Two properties of those Jacobians keep transients in check. First, each Jacobian should be close to <strong>normal</strong>, so that no single step amplifies errors (the within-step story above). Second, the Jacobians at successive steps should <strong>commute</strong>, so their directions of stretching stay aligned over time; otherwise a direction that one step contracts can be re-expanded by the next. Standard training rewards neither property, and unregularized networks trained on non-normal dynamics tend to learn Jacobians that are <em>both</em> non-normal and non-commuting.</p>
 <div class="page-columns page-full">
 <div id="fig-arch" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
@@ -526,126 +545,93 @@ Figure&nbsp;1: Normal versus non-normal transient growth on stable <span class="
 <img src="figures/arch-latent.png" class="img-fluid figure-img column-page">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-arch-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: The latent-advance architecture on which commutativity regularization acts: the penalties are evaluated on the bottleneck-to-bottleneck dynamics <span class="math inline">\mathbf{z}_t \mapsto \mathbf{z}_{t+1}</span>, leaving the inference path unchanged.
+Figure&nbsp;4: Commutativity regularization acts on the latent advance map <span class="math inline">\mathbf{z}_t \mapsto \mathbf{z}_{t+1}</span> (the U-Net bottleneck, or the middle FNO layers), leaving the inference path untouched.
 </figcaption>
 </figure>
 </div>
 </div>
-<p>A <strong>commutator penalty</strong> targets cross-step compounding by penalizing the Frobenius norm of the commutator of consecutive Jacobians, estimated with a single random probe <span class="math inline">\mathbf{v} \sim \mathcal{N}(0, I)</span> (a Hutchinson estimator):</p>
-<p><span class="math display">
-\mathcal{L}_\mathrm{comm} = \mathbb{E}_{\mathbf{v}}\!\left[
-  \bigl\| \mathbf{J}_{t+1}\mathbf{J}_t\mathbf{v} - \mathbf{J}_t\mathbf{J}_{t+1}\mathbf{v} \bigr\|^2
-\right].
-</span></p>
-<p>A <strong>normality penalty</strong> suppresses within-step transients by penalizing each Jacobian’s normality defect:</p>
-<p><span class="math display">
-\mathcal{L}_\mathrm{norm} = \mathbb{E}_{\mathbf{v}}\!\left[
-  \bigl\| \mathbf{J}_t^\top\mathbf{J}_t\mathbf{v} - \mathbf{J}_t\mathbf{J}_t^\top\mathbf{v} \bigr\|^2
-\right].
-</span></p>
-<p>The two are complementary: penalizing non-commutativity alone still permits large within-step transients, while penalizing non-normality alone leaves cross-step compounding uncontrolled. The full objective is <span class="math inline">\mathcal{L} =
-\mathcal{L}_\mathrm{pred} + \lambda_\mathrm{c}\mathcal{L}_\mathrm{comm} +
-\lambda_\mathrm{n}\mathcal{L}_\mathrm{norm}</span>, with <span class="math inline">\mathcal{L}_\mathrm{pred}</span> the standard single-step MSE. Crucially, every term is computed matrix-free with <code>torch.func.jvp</code>/<code>vjp</code> — no <span class="math inline">n \times n</span> Jacobian is ever stored — and <strong>the rollout procedure at inference is unchanged, so there is no inference-time cost.</strong></p>
-<p>The supporting theory is a <strong>propagator bound</strong>: when the Jacobians are <span class="math inline">\alpha</span>-contractive, have spectral radius at most <span class="math inline">\rho \le \alpha</span>, are all-pairs approximately commuting (<span class="math inline">\|[J_s, J_t]\|_F \le \varepsilon</span>), and approximately normal (<span class="math inline">\|J_t^\top J_t - J_t J_t^\top\|_F \le \eta</span>), then</p>
-<p><span class="math display">
-\|\Phi_T\|_2 \;\le\; \rho^T + 2T\alpha^{T-1}\,\delta(\varepsilon, \eta),
-\qquad \delta(\varepsilon, \eta) \to 0 \text{ as } \varepsilon, \eta \to 0.
-</span></p>
-<p>As the two penalties go to zero, the effective decay rate becomes the shared spectral radius <span class="math inline">\rho^T</span> rather than the per-step spectral norm <span class="math inline">\alpha^T</span> — a strict improvement whenever the Jacobians are non-normal.</p>
+<p><strong>Commutativity regularization</strong> adds two penalties during training to encourage exactly these properties: a <em>normality penalty</em> on each latent Jacobian and a <em>commutator penalty</em> on consecutive Jacobians. The two are complementary — controlling one without the other leaves either within-step or cross-step amplification uncontrolled. Both are estimated cheaply with Jacobian-vector products, never forming any matrix explicitly, and <strong>the rollout at inference is unchanged, so there is no inference-time cost.</strong> A propagator bound in the paper makes this precise: as the penalties shrink, long-horizon error decays at the rate set by the Jacobians’ spectral <em>radius</em> rather than their (generally larger) spectral <em>norm</em>. We refer the reader to the paper for the full method and theory.</p>
 </section>
-<section id="what-the-method-buys-at-long-horizons" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="what-the-method-buys-at-long-horizons">What the method buys at long horizons</h2>
-<div class="page-columns page-full"><p>The regularizer is evaluated across four settings spanning 1D and 2D, integrable and chaotic, synthetic and real. In each, a baseline trained with the standard prediction loss is compared against an otherwise-identical model with the commutator and normality penalties added; rollouts are evaluated on horizons far beyond the training window. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Across all settings the regularizer trades a small amount of one-step accuracy for a bounded, far more accurate long-horizon rollout.</span></div></div>
-<p><strong>KdV (1D, integrable).</strong> Models are trained on a short window of single-soliton dynamics (200 steps, 10 s of physical time) and rolled out to <span class="math inline">25\times</span> that horizon, both in-distribution and on an out-of-distribution set with up to three interacting solitons. By step 1000 the regularized UNet (UNet+CR) shows a <span class="math inline">5\times</span> improvement over the baseline. PDE-Refiner <span class="citation" data-cites="lippe2023pderefiner">(<a href="#ref-lippe2023pderefiner" role="doc-biblioref">Lippe et al. 2023</a>)</span> is the strongest unregularized baseline at shorter horizons — more accurate than UNet+CR up to roughly 1000 steps — but pays a <span class="math inline">5\times</span> inference-time cost and, by step 5000, is itself <span class="math inline">5\times</span> worse than the training-time regularizer. On the spectral backbones the effect is sharper still: the unregularized FNO has a one-step MSE about <span class="math inline">4\times</span> better than its regularized counterpart, yet its rollout becomes unstable around step 100; U-FNO holds until about step 500 before collapsing. Both regularized variants stay bounded throughout the 2000-step window. On the multi-soliton OOD split the unregularized UNet and PDE-Refiner both degrade severely, while UNet+CR is essentially unaffected.</p>
-<div class="no-row-height column-margin column-container"><div id="ref-lippe2023pderefiner" class="csl-entry" role="listitem">
-Lippe, Phillip, Bastiaan S. Veeling, Paris Perdikaris, Richard E. Turner, and Johannes Brandstetter. 2023. <span>“<span>PDE</span>-Refiner: Achieving Accurate Long Rollouts with Neural <span>PDE</span> Solvers.”</span> <em>Thirty-Seventh Conference on Neural Information Processing Systems (NeurIPS)</em>. <a href="https://openreview.net/forum?id=Qv6468llWS">https://openreview.net/forum?id=Qv6468llWS</a>.
-</div></div><p><strong>Barotropic vorticity (2D, chaotic).</strong> On this dissipative, chaotic fluid PDE the unregularized 2D UNet destabilizes <em>inside</em> the training horizon: by <span class="math inline">t=1</span> s (20 steps) the baseline is already <span class="math inline">5\times</span> worse than the regularized model, and from <span class="math inline">t\approx3</span> s it saturates at RMSE <span class="math inline">\approx 3</span>–<span class="math inline">6</span>, decorrelated from the ground truth. At the end of the 10 s training window the regularized RMSE is <span class="math inline">9\times</span> smaller than the baseline; in normalized-MSE terms the gap is <span class="math inline">82\times</span>. The same regularizer that controls slow drift on KdV here converts an instability into a bounded, on-attractor rollout.</p>
-<div class="page-columns page-full">
-<div id="fig-bve" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-bve-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="figures/bve-rmse.png" class="img-fluid figure-img column-page">
+<section id="long-horizon-rollouts-in-practice" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="long-horizon-rollouts-in-practice">Long-horizon rollouts in practice</h2>
+<div class="page-columns page-full"><p>We evaluate the regularizer across settings spanning 1D and 2D, integrable and chaotic, synthetic and real. In each case an otherwise-identical baseline is compared against a model with the two penalties added, and rollouts are run far beyond the training window. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">The recurring trade: a small amount of one-step accuracy is exchanged for a bounded, far more accurate long-horizon rollout.</span></div></div>
+<p><strong>KdV (1D).</strong> Trained on a short window of single-soliton dynamics and rolled out to many times that horizon, the regularized U-Net stays accurate where the baseline drifts. The effect is sharpest out-of-distribution: on initial conditions with several interacting solitons — never seen in training — the baseline degrades badly while the regularized model is largely unaffected.</p>
+<div class="column-page">
+<div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start;">
+<figure style="flex:1; min-width:240px; margin:0;" class="figure">
+<img src="figures/kdv/id/initial_condition.png" style="width:100%; border-radius:4px;" class="figure-img">
+<figcaption style="font-size:0.8rem;">
+In-distribution — initial condition (single soliton)
+</figcaption>
+</figure>
+<figure style="flex:1; min-width:240px; margin:0;" class="figure">
+<video src="figures/kdv/id/UNet_video.mp4" autoplay="" loop="" muted="" playsinline="" controls="" style="width:100%; border-radius:4px;">
+</video>
+<figcaption style="font-size:0.8rem;">
+In-distribution — U-Net (baseline)
+</figcaption>
+</figure>
+<figure style="flex:1; min-width:240px; margin:0;" class="figure">
+<video src="figures/kdv/id/UNet+Comm._Reg_video.mp4" autoplay="" loop="" muted="" playsinline="" controls="" style="width:100%; border-radius:4px;">
+</video>
+<figcaption style="font-size:0.8rem;">
+In-distribution — U-Net + Comm. Reg. (ours)
+</figcaption>
+</figure>
 </div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bve-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;3: Barotropic vorticity rollout MSE per step on the held-out test set. The unregularized UNet (solid) destabilizes inside the training window while the regularized UNet+CR (dashed) stays near zero throughout.
+<div style="display:flex; gap:1rem; flex-wrap:wrap; align-items:flex-start; margin-top:1rem;">
+<figure style="flex:1; min-width:240px; margin:0;" class="figure">
+<img src="figures/kdv/ood/initial_condition_ood.png" style="width:100%; border-radius:4px;" class="figure-img">
+<figcaption style="font-size:0.8rem;">
+Out-of-distribution — initial condition (multiple solitons)
+</figcaption>
+</figure>
+<figure style="flex:1; min-width:240px; margin:0;" class="figure">
+<video src="figures/kdv/ood/UNet_video.mp4" autoplay="" loop="" muted="" playsinline="" controls="" style="width:100%; border-radius:4px;">
+</video>
+<figcaption style="font-size:0.8rem;">
+Out-of-distribution — U-Net (baseline)
+</figcaption>
+</figure>
+<figure style="flex:1; min-width:240px; margin:0;" class="figure">
+<video src="figures/kdv/ood/UNet+Comm._Reg_video.mp4" autoplay="" loop="" muted="" playsinline="" controls="" style="width:100%; border-radius:4px;">
+</video>
+<figcaption style="font-size:0.8rem;">
+Out-of-distribution — U-Net + Comm. Reg. (ours)
 </figcaption>
 </figure>
 </div>
 </div>
-<p><strong>Sea-surface temperature (2D, real, near-periodic).</strong> A 2D UNet is trained from scratch on weekly NOAA OISST temperature <span class="citation" data-cites="reynolds2002oisst">(<a href="#ref-reynolds2002oisst" role="doc-biblioref">Reynolds et al. 2002</a>)</span> on a global <span class="math inline">1^\circ</span> grid (1200-week training split) and rolled autoregressively for 376 weeks (about 7.2 years) from the first test frame. The two models are tied at one-week lead and diverge from about three months onward: the baseline drifts in phase against the annual cycle, while the regularized rollout tracks the seasonal cycle to the end of the window. Averaged over the full 376-step rollout the regularized model is <span class="math inline">3.0\times</span> more accurate.</p>
-<div class="no-row-height column-margin column-container"><div id="ref-reynolds2002oisst" class="csl-entry" role="listitem">
-Reynolds, Richard W., Nick A. Rayner, Thomas M. Smith, Diane C. Stokes, and Wanqiu Wang. 2002. <span>“An Improved in Situ and Satellite <span>SST</span> Analysis for Climate.”</span> <em>Journal of Climate</em> 15 (13): 1609–25. <a href="https://doi.org/10.1175/1520-0442(2002)015<1609:AIISAS>2.0.CO;2">https://doi.org/10.1175/1520-0442(2002)015&lt;1609:AIISAS&gt;2.0.CO;2</a>.
-</div><div id="ref-pathak2022fourcastnet" class="csl-entry" role="listitem">
+<p><strong>Barotropic vorticity (2D, chaotic).</strong> On this dissipative, chaotic fluid the unregularized U-Net destabilizes <em>inside</em> the training horizon, saturating into a field decorrelated from the truth. The same regularizer that controls slow drift on KdV here converts an instability into a bounded, on-attractor rollout.</p>
+<div class="column-page">
+<figure style="margin:0;" class="figure">
+<video src="figures/vorticity/rollout_video_trajs0_1.mp4" autoplay="" loop="" muted="" playsinline="" controls="" style="width:100%; border-radius:4px;">
+</video>
+<figcaption style="font-size:0.8rem;">
+Barotropic vorticity rollout: ground truth, baseline, and regularized U-Net.
+</figcaption>
+</figure>
+</div>
+<p><strong>FourCastNet on ERA5 (real, large-scale).</strong> Starting from the pretrained FourCastNet weather model <span class="citation" data-cites="pathak2022fourcastnet">(<a href="#ref-pathak2022fourcastnet" role="doc-biblioref">Pathak et al. 2022</a>)</span>, we fine-tune on a few in-distribution years of its own training data. Plain fine-tuning <em>worsens</em> the long-horizon near-surface temperature forecast; the same data <em>with</em> commutativity regularization turns that regression into a substantial improvement over the frozen model — no new data, no inference-time cost.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-pathak2022fourcastnet" class="csl-entry" role="listitem">
 Pathak, Jaideep, Shashank Subramanian, Peter Harrington, et al. 2022. <span>“<span>FourCastNet</span>: A Global Data-Driven High-Resolution Weather Model Using Adaptive <span>F</span>ourier Neural Operators.”</span> <em>arXiv Preprint arXiv:2202.11214</em>. <a href="https://arxiv.org/abs/2202.11214">https://arxiv.org/abs/2202.11214</a>.
-</div></div><p><strong>FourCastNet on ERA5 (real, large-scale).</strong> The method is tested on the pretrained FourCastNet v1 weather model <span class="citation" data-cites="pathak2022fourcastnet">(<a href="#ref-pathak2022fourcastnet" role="doc-biblioref">Pathak et al. 2022</a>)</span>, a 74 M-parameter AFNO mapping the 20-channel ERA5 state at <span class="math inline">720\times1440</span> (<span class="math inline">0.25^\circ</span>) to the state 6 h later. Fine-tuning on three in-distribution years (2013–2015) of FourCastNet’s own training range, with the regularizer applied to the last two AFNO blocks, is compared against the frozen pretrained model and a plain fine-tune on the same data. The headline finding: <strong>plain fine-tuning actively worsens</strong> the long-horizon near-surface temperature forecast, while the same data <em>with</em> commutativity regularization turns that regression into a substantial improvement — without any new data and without inference-time cost.</p>
-<p>On 40-step (10-day) rollouts over ERA5 2018 (41 initial conditions, latitude- weighted RMSE), the regimes are tied within about 5% through day 6 and split sharply from day 8 on. At day 10 on near-surface temperature <span class="math inline">t_\mathrm{2m}</span>:</p>
-<div id="tbl-fcn" class="quarto-float quarto-figure quarto-figure-center anchored">
-<figure class="quarto-float quarto-float-tbl figure">
-<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-fcn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;1: Day-6/8/10 latitude-weighted <span class="math inline">t_\mathrm{2m}</span> rollout RMSE [K] on held-out ERA5 2018. Plain fine-tuning regresses badly at day 10 while the regularized fine-tune improves on the frozen model.
-</figcaption>
-<div aria-describedby="tbl-fcn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<table class="caption-top table">
-<colgroup>
-<col style="width: 42%">
-<col style="width: 36%">
-<col style="width: 9%">
-<col style="width: 11%">
-</colgroup>
-<thead>
-<tr class="header">
-<th style="text-align: left;">Regime (ERA5 2018)</th>
-<th style="text-align: right;"><span class="math inline">t_\mathrm{2m}</span> RMSE day 6</th>
-<th style="text-align: right;">day 8</th>
-<th style="text-align: right;">day 10</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td style="text-align: left;">Frozen FourCastNet</td>
-<td style="text-align: right;">2.34</td>
-<td style="text-align: right;">3.00</td>
-<td style="text-align: right;">7.53</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Plain fine-tune (2013–2015)</td>
-<td style="text-align: right;">2.36</td>
-<td style="text-align: right;">3.97</td>
-<td style="text-align: right;">16.16</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">FourCastNet + CR (2013–2015)</td>
-<td style="text-align: right;">2.39</td>
-<td style="text-align: right;">2.87</td>
-<td style="text-align: right;">4.48</td>
-</tr>
-</tbody>
-</table>
-</div>
-</figure>
-</div>
-<p>Relative to the frozen model’s 7.53 K at day 10, the regularized fine-tune’s 4.48 K is a <strong>41% improvement</strong>, while the plain fine-tune degrades to 16.16 K. On the upper-air channels the regularized and frozen models stay within about 1–3% at every lead, while the plain fine-tune again drifts at the longest lead (e.g.&nbsp;<span class="math inline">t_{850}</span> at day 10: 4.26 K frozen, 6.33 K plain fine-tune, 4.14 K regularized). A held-out 2019 evaluation shows the same pattern.</p>
-<div class="page-columns page-full">
-<div id="fig-fcn" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-fcn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="figures/fcn-rmse.png" class="img-fluid figure-img column-page">
-</div>
-<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-fcn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: ERA5 rollout RMSE versus lead time on <span class="math inline">t_\mathrm{2m}</span> and <span class="math inline">z_{500}</span> for held-out years 2018 and 2019, including the fine-tune-only regime. Fine-tuning alone destroys long-horizon <span class="math inline">t_\mathrm{2m}</span>; the same data with commutativity regularization pulls well below the frozen FourCastNet baseline.
+</div></div><div class="column-page">
+<figure style="margin:0;" class="figure">
+<video src="figures/fcn/t2m_error_video_compare.mp4" autoplay="" loop="" muted="" playsinline="" controls="" style="width:100%; border-radius:4px;">
+</video>
+<figcaption style="font-size:0.8rem;">
+Near-surface temperature (<span class="math inline">t_\mathrm{2m}</span>) rollout error on held-out ERA5: frozen vs.&nbsp;plain fine-tune vs.&nbsp;regularized fine-tune.
 </figcaption>
 </figure>
-</div>
 </div>
 </section>
 <section id="takeaways" class="level2">
 <h2 class="anchored" data-anchor-id="takeaways">Takeaways</h2>
-<p>The paper identifies non-normal, non-commuting latent Jacobians as a structural driver of long-horizon rollout error — one not addressed by stability alone, since stable maps can still produce large transient amplification at the medium-horizon regime where rollouts are actually evaluated. Commutativity regularization controls that mechanism with two JVP-based penalties at zero inference cost, backed by a propagator bound that replaces the spectral-norm rate with the spectral-radius rate. The authors note the bound is linearization-based and that per-step normality with adjacent-step commutativity is a tractable surrogate for the all-pairs joint-diagonalizability the theory asks for; the method is most natural for architectures with an explicit latent bottleneck, and it is complementary to refinement and diffusion approaches that address distributional shift.</p>
+<p>Long-horizon rollout error is not only a data problem. A stable neural simulator can still amplify its own errors transiently, and non-normal, non-commuting latent Jacobians are a structural driver of that amplification — one that enforcing stability alone does not address. Commutativity regularization controls the mechanism directly with two Jacobian-vector-product penalties at zero inference cost, and it is complementary to refinement and diffusion methods that target distributional shift. For the propagator bound, the full method, and the complete experiments, we invite you to read the <a href="https://arxiv.org/abs/2605.08856">paper</a>.</p>
 
 
 
 </section>
-
 
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{pervez2026,
   author = {Pervez, Adeel and Locatello, Francesco},
@@ -1153,6 +1139,24 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       open(img.currentSrc || img.src, img.alt);
     });
+  });
+});
+</script>
+<script>
+// Reassemble the email links that scripts/cloak-emails.py cloaked at build time.
+// That post-render step strips every `href="mailto:..."` down to a base64
+// `data-cloak` attribute so the plaintext address never ships in the static
+// HTML (defeats non-JS email harvesters). Here we decode it back into a working
+// mailto link for real visitors, the instant the page loads.
+// Progressive enhancement: with JS off the link is inert, but the address was
+// never visible anyway (paper authors are an envelope icon, team links say
+// "Email"), so nothing readable is lost.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("a[data-cloak]").forEach(function (a) {
+    try {
+      a.setAttribute("href", "mailto:" + atob(a.getAttribute("data-cloak")));
+      a.removeAttribute("data-cloak");                          // idempotent
+    } catch (e) {}
   });
 });
 </script>
