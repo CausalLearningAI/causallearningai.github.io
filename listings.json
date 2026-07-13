@@ -5,7 +5,9 @@
   },
   {
     "listing": "/team/members/shimeng-huang/index.html",
-    "items": []
+    "items": [
+      "/papers/2026/mendelian-randomization-representation-learning/index.html"
+    ]
   },
   {
     "listing": "/team/members/marco-fumero/index.html",
@@ -47,17 +49,18 @@
     ]
   },
   {
-    "listing": "/index.html",
+    "listing": "/news/index.html",
     "items": []
   },
   {
-    "listing": "/news/index.html",
+    "listing": "/index.html",
     "items": []
   },
   {
     "listing": "/papers/index.html",
     "items": [
-      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html"
+      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/mendelian-randomization-representation-learning/index.html"
     ]
   },
   {
@@ -77,7 +80,8 @@
   {
     "listing": "/team/members/francesco-locatello/index.html",
     "items": [
-      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html"
+      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/mendelian-randomization-representation-learning/index.html"
     ]
   },
   {
