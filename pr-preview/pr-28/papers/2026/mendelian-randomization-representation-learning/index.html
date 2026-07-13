@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Shimeng Huang">
-<meta name="author" content="Matthew Robinson">
+<meta name="author" content="Matthew R. Robinson">
 <meta name="author" content="Francesco Locatello">
 <meta name="dcterms.date" content="2026-02-23">
 <meta name="description" content="Mendelian Randomization (MR) uses genetic variants as instruments to estimate causal effects from observational data, but its core assumptions — especially the independence between instruments and unobserved confounders — are routinely broken by population stratification and assortative mating. Leveraging the growing availability of multi-environment biobank data, this work proposes a representation-learning framework that exploits cross-environment invariance to recover the latent exogenous component of a confounded genetic instrument. It provides identifiability guarantees for recovering these latent instruments under several mixing mechanisms, and demonstrates effective bias correction in simulations and in semi-synthetic experiments built from the All of Us Research Hub.">
@@ -70,7 +70,7 @@ div.csl-indent {
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-a208a425cdc81fcf85dda97472dc73c1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
@@ -154,7 +154,7 @@ window.Quarto = {
 <meta name="twitter:card" content="summary_large_image">
 <meta name="citation_title" content="Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning">
 <meta name="citation_author" content="Shimeng Huang">
-<meta name="citation_author" content="Matthew Robinson">
+<meta name="citation_author" content="Matthew R. Robinson">
 <meta name="citation_author" content="Francesco Locatello">
 <meta name="citation_publication_date" content="2026-02-23">
 <meta name="citation_cover_date" content="2026-02-23">
@@ -178,6 +178,8 @@ window.Quarto = {
 <meta name="citation_reference" content="citation_title=A kernel two-sample test;,citation_author=Arthur Gretton;,citation_author=Karsten M. Borgwardt;,citation_author=Malte J. Rasch;,citation_author=Bernhard Schölkopf;,citation_author=Alexander J. Smola;,citation_publication_date=2012;,citation_cover_date=2012;,citation_year=2012;,citation_issue=25;,citation_volume=13;,citation_journal_title=Journal of Machine Learning Research;">
 <meta name="citation_reference" content="citation_title=Measuring statistical dependence with Hilbert–Schmidt norms;,citation_author=Arthur Gretton;,citation_author=Olivier Bousquet;,citation_author=Alex Smola;,citation_author=Bernhard Schölkopf;,citation_publication_date=2005;,citation_cover_date=2005;,citation_year=2005;,citation_conference_title=Algorithmic learning theory (ALT);,citation_conference=Springer;">
 <meta name="citation_reference" content="citation_title=Representation learning with contrastive predictive coding;,citation_author=Aaron Oord;,citation_author=Yazhe Li;,citation_author=Oriol Vinyals;,citation_publication_date=2018;,citation_cover_date=2018;,citation_year=2018;,citation_journal_title=arXiv preprint arXiv:1807.03748;">
+<meta name="citation_reference" content="citation_title=Theoretical and empirical quantification of the accuracy of polygenic scores in ancestry divergent populations;,citation_author=Y Wang;,citation_author=J Guo;,citation_author=G Ni;,citation_author=J Yang;,citation_author=PM Visscher;,citation_author=L Yengo;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_issue=1;,citation_volume=11;,citation_journal_title=Nature Communications;,citation_publisher=Nature Publishing Group;">
+<meta name="citation_reference" content="citation_title=Polygenic prediction across populations is influenced by ancestry, genetic architecture, and methodology;,citation_author=Ying Wang;,citation_author=Kristy Tsuo;,citation_author=Masahiro Kanai;,citation_author=Alicia R Martin;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_issue=10;,citation_volume=3;,citation_journal_title=Cell Genomics;,citation_publisher=Elsevier;">
 </head>
 
 <body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
@@ -435,7 +437,7 @@ window.Quarto = {
   <div class="quarto-title-meta-heading">Affiliation</div>
   
     <div class="quarto-title-meta-contents">
-    <p class="author">Shimeng Huang <a href="mailto:shimeng.huang@ist.ac.at" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
+    <p class="author">Shimeng Huang <a data-cloak="c2hpbWVuZy5odWFuZ0Bpc3QuYWMuYXQ=" class="quarto-title-author-email"><i class="bi bi-envelope"></i></a> </p>
   </div>
   <div class="quarto-title-meta-contents">
         <p class="affiliation">
@@ -443,7 +445,7 @@ window.Quarto = {
           </p>
       </div>
     <div class="quarto-title-meta-contents">
-    <p class="author">Matthew Robinson </p>
+    <p class="author">Matthew R. Robinson </p>
   </div>
   <div class="quarto-title-meta-contents">
         <p class="affiliation">
@@ -497,45 +499,154 @@ Angrist, Joshua D., Guido W. Imbens, and Donald B. Rubin. 1996. <span>“Identif
 <div class="page-columns page-full"><p></p><div class="no-row-height column-margin column-container"><span class="margin-aside">Relevance is empirically checkable; exchangeability and the exclusion restriction are not, and are the ones that break in practice <span class="citation" data-cites="swerdlow2016selecting">(<a href="#ref-swerdlow2016selecting" role="doc-biblioref"><span class="nocase">Swerdlow et al.</span> 2016</a>)</span>.</span></div><div class="no-row-height column-margin column-container"><div id="ref-swerdlow2016selecting" class="csl-entry" role="listitem">
 <span class="nocase">Swerdlow, Daniel I., Karoline B. Kuchenbaecker, Sonia Shah, et al.</span> 2016. <span>“Selecting Instruments for <span>Mendelian</span> Randomization in the Wake of Genome-Wide Association Studies.”</span> <em>International Journal of Epidemiology</em> 45 (5): 1600–1616.
 </div></div></div>
-<p>The trouble is that in real genetic data the exchangeability condition is routinely violated. <strong>Population stratification</strong> and assortative mating make genetic variants and phenotypes share ancestry- and environment-driven influences, so the variant is no longer independent of the confounder, and the MR estimate is biased.</p>
-<p>A worked example makes the failure concrete. Suppose we want the average causal effect (ACE) of type II diabetes (<span class="math inline">D</span>) on coronary artery disease (<span class="math inline">Y</span>), both confounded by unobserved population-level factors <span class="math inline">H</span>. The candidate instruments <span class="math inline">Z = (Z_1, Z_2, Z_3)</span> are each a mixture of latent sources <span class="math inline">U = (U_1, U_2, U_3)</span>: <span class="math inline">U_2</span> and <span class="math inline">U_3</span> are stochastic recombination governed by Mendel’s law (valid), while <span class="math inline">U_1</span> is driven by population factors <span class="math inline">H</span> (invalid). Because every observed variant mixes in a little of the invalid <span class="math inline">U_1</span>, <strong>all of <span class="math inline">Z_1, Z_2, Z_3</span> become invalid instruments</strong> — even though two clean instruments are hiding inside.</p>
-<div class="page-columns page-full">
-<div id="fig-entangle" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-entangle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="fig-entangle.svg" class="img-fluid figure-img column-page">
+<p>The trouble is that in real genetic data the exchangeability condition is often violated. <strong>Population stratification</strong> and assortative mating make genetic variants and phenotypes share ancestry- and environment-driven influences, so the variant is no longer independent of the confounder, and the MR estimate is biased.</p>
+<p>A worked example makes the failure concrete. Suppose we want the average causal effect (ACE) of type II diabetes (<span class="math inline">D</span>) on coronary artery disease (<span class="math inline">Y</span>), both confounded by unobserved population-level factors <span class="math inline">H</span>. The candidate instruments <span class="math inline">Z = (Z_1, Z_2, Z_3)</span> are each a mixture of latent sources <span class="math inline">U = (U_1, U_2,
+U_3)</span>: <span class="math inline">U_2</span> and <span class="math inline">U_3</span> are stochastic recombination governed by Mendel’s law (valid), while <span class="math inline">U_1</span> is driven by population factors <span class="math inline">H</span> (invalid). Because every observed variant mixes in a little of the invalid <span class="math inline">U_1</span>, <strong>all of <span class="math inline">Z_1,
+Z_2, Z_3</span> become invalid instruments</strong>, although two valid instruments are hiding inside.</p>
+<div id="fig-entangle" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-entangle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<svg viewbox="0 0 720 320" style="width:100%;height:auto" role="img" aria-label="Schematic of the entanglement problem: latent sources generate every observed variant; an invalid source driven by the confounder H leaks into all variants, so all become invalid.">
+  <defs>
+    <marker id="e-arr" viewbox="0 0 10 10" refx="9" refy="5" markerwidth="6.5" markerheight="6.5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" class="f-ink"></path>
+    </marker>
+    <marker id="e-arr-a" viewbox="0 0 10 10" refx="9" refy="5" markerwidth="6.5" markerheight="6.5" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#cf4433"></path>
+    </marker>
+  </defs>
+
+  <!-- U -> Z fan (all latents feed all variants) -->
+  <g class="s-ink" stroke-width="1.2" fill="none" opacity="0.5">
+    <line x1="300" y1="70" x2="190" y2="70" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="70" x2="190" y2="160" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="70" x2="190" y2="250" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="160" x2="190" y2="70" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="160" x2="190" y2="160" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="160" x2="190" y2="250" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="250" x2="190" y2="70" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="250" x2="190" y2="160" marker-end="url(#e-arr)"></line>
+    <line x1="300" y1="250" x2="190" y2="250" marker-end="url(#e-arr)"></line>
+  </g>
+  <!-- U -> D, D -> Y, H -> D/Y -->
+  <g class="s-ink" stroke-width="1.5" fill="none" opacity="0.8">
+    <line x1="332" y1="70" x2="452" y2="150" marker-end="url(#e-arr)"></line>
+    <line x1="332" y1="160" x2="452" y2="160" marker-end="url(#e-arr)"></line>
+    <line x1="332" y1="250" x2="452" y2="172" marker-end="url(#e-arr)"></line>
+    <line x1="500" y1="160" x2="560" y2="160" marker-end="url(#e-arr)"></line>
+    <line x1="566" y1="92" x2="490" y2="142" marker-end="url(#e-arr)"></line>
+    <line x1="586" y1="106" x2="586" y2="136" marker-end="url(#e-arr)"></line>
+  </g>
+  <!-- H -> U1 (the invalidating edge) accent -->
+  <path d="M560 70 Q450 30 340 58" stroke="#cf4433" stroke-width="1.7" fill="none" marker-end="url(#e-arr-a)"></path>
+
+  <!-- Z nodes -->
+  <g>
+    <circle cx="170" cy="70" r="22" class="s-ink" fill="none" stroke-width="1.5"></circle><text x="170" y="75" class="f-ink" font-size="13" text-anchor="middle">Z₁</text>
+    <circle cx="170" cy="160" r="22" class="s-ink" fill="none" stroke-width="1.5"></circle><text x="170" y="165" class="f-ink" font-size="13" text-anchor="middle">Z₂</text>
+    <circle cx="170" cy="250" r="22" class="s-ink" fill="none" stroke-width="1.5"></circle><text x="170" y="255" class="f-ink" font-size="13" text-anchor="middle">Z₃</text>
+  </g>
+  <!-- U nodes: U1 invalid (accent), U2/U3 valid (green) -->
+  <g>
+    <circle cx="318" cy="70" r="22" fill="#cf4433" fill-opacity="0.22" stroke="#cf4433" stroke-width="1.5"></circle><text x="318" y="75" class="f-ink" font-size="13" text-anchor="middle">U₁</text>
+    <circle cx="318" cy="160" r="22" fill="#3f9e78" fill-opacity="0.24" stroke="#3f9e78" stroke-width="1.5"></circle><text x="318" y="165" class="f-ink" font-size="13" text-anchor="middle">U₂</text>
+    <circle cx="318" cy="250" r="22" fill="#3f9e78" fill-opacity="0.24" stroke="#3f9e78" stroke-width="1.5"></circle><text x="318" y="255" class="f-ink" font-size="13" text-anchor="middle">U₃</text>
+  </g>
+  <!-- D, Y, H -->
+  <circle cx="476" cy="160" r="24" class="s-ink" fill="none" stroke-width="1.5"></circle><text x="476" y="165" class="f-ink" font-size="15" text-anchor="middle">D</text>
+  <circle cx="586" cy="160" r="24" class="s-ink" fill="none" stroke-width="1.5"></circle><text x="586" y="165" class="f-ink" font-size="15" text-anchor="middle">Y</text>
+  <circle cx="580" cy="70" r="24" fill="#cf4433" fill-opacity="0.22" stroke="#cf4433" stroke-width="1.5"></circle><text x="580" y="75" class="f-ink" font-size="15" text-anchor="middle">H</text>
+
+  <text x="170" y="300" class="f-muted" font-size="12" text-anchor="middle">observed variants</text>
+  <text x="318" y="300" class="f-muted" font-size="12" text-anchor="middle">latent sources</text>
+  <text x="318" y="30" fill="#cf4433" font-size="11" text-anchor="middle">confounded by H</text>
+</svg>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-entangle-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: A schematic of the entanglement problem. Latent sources (centre) generate the observed variants on the left; an invalid source (red, <span class="math inline">U_1</span>) is influenced by the unobserved confounder <span class="math inline">H</span>, so its leakage into every observed variant <span class="math inline">Z_1, Z_2, Z_3</span> renders all of them invalid. The green sources (<span class="math inline">U_2, U_3</span>) would be valid if they could be isolated. Schematic by the editors of this page, redrawn from the structure described in the original paper.
+Figure&nbsp;1: A schematic of the entanglement problem. Latent sources (centre) generate the observed variants on the left; an invalid source (red, <span class="math inline">U_1</span>) is influenced by the unobserved confounder <span class="math inline">H</span>, so its leakage into every observed variant <span class="math inline">Z_1, Z_2, Z_3</span> renders all of them invalid. The green sources (<span class="math inline">U_2, U_3</span>) would be valid if they could be isolated.
 </figcaption>
 </figure>
 </div>
-</div>
-<p>If we could recover the latent variables <span class="math inline">U</span> from the observed <span class="math inline">Z</span>, we would get back two valid instruments. That recovery problem is exactly an <em>identification</em> problem in representation learning — and it is the heart of the paper.</p>
+<p>If we could recover the latent variables <span class="math inline">U</span> from the observed <span class="math inline">Z</span>, we would get back two valid instruments. That recovery problem is exactly an <em>identification</em> problem in representation learning.</p>
 </section>
 <section id="a-multi-environment-setup" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="a-multi-environment-setup">A multi-environment setup</h2>
-<p>The key resource is that the same traits can now be studied across many populations: large biobanks such as All of Us <span class="citation" data-cites="allofus2019">(<a href="#ref-allofus2019" role="doc-biblioref">The All of Us Research Program Investigators 2019</a>)</span> make <strong>multi-environment</strong> data available. The underlying causal biology is shared across populations, but allele frequencies and linkage-disequilibrium structure differ by demographic history. So an observed variant can be read as a <em>mixture</em> of an <strong>invariant biological signal</strong> and an <strong>environment-specific confounding component</strong>.</p>
+<p>The key resource is that the same traits can now be studied across many populations: large biobanks such as All of Us <span class="citation" data-cites="allofus2019">(<a href="#ref-allofus2019" role="doc-biblioref">The All of Us Research Program Investigators 2019</a>)</span> make <strong>multi-environment</strong> data available. The underlying causal biology is shared across populations, but allele frequencies and linkage-disequilibrium structure differ by demographic history <span class="citation" data-cites="wang2020theoretical wang2023polygenic">(<a href="#ref-wang2020theoretical" role="doc-biblioref">Wang et al. 2020</a>; <a href="#ref-wang2023polygenic" role="doc-biblioref">Wang et al. 2023</a>)</span>. So an observed variant can be read as a <em>mixture</em> of an <strong>invariant biological signal</strong> and an <strong>environment-specific confounding component</strong>.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-allofus2019" class="csl-entry" role="listitem">
 The All of Us Research Program Investigators. 2019. <span>“The <span>‘<span>All</span> of <span>Us</span>’</span> Research Program.”</span> <em>New England Journal of Medicine</em> 381 (7): 668–76.
-</div></div><p>The paper formalizes this. Across <span class="math inline">K</span> environments one observes i.i.d. data <span class="math inline">\mathcal{D}_k = \{(Z_i^{(k)}, D_i^{(k)}, Y_i^{(k)})\}</span>, where the candidate instrument is generated through an invertible mixing function <span class="math inline">Z^{(k)} = f(W^{(k)}, V^{(k)})</span> from two independent latent blocks:</p>
+</div><div id="ref-wang2020theoretical" class="csl-entry" role="listitem">
+Wang, Y, J Guo, G Ni, J Yang, PM Visscher, and L Yengo. 2020. <span>“Theoretical and Empirical Quantification of the Accuracy of Polygenic Scores in Ancestry Divergent Populations.”</span> <em>Nature Communications</em> 11 (1): 3865.
+</div><div id="ref-wang2023polygenic" class="csl-entry" role="listitem">
+Wang, Ying, Kristy Tsuo, Masahiro Kanai, and Alicia R Martin. 2023. <span>“Polygenic Prediction Across Populations Is Influenced by Ancestry, Genetic Architecture, and Methodology.”</span> <em>Cell Genomics</em> 3 (10): 100408.
+</div></div><p>This paper formalizes this. Across <span class="math inline">K</span> environments one observes i.i.d. data <span class="math inline">\mathcal{D}_k = \{(Z_i^{(k)}, D_i^{(k)}, Y_i^{(k)})\}</span>, where the candidate instrument is generated through an invertible mixing function <span class="math inline">Z^{(k)} =
+f(W^{(k)}, V^{(k)})</span> from two independent latent blocks:</p>
 <ul>
 <li><span class="math inline">W^{(k)}</span> — the <strong>valid</strong> part: <span class="math inline">W^{(k)} \perp H^{(k)}</span>, and its distribution is <strong>invariant</strong> across environments;</li>
 <li><span class="math inline">V^{(k)}</span> — the <strong>invalid</strong> part: <span class="math inline">V^{(k)}</span> depends on <span class="math inline">H^{(k)}</span>, and its distribution <strong>shifts</strong> across environments.</li>
 </ul>
 <div class="page-columns page-full"><p></p><div class="no-row-height column-margin column-container"><span class="margin-aside"><span class="math inline">W</span> and <span class="math inline">V</span> need not be subvectors of <span class="math inline">Z</span> — they are entangled through <span class="math inline">f</span> and must be disentangled, not simply selected.</span></div></div>
 <p>So while <span class="math inline">Z^{(k)}</span> is invalid (because of <span class="math inline">V</span>), there exists a map <span class="math inline">\varphi:\mathcal{Z}\to\mathbb{R}^p</span> — the inverse of <span class="math inline">f</span> onto the <span class="math inline">W</span> coordinates — such that <span class="math inline">\varphi(Z^{(k)})</span> <em>is</em> a valid instrument.</p>
-<div class="page-columns page-full">
-<div id="fig-setup" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="fig-setup.svg" class="img-fluid figure-img column-page">
+<div id="fig-setup" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<svg viewbox="12.5 6 780 284" style="width:100%;height:auto" role="img" aria-label="The general setup: the observed instrument Z is an entangled mixture of a valid, environment-invariant component W and an invalid component V tied to the unobserved confounder H; recovering W restores a valid instrument for the effect of D on Y.">
+  <defs>
+    <marker id="s-arr" viewbox="0 0 10 10" refx="9" refy="5" markerwidth="7" markerheight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" class="f-ink"></path>
+    </marker>
+    <marker id="s-arr-a" viewbox="0 0 10 10" refx="9" refy="5" markerwidth="7" markerheight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#cf4433"></path>
+    </marker>
+  </defs>
+
+  <!-- edges (drawn first) -->
+  <g class="s-ink" stroke-width="1.6" fill="none" opacity="0.8">
+    <line x1="318" y1="120" x2="232" y2="168" marker-end="url(#s-arr)"></line>
+    <line x1="318" y1="210" x2="232" y2="188" marker-end="url(#s-arr)"></line>
+    <line x1="378" y1="120" x2="452" y2="184" marker-end="url(#s-arr)"></line>
+    <line x1="378" y1="210" x2="452" y2="188" marker-end="url(#s-arr)"></line>
+    <line x1="500" y1="180" x2="566" y2="180" marker-end="url(#s-arr)"></line>
+    <line x1="566" y1="92" x2="490" y2="160" marker-end="url(#s-arr)"></line>
+    <line x1="600" y1="108" x2="590" y2="156" marker-end="url(#s-arr)"></line>
+  </g>
+  <!-- confounding edges from V through H and Y, dashed accent -->
+  <g stroke="#cf4433" stroke-width="1.6" fill="none" stroke-dasharray="5 4" opacity="0.95">
+    <path d="M360 92 Q470 50 560 78" marker-end="url(#s-arr-a)"></path>
+    <path d="M366 98 Q476 96 576 160" marker-end="url(#s-arr-a)"></path>
+  </g>
+
+  <!-- Z node (entangled instrument) -->
+  <ellipse cx="195" cy="178" rx="34" ry="48" class="s-ink" fill="none" stroke-width="1.6"></ellipse>
+  <text x="195" y="184" class="f-ink" font-size="18" text-anchor="middle">Z</text>
+  <!-- V node (invalid) -->
+  <ellipse cx="348" cy="104" rx="24" ry="34" fill="#cf4433" fill-opacity="0.22" stroke="#cf4433" stroke-width="1.6"></ellipse>
+  <text x="348" y="110" class="f-ink" font-size="17" text-anchor="middle">V</text>
+  <!-- W node (valid) -->
+  <ellipse cx="348" cy="210" rx="24" ry="34" fill="#3f9e78" fill-opacity="0.26" stroke="#3f9e78" stroke-width="1.6"></ellipse>
+  <text x="348" y="216" class="f-ink" font-size="17" text-anchor="middle">W</text>
+
+  <!-- D node -->
+  <circle cx="476" cy="180" r="26" class="s-ink" fill="none" stroke-width="1.6"></circle>
+  <text x="476" y="186" class="f-ink" font-size="17" text-anchor="middle">D</text>
+  <!-- Y node -->
+  <circle cx="592" cy="180" r="26" class="s-ink" fill="none" stroke-width="1.6"></circle>
+  <text x="592" y="186" class="f-ink" font-size="17" text-anchor="middle">Y</text>
+  <!-- H node (confounder) -->
+  <circle cx="586" cy="84" r="26" fill="#cf4433" fill-opacity="0.22" stroke="#cf4433" stroke-width="1.6"></circle>
+  <text x="586" y="90" class="f-ink" font-size="17" text-anchor="middle">H</text>
+
+  <!-- labels -->
+  <text x="195" y="250" class="f-muted" font-size="12" text-anchor="middle">observed instrument</text>
+  <text x="348" y="266" fill="#3f9e78" font-size="12" text-anchor="middle">valid (invariant)</text>
+  <text x="348" y="52" fill="#cf4433" font-size="12" text-anchor="middle">invalid (shifts)</text>
+  <text x="586" y="38" class="f-muted" font-size="12" text-anchor="middle">unobserved confounder</text>
+  <text x="678" y="178" class="f-muted" font-size="12" text-anchor="end">∀ k ∈ [K]</text>
+</svg>
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-setup-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;2: The general setup. The observed instrument <span class="math inline">Z</span> is an entangled mixture of a valid, environment-invariant component <span class="math inline">W</span> (green) and an invalid component <span class="math inline">V</span> (red) that shifts with the environment and is tied to the unobserved confounder <span class="math inline">H</span>. Solid arrows are the data-generating mechanism; dashed red arrows are the confounding paths through <span class="math inline">V</span> and <span class="math inline">H</span>. Recovering <span class="math inline">W</span> from <span class="math inline">Z</span> restores a valid instrument for <span class="math inline">D \to Y</span>. Schematic by the editors of this page, redrawn from the structure described in the original paper.
+Figure&nbsp;2: The general setup. The observed instrument <span class="math inline">Z</span> is an entangled mixture of a valid, environment-invariant component <span class="math inline">W</span> (green) and an invalid component <span class="math inline">V</span> (red) that shifts with the environment and is tied to the unobserved confounder <span class="math inline">H</span>. Solid arrows are the data-generating mechanism; dashed red arrows are the confounding paths through <span class="math inline">V</span> and <span class="math inline">H</span>. Recovering <span class="math inline">W</span> from <span class="math inline">Z</span> restores a valid instrument for <span class="math inline">D \to Y</span>.
 </figcaption>
 </figure>
-</div>
 </div>
 
 <div class="no-row-height column-margin column-container"><div class="">
@@ -544,21 +655,20 @@ Figure&nbsp;2: The general setup. The observed instrument <span class="math inli
 <p><span class="math display">
 \mathbb{E}\!\left[\varphi_0(Z)\,(Y - D^\top \theta_0)\right] = 0,
 </span></p>
-<p>which, together with a <strong>rank condition</strong>, identifies <span class="math inline">\theta_0</span> when <span class="math inline">\varphi_0</span> is known. A crucial convenience from representation-learning theory is that we <em>don’t</em> need <span class="math inline">\varphi_0</span> exactly: any <strong>bijective transformation of a valid instrument is still a valid instrument</strong>, and any rank-preserving affine transformation of an identifying instrument still identifies <span class="math inline">\theta_0</span>. This is exactly what representation learning can deliver — recovery up to a transformation — so the loose guarantees of disentanglement are tight enough for valid causal inference.</p>
+<p>which, together with a <strong>rank condition</strong>, identifies <span class="math inline">\theta_0</span> when <span class="math inline">\varphi_0</span> is known. A crucial convenience from representation-learning theory is that we <em>don’t</em> need <span class="math inline">\varphi_0</span> exactly: any <strong>bijective transformation of a valid instrument is still a valid instrument</strong>, and any rank-preserving affine transformation of an identifying instrument still identifies <span class="math inline">\theta_0</span>. This is exactly what representation learning can deliver, so the loose guarantees of disentanglement are tight enough for valid causal inference.</p>
 </section>
 <section id="identifying-the-invariant-component" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="identifying-the-invariant-component">Identifying the invariant component</h2>
-<p>The recovery is driven by <strong>distributional invariance</strong>. The paper trains an autoencoder <span class="math inline">(m_{\text{en}}, m_{\text{de}})</span> that reconstructs <span class="math inline">Z</span>, and requires the first <span class="math inline">\hat{p}</span> encoder coordinates to have a distribution that is <em>stable across environments</em>:</p>
+<p>The recovery is driven by <strong>distributional invariance</strong>. We train an autoencoder <span class="math inline">(m_{\text{en}}, m_{\text{de}})</span> that reconstructs <span class="math inline">Z</span>, and require the first <span class="math inline">\hat{p}</span> encoder coordinates to have a distribution that is <em>stable across environments</em>:</p>
 <p><span class="math display">
 \forall\, k, k' \in [K], \quad
 m_{\text{en}}(Z^{(k)})^{:\hat{p}} \stackrel{d}{=} m_{\text{en}}(Z^{(k')})^{:\hat{p}}.
 </span></p>
-<p>Reconstruction forces the representation to preserve the information in <span class="math inline">Z</span>; invariance forces the first block to track the environment-stable signal. Under <strong>injective polynomial mixing</strong> and a <strong>modular, sufficiently-variable</strong> shift in the distribution of <span class="math inline">V</span>, the result is clean:</p>
-<blockquote class="blockquote">
+<p>Reconstruction forces the representation to preserve the information in <span class="math inline">Z</span>, and invariance forces the first block to track the environment-stable signal. Under <strong>injective polynomial mixing</strong><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> and a <strong>modular, sufficiently-variable</strong> shift in the distribution of <span class="math inline">V</span>, we have:</p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;We foreground the polynomial case here because it yields the strongest, cleanest guarantee — exact <em>affine</em> recovery of <span class="math inline">W</span>. The paper treats identifiability more generally: see the margin note on general <span class="math inline">C^1</span>-diffeomorphic mixing, alongside the linear and misspecified-dimension analyses.</p></div></div><blockquote class="blockquote">
 <p>If <span class="math inline">\hat{p} \ge p</span>, the encoder’s first <span class="math inline">\hat{p}</span> coordinates <strong>perfectly identify</strong> <span class="math inline">W</span>, recovering it <strong>up to an affine transformation</strong> <span class="math inline">m_{\text{en}}(Z^{(k)})^{:\hat{p}} = A\,W^{(k)} + a</span>. If <span class="math inline">\hat{p} &lt; p</span>, <span class="math inline">W</span> is <strong>partially identified</strong> (recovered up to a linear projection).</p>
 </blockquote>
-<div class="page-columns page-full"><p></p><div class="no-row-height column-margin column-container"><span class="margin-aside">The companion analysis under general <span class="math inline">C^1</span>-diffeomorphic mixing recovers <span class="math inline">W</span> up to a diffeomorphism when <span class="math inline">\hat{p}\ge p</span>, using diffeomorphic encoders such as normalizing flows.</span></div></div>
-<p>The paper notes its assumptions are weaker than prior multi-environment causal representation learning <span class="citation" data-cites="ahuja24multi">(<a href="#ref-ahuja24multi" role="doc-biblioref">Ahuja et al. 2024</a>)</span>: it does not require an additive-noise SCM over the latents or that interventions act only on exogenous noise, and it explicitly works out what happens when the latent dimension is <strong>misspecified</strong>. It also connects to the invariance-principle view of representation learning <span class="citation" data-cites="yao2025unifying">(<a href="#ref-yao2025unifying" role="doc-biblioref">Yao et al. 2025</a>)</span> and to the broader identifiability literature <span class="citation" data-cites="khemakhem2020variational locatello2019challenging">(<a href="#ref-khemakhem2020variational" role="doc-biblioref">Khemakhem et al. 2020</a>; <a href="#ref-locatello2019challenging" role="doc-biblioref">Locatello et al. 2019</a>)</span>, while contrasting with earlier learned-representation IV methods that lacked recovery guarantees <span class="citation" data-cites="cheng2024conditional cheng2024disentangled">(<a href="#ref-cheng2024conditional" role="doc-biblioref">Cheng et al. 2024a</a>, <a href="#ref-cheng2024disentangled" role="doc-biblioref">2024b</a>)</span>.</p>
+<p>Compared to prior multi-environment causal representation learning <span class="citation" data-cites="ahuja24multi">(<a href="#ref-ahuja24multi" role="doc-biblioref">Ahuja et al. 2024</a>)</span>, our approach does not require an additive-noise SCM over the latents or that interventions act only on exogenous noise, and we explicitly work out what happens when the latent dimension is <strong>misspecified</strong>. It also connects to the invariance-principle view of representation learning <span class="citation" data-cites="yao2025unifying">(<a href="#ref-yao2025unifying" role="doc-biblioref">Yao et al. 2025</a>)</span> and to the broader identifiability literature <span class="citation" data-cites="khemakhem2020variational locatello2019challenging">(<a href="#ref-khemakhem2020variational" role="doc-biblioref">Khemakhem et al. 2020</a>; <a href="#ref-locatello2019challenging" role="doc-biblioref">Locatello et al. 2019</a>)</span>, while contrasting with earlier learned-representation IV methods that lacked recovery guarantees <span class="citation" data-cites="cheng2024conditional cheng2024disentangled">(<a href="#ref-cheng2024conditional" role="doc-biblioref">Cheng et al. 2024a</a>, <a href="#ref-cheng2024disentangled" role="doc-biblioref">2024b</a>)</span>.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-ahuja24multi" class="csl-entry" role="listitem">
 Ahuja, Kartik, Amin Mansouri, and Yixin Wang. 2024. <span>“Multi-Domain Causal Representation Learning via Weak Distributional Invariances.”</span> <em>International Conference on Artificial Intelligence and Statistics (AISTATS)</em>, 865–73.
 </div><div id="ref-yao2025unifying" class="csl-entry" role="listitem">
@@ -571,8 +681,8 @@ Locatello, Francesco, Stefan Bauer, Mario Lucic, et al. 2019. <span>“Challengi
 Cheng, Debo, Ziqi Xu, Jiuyong Li, Lin Liu, Jixue Liu, and Thuc Duy Le. 2024a. <span>“Conditional Instrumental Variable Regression with Representation Learning for Causal Inference.”</span> <em>International Conference on Learning Representations (ICLR)</em>.
 </div><div id="ref-cheng2024disentangled" class="csl-entry" role="listitem">
 Cheng, Debo, Ziqi Xu, Jiuyong Li, Lin Liu, Jixue Liu, and Thuc Duy Le. 2024b. <span>“Disentangled Representation Learning for Causal Inference with Instruments.”</span> <em>IEEE Transactions on Neural Networks and Learning Systems</em> 35 (8): 1–14.
-</div></div><p>The <strong>invalid</strong> block <span class="math inline">V</span> is harder: it is not identifiable in general, even when <span class="math inline">W</span> is perfectly recovered. Under polynomial mixing, adding an <strong>independence constraint</strong> between the two encoder blocks recovers <em>both</em> <span class="math inline">W</span> and <span class="math inline">V</span> up to affine transformations.</p>
-<p>In practice the autoencoder minimizes a weighted sum of a reconstruction loss, an <strong>invariance</strong> loss, and an <strong>independence</strong> loss; the paper uses Maximum Mean Discrepancy <span class="citation" data-cites="gretton2012kernel">(<a href="#ref-gretton2012kernel" role="doc-biblioref">Gretton et al. 2012</a>)</span> for invariance and the Hilbert–Schmidt Independence Criterion <span class="citation" data-cites="gretton2005measuring">(<a href="#ref-gretton2005measuring" role="doc-biblioref">Gretton et al. 2005</a>)</span> for independence, with a term that discourages representation collapse.</p>
+</div></div><p>The <strong>invalid</strong> block <span class="math inline">V</span> is not identifiable in general, even when <span class="math inline">W</span> is perfectly recovered. Under polynomial mixing, adding an <strong>independence constraint</strong> between the two encoder blocks recovers <em>both</em> <span class="math inline">W</span> and <span class="math inline">V</span> up to affine transformations.</p>
+<p>In practice the autoencoder minimizes a weighted sum of a reconstruction loss, an <strong>invariance</strong> loss, and an <strong>independence</strong> loss. We use Maximum Mean Discrepancy <span class="citation" data-cites="gretton2012kernel">(<a href="#ref-gretton2012kernel" role="doc-biblioref">Gretton et al. 2012</a>)</span> for invariance and the Hilbert–Schmidt Independence Criterion <span class="citation" data-cites="gretton2005measuring">(<a href="#ref-gretton2005measuring" role="doc-biblioref">Gretton et al. 2005</a>)</span> for independence, with a term that discourages representation collapse.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-gretton2012kernel" class="csl-entry" role="listitem">
 Gretton, Arthur, Karsten M. Borgwardt, Malte J. Rasch, Bernhard Schölkopf, and Alexander J. Smola. 2012. <span>“A Kernel Two-Sample Test.”</span> <em>Journal of Machine Learning Research</em> 13 (25): 723–73.
 </div><div id="ref-gretton2005measuring" class="csl-entry" role="listitem">
@@ -589,11 +699,11 @@ Gretton, Arthur, Olivier Bousquet, Alex Smola, and Bernhard Schölkopf. 2005. <s
 </section>
 <section id="experiments" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="experiments">Experiments</h2>
-<p><strong>Semi-synthetic, from All of Us.</strong> The authors extract <span class="math inline">652</span> genetic variants in the GLP1R region from individuals of East Asian and African predicted ancestry (<span class="math inline">8000</span> individuals per population), apply ICA to reduce to <span class="math inline">10</span> latent components, pick the component with the strongest cross-population shift as the confounder <span class="math inline">V</span>, and resample the rest as the invariant <span class="math inline">W</span> — then map back to SNP space so the genotypes keep realistic LD but carry controlled stratification. A two-dimensional exposure <span class="math inline">D</span> and scalar outcome <span class="math inline">Y</span> follow a linear SCM with an unobserved confounder <span class="math inline">H</span> copied from <span class="math inline">V</span>; the procedure is repeated over <span class="math inline">20</span> seeds.</p>
-<p>Training the autoencoder with <span class="math inline">\lambda_1 = \lambda_2 = 10</span>, two estimators are built on the learned representation: <span class="math inline">\text{2SLS}(\widehat{W})</span> and the partialling-out variant <span class="math inline">\text{PO}(\widehat{V})\text{-2SLS}(\widehat{W})</span>. They are compared against naive <span class="math inline">\text{2SLS}(Z)</span>, MR-Egger <span class="citation" data-cites="bowden2015mendelian">(<a href="#ref-bowden2015mendelian" role="doc-biblioref">Bowden et al. 2015</a>)</span>, and their population-label-adjusted counterparts <span class="math inline">\text{PO}(K)\text{-2SLS}(Z)</span> and <span class="math inline">\text{PO}(K)\text{-Egger}(Z)</span>.</p>
+<p><strong>Semi-synthetic, from All of Us.</strong> We extract <span class="math inline">652</span> genetic variants in the GLP1R region from individuals of East Asian and African predicted ancestry (<span class="math inline">8000</span> individuals per population), apply ICA to reduce to <span class="math inline">10</span> latent components, pick the component with the strongest cross-population shift as the confounder <span class="math inline">V</span>, and resample the rest as the invariant <span class="math inline">W</span> — then map back to SNP space so the genotypes keep realistic LD but carry controlled stratification. A two-dimensional exposure <span class="math inline">D</span> and scalar outcome <span class="math inline">Y</span> follow a linear SCM with an unobserved confounder <span class="math inline">H</span> copied from <span class="math inline">V</span>; we repeat over <span class="math inline">20</span> seeds.</p>
+<p>Training the autoencoder with <span class="math inline">\lambda_1 = \lambda_2 = 10</span>, we build two estimators on the learned representation: <span class="math inline">\text{2SLS}(\widehat{W})</span> and the partialling-out variant <span class="math inline">\text{PO}(\widehat{V})\text{-2SLS}(\widehat{W})</span>. They are compared against naive <span class="math inline">\text{2SLS}(Z)</span>, MR-Egger <span class="citation" data-cites="bowden2015mendelian">(<a href="#ref-bowden2015mendelian" role="doc-biblioref">Bowden et al. 2015</a>)</span>, and their population-label-adjusted counterparts <span class="math inline">\text{PO}(K)\text{-2SLS}(Z)</span> and <span class="math inline">\text{PO}(K)\text{-Egger}(Z)</span>.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-bowden2015mendelian" class="csl-entry" role="listitem">
 Bowden, Jack, George Davey Smith, and Stephen Burgess. 2015. <span>“Mendelian Randomization with Invalid Instruments: Effect Estimation and Bias Detection Through <span>Egger</span> Regression.”</span> <em>International Journal of Epidemiology</em> 44 (2): 512–25.
-</div></div><p>The reported qualitative findings (the paper presents these as box-plots of bias over the <span class="math inline">20</span> seeds):</p>
+</div></div><p>The reported qualitative findings are collected in <a href="#tbl-aou" class="quarto-xref">Table&nbsp;1</a> (the paper presents them as box-plots of bias over the <span class="math inline">20</span> seeds).</p>
 <div id="tbl-aou" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-tbl figure">
 <figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-aou-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
@@ -650,26 +760,26 @@ Table&nbsp;1: Bias of ACE estimators on the All-of-Us semi-synthetic task, as re
 </figure>
 </div>
 <p>Two messages stand out. First, partialling out the <strong>discrete population label</strong> (<span class="math inline">\text{PO}(K)</span>) helps but does <strong>not</strong> remove the bias, showing the confounding is more than a mean shift between populations. Second, the partialling-out estimator that adjusts for the learned <span class="math inline">\widehat{V}</span> has visibly <strong>tighter variance</strong> than plain <span class="math inline">\text{2SLS}(\widehat{W})</span> — the predicted efficiency gain.</p>
-<p><strong>Fully-synthetic ablations.</strong> With <span class="math inline">p = q = 2</span> and noise drawn from correlated Gaussians, the authors vary the mixing function across polynomials of degree <span class="math inline">1</span>–<span class="math inline">3</span> (giving <span class="math inline">d_Z \in \{5, 15, 35\}</span>) and an invertible MLP (<span class="math inline">d_Z = 4</span>):</p>
+<p><strong>Fully-synthetic ablations.</strong> With <span class="math inline">p = q = 2</span> and noise drawn from correlated Gaussians, we vary the mixing function across polynomials of degree <span class="math inline">1</span>–<span class="math inline">3</span> (giving <span class="math inline">d_Z \in \{5, 15, 35\}</span>) and an invertible MLP (<span class="math inline">d_Z = 4</span>):</p>
 <ul>
 <li><strong>Mixing mechanism.</strong> Both proposed estimators stay at low or near-zero bias across all four mixing functions, while every baseline shows large bias — standard IV and population-adjusted variants fail once the mixing is non-linear or the invalidity is latent rather than a discrete label.</li>
-<li><strong>Misspecified dimension.</strong> With the true <span class="math inline">p = 2</span> and degree-3 polynomial mixing, <strong>under-specifying</strong> <span class="math inline">\hat{p} \in \{1, 2\}</span> keeps bias small (a linear projection of <span class="math inline">W</span> suffices for valid IV), but <strong>over-specifying</strong> to <span class="math inline">\hat{p}=4</span> raises both bias and variance as the model leaks information from <span class="math inline">V</span> — so a conservative dimension is preferable when the instrument is still strong.</li>
+<li><strong>Misspecified dimension.</strong> With the true <span class="math inline">p = 2</span> and degree-3 polynomial mixing, we sweep <span class="math inline">\hat{p} \in \{1, 2, 3, 4\}</span>. <strong>Under-specifying</strong> (<span class="math inline">\hat{p}=1</span>, where a linear projection of <span class="math inline">W</span> still suffices for valid IV), <strong>correctly specifying</strong>, and even <strong>moderately over-specifying</strong> (<span class="math inline">\hat{p}=3</span>) all keep bias small; only <strong>strong over-specification</strong> (<span class="math inline">\hat{p}=4</span>) raises both bias and variance as the model leaks information from <span class="math inline">V</span> — so a conservative dimension is preferable when the instrument is still strong.</li>
 <li><strong>Independence loss.</strong> With the independence loss, both estimators are unbiased. Without it (<span class="math inline">\lambda_2 = 0</span>), <span class="math inline">\text{2SLS}(\widehat{W})</span> stays largely unbiased but <span class="math inline">\text{PO}(\widehat{V})\text{-2SLS}(\widehat{W})</span> picks up significant bias, worst under the complex Poly-3 and MLP mixings — confirming that the adjustment trick <em>requires</em> disentanglement.</li>
 </ul>
 </section>
 <section id="why-it-matters" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="why-it-matters">Why it matters</h2>
-<p>The paper reframes a long-standing epidemiological headache — invalid instruments from population structure — as a <strong>causal representation learning</strong> problem, and shows that cross-environment <strong>invariance</strong> is enough to recover the exogenous part of a confounded instrument up to a transformation that downstream IV estimation can absorb. The honest accounting of when the learned <em>invalid</em> component helps (variance reduction) versus hurts (leakage, collider bias) is the practical payoff. Limitations the authors flag: the guarantees rest on a <strong>sufficient-variability</strong> assumption whose finite-sample testing is open, and high-dimensional genetic settings would benefit from sparsity in the encoder. They also note the framework extends from multi-environment to multi-view data, where a contrastive objective such as InfoNCE <span class="citation" data-cites="oord2018representation">(<a href="#ref-oord2018representation" role="doc-biblioref">Oord et al. 2018</a>)</span> could replace the MMD invariance loss.</p>
+<p>This paper reframes a long-standing epidemiological headache — invalid instruments from population structure — as a <strong>causal representation learning</strong> problem, and shows that cross-environment <strong>invariance</strong> is enough to recover the exogenous part of a confounded instrument up to a transformation that downstream IV estimation can absorb. The honest accounting of when the learned <em>invalid</em> component helps (variance reduction) versus hurts (leakage, collider bias) is the practical payoff. Limitations we flag: the guarantees rest on a <strong>sufficient-variability</strong> assumption whose finite-sample testing is open, and high-dimensional genetic settings would benefit from sparsity in the encoder. We also note the framework extends from multi-environment to multi-view data, where a contrastive objective such as InfoNCE <span class="citation" data-cites="oord2018representation">(<a href="#ref-oord2018representation" role="doc-biblioref">Oord et al. 2018</a>)</span> could replace the MMD invariance loss.</p>
+
+
 <div class="no-row-height column-margin column-container"><div id="ref-oord2018representation" class="csl-entry" role="listitem">
 Oord, Aaron van den, Yazhe Li, and Oriol Vinyals. 2018. <span>“Representation Learning with Contrastive Predictive Coding.”</span> <em>arXiv Preprint arXiv:1807.03748</em>.
-</div></div><p>Full references appear in the margin and below; a copyable BibTeX entry for <em>this</em> paper is generated automatically.</p>
-
-
-
+</div></div>
 </section>
 
+
 <div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{huang2026,
-  author = {Huang, Shimeng and Robinson, Matthew and Locatello,
+  author = {Huang, Shimeng and R. Robinson, Matthew and Locatello,
     Francesco},
   title = {Addressing {Instrument–Outcome} {Confounding} in {Mendelian}
     {Randomization} Through {Representation} {Learning}},
@@ -1174,6 +1284,24 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       open(img.currentSrc || img.src, img.alt);
     });
+  });
+});
+</script>
+<script>
+// Reassemble the email links that scripts/cloak-emails.py cloaked at build time.
+// That post-render step strips every `href="mailto:..."` down to a base64
+// `data-cloak` attribute so the plaintext address never ships in the static
+// HTML (defeats non-JS email harvesters). Here we decode it back into a working
+// mailto link for real visitors, the instant the page loads.
+// Progressive enhancement: with JS off the link is inert, but the address was
+// never visible anyway (paper authors are an envelope icon, team links say
+// "Email"), so nothing readable is lost.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("a[data-cloak]").forEach(function (a) {
+    try {
+      a.setAttribute("href", "mailto:" + atob(a.getAttribute("data-cloak")));
+      a.removeAttribute("data-cloak");                          // idempotent
+    } catch (e) {}
   });
 });
 </script>

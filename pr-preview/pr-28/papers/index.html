@@ -49,7 +49,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-dark-a208a425cdc81fcf85dda97472dc73c1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
@@ -434,7 +434,42 @@ window.Quarto = {
     </div>
 </div>
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="Q2F1c2FsJTIwSW5mZXJlbmNlJTJDUmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ0FJJTIwZm9yJTIwU2NpZW5jZQ==" data-listing-date-sort="1771804800000" data-listing-file-modified-sort="1782381664821" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="9" data-listing-word-count-sort="1750">
+<div class="quarto-post image-right" data-index="0" data-categories="QUklMjBmb3IlMjBTY2llbmNlJTJDRHluYW1pY2FsJTIwU3lzdGVtcyUyQ1RoZW9yeQ==" data-listing-date-sort="1778284800000" data-listing-file-modified-sort="1783967124515" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1235">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">Controlling Transient Amplification Improves Long-horizon Rollouts</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('QUklMjBmb3IlMjBTY2llbmNl'); return false;">AI for Science</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('RHluYW1pY2FsJTIwU3lzdGVtcw=='); return false;">Dynamical Systems</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('VGhlb3J5'); return false;">Theory</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">
+<p>Autoregressive neural simulators match classical solvers on short-horizon prediction but degrade rapidly over long rollouts. This work identifies transient amplification of perturbations along rollout trajectories as a structural driver of that error: when the Jacobians along an autoregressive trajectory are non-normal and non-commuting, errors are amplified transiently even when the system is asymptotically stable. The authors propose commutativity regularization — a commutator penalty and a normality penalty, both estimated with Jacobian-vector products and carrying no inference-time cost — and prove a propagator bound that replaces the per-step spectral-norm decay rate with the shared spectral radius under approximate commutativity and normality. On UNet and FNO variants across the 1D KdV equation, the 2D barotropic vorticity equation, sea-surface temperature, and fine-tuning of FourCastNet on ERA5, the method sustains long-horizon rollouts over thousands of steps, with the largest gains out-of-distribution.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">
+<div class="listing-date">
+May 9, 2026
+</div>
+<div class="listing-author">
+Adeel Pervez, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+arXiv
+</div>
+<div class="metadata-value listing-year">
+2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="Q2F1c2FsJTIwSW5mZXJlbmNlJTJDUmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ0FJJTIwZm9yJTIwU2NpZW5jZQ==" data-listing-date-sort="1771804800000" data-listing-file-modified-sort="1783967124515" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2610">
 <div class="body">
 <h3 class="no-anchor listing-title">
 <a href="../papers/2026/mendelian-randomization-representation-learning/index.html" class="no-external">Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning</a>
@@ -458,7 +493,7 @@ window.Quarto = {
 Feb 23, 2026
 </div>
 <div class="listing-author">
-Shimeng Huang, Matthew Robinson, Francesco Locatello
+Shimeng Huang, Matthew R. Robinson, Francesco Locatello
 </div>
 <div class="metadata-value listing-venue">
 ICML
@@ -974,6 +1009,24 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       open(img.currentSrc || img.src, img.alt);
     });
+  });
+});
+</script>
+<script>
+// Reassemble the email links that scripts/cloak-emails.py cloaked at build time.
+// That post-render step strips every `href="mailto:..."` down to a base64
+// `data-cloak` attribute so the plaintext address never ships in the static
+// HTML (defeats non-JS email harvesters). Here we decode it back into a working
+// mailto link for real visitors, the instant the page loads.
+// Progressive enhancement: with JS off the link is inert, but the address was
+// never visible anyway (paper authors are an envelope icon, team links say
+// "Email"), so nothing readable is lost.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("a[data-cloak]").forEach(function (a) {
+    try {
+      a.setAttribute("href", "mailto:" + atob(a.getAttribute("data-cloak")));
+      a.removeAttribute("data-cloak");                          // idempotent
+    } catch (e) {}
   });
 });
 </script>

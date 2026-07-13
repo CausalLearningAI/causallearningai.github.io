@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="description" content="About the Locatello Group at ISTA.">
+<meta name="description" content="The Locatello Group, led by Assistant Professor Francesco Locatello at the Institute of Science and Technology Austria (ISTA), works on causal learning and artificial intelligence.">
 
 <title>About – CLAI Research Group</title>
 <style>
@@ -47,7 +47,7 @@ ul.task-list li input[type="checkbox"] {
 <script src="site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
 <link href="site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="site_libs/bootstrap/bootstrap-dark-a208a425cdc81fcf85dda97472dc73c1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
 <link href="site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
@@ -79,13 +79,13 @@ ul.task-list li input[type="checkbox"] {
 
 
 <meta property="og:title" content="About – CLAI Research Group">
-<meta property="og:description" content="About the Locatello Group at ISTA.">
+<meta property="og:description" content="The Locatello Group, led by Assistant Professor Francesco Locatello at the Institute of Science and Technology Austria (ISTA), works on causal learning and artificial intelligence.">
 <meta property="og:image" content="https://causallearningai.github.io/assets/social-card.png">
 <meta property="og:site_name" content="CLAI Research Group">
 <meta property="og:image:height" content="630">
 <meta property="og:image:width" content="1200">
 <meta name="twitter:title" content="About – CLAI Research Group">
-<meta name="twitter:description" content="About the Locatello Group at ISTA.">
+<meta name="twitter:description" content="The Locatello Group, led by Assistant Professor Francesco Locatello at the Institute of Science and Technology Austria (ISTA), works on causal learning and artificial intelligence.">
 <meta name="twitter:image" content="https://causallearningai.github.io/assets/social-card.png">
 <meta name="twitter:image-height" content="630">
 <meta name="twitter:image-width" content="1200">
@@ -328,7 +328,7 @@ ul.task-list li input[type="checkbox"] {
 
 <div>
   <div class="description">
-    About the Locatello Group at ISTA.
+    The <strong>Locatello Group</strong>, led by Assistant Professor <strong>Francesco Locatello</strong> at the <strong>Institute of Science and Technology Austria (ISTA)</strong>, works on causal learning and artificial intelligence.
   </div>
 </div>
 
@@ -345,7 +345,6 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<p>The <strong>Locatello Group</strong>, led by Assistant Professor <strong>Francesco Locatello</strong> at the <strong>Institute of Science and Technology Austria (ISTA)</strong>, works on causal learning and artificial intelligence.</p>
 <p>Modern machine learning is still limited to a superficial description of reality that only holds when the experimental conditions are fixed. It largely ignores interventions in the world, domain shifts, and temporal structure. Our group focuses on learning causal representations and causal models from data to address these issues. Through rigorous theory and scalable algorithms, we enable AI agents to understand cause-and-effect relationships, the effect of interventions, and distribution changes underlying the data they encounter.</p>
 <p>Advances in causal learning have promising applications in machine learning and artificial intelligence, including robustness, explainability, and fairness in recognition, reasoning, and planning tasks. Most importantly, their impact extends to discovering new scientific knowledge from massive amounts of data and serving as the interface between people and complex systems for decision-making.</p>
 <p>Causal learning emerges by discovering structural knowledge about the data-generating process and meaningful abstractions that allow for well-defined causal relations. Research questions span theoretical identifiability and methodological innovations in causal learning, discovering objects and abstract entities, their factors of variations, and their causal relations. We apply these methods to solve open problems in machine learning and enable new applications in the sciences.</p>
@@ -886,6 +885,24 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       open(img.currentSrc || img.src, img.alt);
     });
+  });
+});
+</script>
+<script>
+// Reassemble the email links that scripts/cloak-emails.py cloaked at build time.
+// That post-render step strips every `href="mailto:..."` down to a base64
+// `data-cloak` attribute so the plaintext address never ships in the static
+// HTML (defeats non-JS email harvesters). Here we decode it back into a working
+// mailto link for real visitors, the instant the page loads.
+// Progressive enhancement: with JS off the link is inert, but the address was
+// never visible anyway (paper authors are an envelope icon, team links say
+// "Email"), so nothing readable is lost.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("a[data-cloak]").forEach(function (a) {
+    try {
+      a.setAttribute("href", "mailto:" + atob(a.getAttribute("data-cloak")));
+      a.removeAttribute("data-cloak");                          // idempotent
+    } catch (e) {}
   });
 });
 </script>
