@@ -1,10 +1,14 @@
 [
   {
-    "listing": "/team/members/walter-nelson/index.html",
+    "listing": "/team/members/yiwen-qiu/index.html",
     "items": []
   },
   {
-    "listing": "/team/members/shimeng-huang/index.html",
+    "listing": "/team/members/valentino-maiorca/index.html",
+    "items": []
+  },
+  {
+    "listing": "/team/members/riccardo-cadei/index.html",
     "items": []
   },
   {
@@ -41,7 +45,9 @@
       "/team/members/clementine-domine/index.html",
       "/team/members/riccardo-cadei/index.html",
       "/team/members/berker-demirel/index.html",
+      "/team/members/marek-jankola/index.html",
       "/team/members/walter-nelson/index.html",
+      "/team/members/yiwen-qiu/index.html",
       "/team/members/dario-rancati/index.html",
       "/team/members/jan-philipp-von-bassewitz/index.html",
       "/team/members/dingling-yao/index.html",
@@ -59,12 +65,15 @@
   {
     "listing": "/papers/index.html",
     "items": [
-      "/papers/2026/single-cell-dynamics-ode/index.html"
+      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/single-cell-dynamics-ode/index.html",
+      "/papers/2026/mendelian-randomization-representation-learning/index.html"
     ]
   },
   {
     "listing": "/team/members/adeel-pervez/index.html",
     "items": [
+      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
       "/papers/2026/single-cell-dynamics-ode/index.html"
     ]
   },
@@ -79,7 +88,9 @@
   {
     "listing": "/team/members/francesco-locatello/index.html",
     "items": [
-      "/papers/2026/single-cell-dynamics-ode/index.html"
+      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/single-cell-dynamics-ode/index.html",
+      "/papers/2026/mendelian-randomization-representation-learning/index.html"
     ]
   },
   {
@@ -89,11 +100,17 @@
     ]
   },
   {
-    "listing": "/team/members/riccardo-cadei/index.html",
+    "listing": "/team/members/marek-jankola/index.html",
     "items": []
   },
   {
-    "listing": "/team/members/valentino-maiorca/index.html",
+    "listing": "/team/members/shimeng-huang/index.html",
+    "items": [
+      "/papers/2026/mendelian-randomization-representation-learning/index.html"
+    ]
+  },
+  {
+    "listing": "/team/members/walter-nelson/index.html",
     "items": []
   }
 ]

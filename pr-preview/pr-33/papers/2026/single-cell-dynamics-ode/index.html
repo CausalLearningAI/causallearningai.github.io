@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.38">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -13,17 +13,20 @@
 <meta name="author" content="Theofanis Karaletsos">
 <meta name="author" content="Francesco Locatello">
 <meta name="dcterms.date" content="2026-03-04">
-<meta name="description" content="Modeling how stem cells differentiate into specialized tissue cells is central to understanding diseases such as cancer, but single-cell measurements destroy the cell, leaving only snapshot observations of a population at a few time points. State-of-the-art trajectory models rely on expensive optimal-transport preprocessing and multi-stage training, and do not expose explicit gene interactions. Cell-Mechanistic Neural Networks (Cell-MNN) are an end-to-end encoder–decoder whose latent representation is a locally linearized ODE: an MLP acts as a hypernetwork that, at each operating point, predicts a linear operator approximating the local dynamics, which is then solved analytically via the matrix exponential. The same operator, projected back through the PCA map, yields explicit gene-to-gene interaction weights. Cell-MNN attains the best average earth-mover’s-distance across the Cite, EB, and Multi single-cell benchmarks, remains trainable where optimal-transport baselines run out of memory on upsampled datasets, supports amortized joint training across datasets, and recovers signed gene interactions that agree with the literature-curated TRRUST database.">
+<meta name="description" content="Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.">
 
 <title>Learning Explicit Single-Cell Dynamics Using ODE Representations – CLAI Research Group</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -67,14 +70,14 @@ div.csl-indent {
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-9b13294eb98a7ccc9837366643235be5.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-ad7a70ee837950f74c3137b2b7f1bb4b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-9b13294eb98a7ccc9837366643235be5.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../../../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../../../site_libs/bootstrap/bootstrap-dark-ca51443ede194eb76c9621e381d37b59.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../../../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-96be14a3ff4f7e3f2c71ae2d645d982d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../../../site_libs/bootstrap/bootstrap-dark-1eaed955c8a3eb82b27d4f2f1b2398a8.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../../../site_libs/bootstrap/bootstrap-96be14a3ff4f7e3f2c71ae2d645d982d.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -148,11 +151,11 @@ window.Quarto = {
 </script>
 
 <meta property="og:title" content="Learning Explicit Single-Cell Dynamics Using ODE Representations – CLAI Research Group">
-<meta property="og:description" content="Modeling how stem cells differentiate into specialized tissue cells is central to understanding diseases such as cancer, but single-cell measurements destroy the cell, leaving only snapshot observations of a population at a few time points. State-of-the-art trajectory models rely on expensive optimal-transport preprocessing and multi-stage training, and do not expose explicit gene interactions. Cell-Mechanistic Neural Networks (Cell-MNN) are an end-to-end encoder–decoder whose latent representation is a locally linearized ODE: an MLP acts as a hypernetwork that, at each operating point, predicts a linear operator approximating the local dynamics, which is then solved analytically via the matrix exponential. The same operator, projected back through the PCA map, yields explicit gene-to-gene interaction weights. Cell-MNN attains the best average earth-mover’s-distance across the Cite, EB, and Multi single-cell benchmarks, remains trainable where optimal-transport baselines run out of memory on upsampled datasets, supports amortized joint training across datasets, and recovers signed gene interactions that agree with the literature-curated TRRUST database.">
+<meta property="og:description" content="Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.">
 <meta property="og:image" content="https://causallearningai.github.io/papers/2026/single-cell-dynamics-ode/thumbnail.svg">
 <meta property="og:site_name" content="CLAI Research Group">
 <meta name="twitter:title" content="Learning Explicit Single-Cell Dynamics Using ODE Representations – CLAI Research Group">
-<meta name="twitter:description" content="Modeling how stem cells differentiate into specialized tissue cells is central to understanding diseases such as cancer, but single-cell measurements destroy the cell, leaving only snapshot observations of a population at a few time points. State-of-the-art trajectory models rely on expensive optimal-transport preprocessing and multi-stage training, and do not expose explicit gene interactions. Cell-Mechanistic Neural Networks (Cell-MNN) are an end-to-end encoder–decoder whose latent representation is a locally linearized ODE: an MLP acts as a hypernetwork that, at each operating point, predicts a linear operator approximating the local dynamics, which is then solved analytically via the matrix exponential. The same operator, projected back through the PCA map, yields explicit gene-to-gene interaction weights. Cell-MNN attains the best average earth-mover’s-distance across the Cite, EB, and Multi single-cell benchmarks, remains trainable where optimal-transport baselines run out of memory on upsampled datasets, supports amortized joint training across datasets, and recovers signed gene interactions that agree with the literature-curated TRRUST database.">
+<meta name="twitter:description" content="Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.">
 <meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/single-cell-dynamics-ode/thumbnail.svg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="citation_title" content="Learning Explicit Single-Cell Dynamics Using ODE Representations">
@@ -425,7 +428,7 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Learning Explicit Single-Cell Dynamics Using ODE Representations</h1>
-<p class="subtitle lead">Cell-MNN: an end-to-end encoder–decoder whose latent representation is a locally linearized ODE, jointly predicting cell fate and recovering interpretable gene interactions</p>
+<p class="subtitle lead">Cell-MNN: an end-to-end encoder–decoder whose latent representation is a locally linearized ODE, jointly predicting cell fate and gene interactions</p>
   <div class="quarto-categories">
     <div class="quarto-category">AI for Science</div>
     <div class="quarto-category">Dynamical Systems</div>
@@ -435,7 +438,7 @@ window.Quarto = {
 
 <div>
   <div class="description">
-    <p>Modeling how stem cells differentiate into specialized tissue cells is central to understanding diseases such as cancer, but single-cell measurements destroy the cell, leaving only snapshot observations of a population at a few time points. State-of-the-art trajectory models rely on expensive optimal-transport preprocessing and multi-stage training, and do not expose explicit gene interactions. Cell-Mechanistic Neural Networks (Cell-MNN) are an end-to-end encoder–decoder whose latent representation is a <em>locally linearized ODE</em>: an MLP acts as a hypernetwork that, at each operating point, predicts a linear operator approximating the local dynamics, which is then solved analytically via the matrix exponential. The same operator, projected back through the PCA map, yields explicit gene-to-gene interaction weights. Cell-MNN attains the best average earth-mover’s-distance across the Cite, EB, and Multi single-cell benchmarks, remains trainable where optimal-transport baselines run out of memory on upsampled datasets, supports amortized joint training across datasets, and recovers signed gene interactions that agree with the literature-curated TRRUST database.</p>
+    <p>Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.</p>
   </div>
 </div>
 
@@ -523,7 +526,7 @@ window.Quarto = {
 <div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2510.02903" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://openreview.net/forum?id=DzSNH5APPl" target="_blank" rel="noopener"><i class="bi bi-card-text" aria-hidden="true"></i> OpenReview</a><a class="paper-link" href="https://github.com/czi-ai/cell-mnn" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
 <section id="the-problem-dynamics-from-snapshots" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="the-problem-dynamics-from-snapshots">The problem: dynamics from snapshots</h2>
-<p>The process by which stem cells differentiate into specialized tissue cells is still poorly understood, and predicting cellular fate remains an open problem in systems biology. A deeper grasp of these dynamics matters for diseases such as cancer and for understanding how genes activate or repress one another as a cell differentiates. The combinatorial space of possible gene interactions is vast — the paper notes on the order of <span class="math inline">10^8</span> theoretically possible interactions — yet single-cell sequencing now produces datasets growing faster than Moore’s law, making this a natural target for machine learning.</p>
+<p>The process by which stem cells differentiate into specialized tissue cells is still poorly understood, and predicting cellular fate remains an open problem in systems biology. A deeper grasp of these dynamics matters for diseases such as cancer and for understanding how genes activate or repress one another as a cell differentiates. The combinatorial space of possible gene interactions is vast — on the order of <span class="math inline">10^8</span> theoretically possible interactions — yet single-cell sequencing now produces datasets growing faster than Moore’s law, making this a natural target for machine learning.</p>
 <div class="page-columns page-full"><p>The defining difficulty is that <strong>measuring a cell destroys it.</strong> Each cell is observed at exactly one point along its trajectory — a <em>snapshot observation</em> — so the data is a set of unpaired population marginals at a handful of experimental time points, not a set of tracked trajectories. The task is to learn dynamics for the observable gene-expression vector <span class="math inline">\mathbf{x}_t</span> that are consistent with the family of marginals <span class="math inline">\{p_t\}_{t\in\mathcal{T}}</span>. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Because cells are destroyed by measurement, there is no correspondence between the cells seen at <span class="math inline">t_1</span> and those seen at <span class="math inline">t_2</span> — only their distributions are observed.</span></div></div>
 <div class="page-columns page-full">
 <div id="fig-problem" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
@@ -1210,10 +1213,12 @@ document.addEventListener("DOMContentLoaded", function () {
   "Francesco Montagna": "francesco-montagna",
   "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
   "Marco Fumero": "marco-fumero",
+  "Marek Jankola": "marek-jankola",
   "Riccardo Cadei": "riccardo-cadei",
   "Shimeng Huang": "shimeng-huang",
   "Valentino Maiorca": "valentino-maiorca",
-  "Walter Nelson": "walter-nelson"
+  "Walter Nelson": "walter-nelson",
+  "Yiwen Qiu": "yiwen-qiu"
 };</script>
 <script>
 // Author line for publication listing rows. Quarto renders the `author` field as
@@ -1377,6 +1382,24 @@ document.addEventListener("DOMContentLoaded", function () {
       e.stopPropagation();
       open(img.currentSrc || img.src, img.alt);
     });
+  });
+});
+</script>
+<script>
+// Reassemble the email links that scripts/cloak-emails.py cloaked at build time.
+// That post-render step strips every `href="mailto:..."` down to a base64
+// `data-cloak` attribute so the plaintext address never ships in the static
+// HTML (defeats non-JS email harvesters). Here we decode it back into a working
+// mailto link for real visitors, the instant the page loads.
+// Progressive enhancement: with JS off the link is inert, but the address was
+// never visible anyway (paper authors are an envelope icon, team links say
+// "Email"), so nothing readable is lost.
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("a[data-cloak]").forEach(function (a) {
+    try {
+      a.setAttribute("href", "mailto:" + atob(a.getAttribute("data-cloak")));
+      a.removeAttribute("data-cloak");                          // idempotent
+    } catch (e) {}
   });
 });
 </script>
