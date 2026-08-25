@@ -532,7 +532,7 @@ window.Quarto = {
 <div id="fig-problem" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-problem-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="sc-problem.png" class="img-fluid figure-img column-page" style="width:58.0%">
+<img src="sc-problem.png" class="img-fluid figure-img column-page" style="width:35.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-problem-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: The single-cell interpolation setup. Trajectories are scored by the earth-mover’s distance (EMD) between the model’s predicted distribution and the empirical marginal at a held-out time <span class="math inline">t_{\text{val}}</span>.
@@ -560,7 +560,7 @@ Cuturi, Marco. 2013. <span>“Sinkhorn Distances: Lightspeed Computation of Opti
 <div id="fig-projection" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="operator-projection.png" class="img-fluid figure-img column-page" style="width:70.0%">
+<img src="operator-projection.png" class="img-fluid figure-img column-page" style="width:50.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: The encoder as a hypernetwork over operators. Rather than directly predicting a velocity at the current point (as a Neural ODE does), Cell-MNN’s MLP maps each operating point into the subspace of <em>linear</em> operators, predicting a local linear approximation of the global dynamics.
@@ -582,7 +582,7 @@ Ha, David, Andrew M. Dai, and Quoc V. Le. 2017. <span>“HyperNetworks.”</span
 <div id="fig-cellmnn-vs-node" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-cellmnn-vs-node-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="cellmnn-vs-node.png" class="img-fluid figure-img column-page" style="width:70.0%">
+<img src="cellmnn-vs-node.png" class="img-fluid figure-img column-page" style="width:50.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cellmnn-vs-node-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3: Cell-MNN versus the Neural-ODE framing. A Neural ODE predicts a velocity that must be integrated numerically; Cell-MNN predicts a local linear operator <span class="math inline">\mathbf{A}_\theta</span> whose flow is solved analytically with the matrix exponential.
@@ -763,7 +763,7 @@ Matsumoto, Hirotaka, Hisanori Kiryu, Chikara Furusawa, et al. 2017. <span>“<sp
 <div id="fig-spider" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-spider-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="gene-f1-spider.png" class="img-fluid figure-img" style="width:62.0%">
+<img src="gene-f1-spider.png" class="img-fluid figure-img" style="width:50.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-spider-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;4: Per-source-gene F1 on the TRRUST activation/repression task, comparing two Cell-MNN variants against a guessing baseline.
@@ -852,7 +852,7 @@ Table&nbsp;3: GRN discovery on EB, F1 score (%) for predicting activation vs.&nb
 <div id="fig-umap" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
 <div aria-describedby="fig-umap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="operator-umap.png" class="img-fluid figure-img" style="width:55.0%">
+<img src="operator-umap.png" class="img-fluid figure-img" style="width:45.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-umap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;5: UMAP of the operators predicted by Cell-MNN across the EB time course, colored by day range. The model learns visibly distinct dynamics at different stages of differentiation.
