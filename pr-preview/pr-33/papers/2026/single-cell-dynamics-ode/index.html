@@ -528,17 +528,15 @@ window.Quarto = {
 <h2 class="anchored" data-anchor-id="the-problem-dynamics-from-snapshots">The problem: dynamics from snapshots</h2>
 <p>The process by which stem cells differentiate into specialized tissue cells is still poorly understood, and predicting cellular fate remains an open problem in systems biology. A deeper grasp of these dynamics matters for diseases such as cancer and for understanding how genes activate or repress one another as a cell differentiates. The combinatorial space of possible gene interactions is vast — on the order of <span class="math inline">10^8</span> theoretically possible interactions — yet single-cell sequencing now produces datasets growing faster than Moore’s law, making this a natural target for machine learning.</p>
 <div class="page-columns page-full"><p>The defining difficulty is that <strong>measuring a cell destroys it.</strong> Each cell is observed at exactly one point along its trajectory — a <em>snapshot observation</em> — so the data is a set of unpaired population marginals at a handful of experimental time points, not a set of tracked trajectories. The task is to learn dynamics for the observable gene-expression vector <span class="math inline">\mathbf{x}_t</span> that are consistent with the family of marginals <span class="math inline">\{p_t\}_{t\in\mathcal{T}}</span>. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Because cells are destroyed by measurement, there is no correspondence between the cells seen at <span class="math inline">t_1</span> and those seen at <span class="math inline">t_2</span> — only their distributions are observed.</span></div></div>
-<div class="page-columns page-full">
-<div id="fig-problem" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-problem-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="sc-problem.png" class="img-fluid figure-img column-page" style="width:35.0%">
+<div id="fig-problem" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-problem-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="sc-problem.png" class="img-fluid figure-img" style="width:50.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-problem-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: The single-cell interpolation setup. Trajectories are scored by the earth-mover’s distance (EMD) between the model’s predicted distribution and the empirical marginal at a held-out time <span class="math inline">t_{\text{val}}</span>.
 </figcaption>
 </figure>
-</div>
 </div>
 <p>Best-performing methods in this setting depend on <strong>optimal-transport (OT) preprocessing</strong> to manufacture trajectory labels, which becomes a bottleneck at scale: the Sinkhorn algorithm scales quadratically in the number of samples <span class="citation" data-cites="cuturi2013sinkhorn">(<a href="#ref-cuturi2013sinkhorn" role="doc-biblioref">Cuturi 2013</a>)</span>. Strong baselines such as OT-MFM <span class="citation" data-cites="kapusniak2024metric">(<a href="#ref-kapusniak2024metric" role="doc-biblioref">Kapusniak et al. 2024</a>)</span> and DeepRUOT <span class="citation" data-cites="zhang2025deepruot">(<a href="#ref-zhang2025deepruot" role="doc-biblioref">Zhang et al. 2025</a>)</span> also involve multiple training stages and networks, which makes amortized training across datasets awkward. And none of these methods directly learns explicit gene interactions.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-cuturi2013sinkhorn" class="csl-entry" role="listitem">
@@ -556,17 +554,15 @@ Cuturi, Marco. 2013. <span>“Sinkhorn Distances: Lightspeed Computation of Opti
 \mathbf{A}_\theta\!\big(\mathbf{z}^{(i)}, t^{(i)}\big)\,\mathbf{z}.
 </span></p>
 <p>The linear operator <span class="math inline">\mathbf{A}_\theta</span> is produced by an <span class="math inline">\text{MLP}_\theta</span> that maps the operating point into the space of linear operators. Crucially, although the operator governing the <em>local</em> dynamics is linear, it is a <strong>non-linear function of the current state and time</strong>, so the global behavior remains non-linear. This is the role the paper draws as a meta-learning task for the encoder.</p>
-<div class="page-columns page-full">
-<div id="fig-projection" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="operator-projection.png" class="img-fluid figure-img column-page" style="width:50.0%">
+<div id="fig-projection" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="operator-projection.png" class="img-fluid figure-img" style="width:72.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;2: The encoder as a hypernetwork over operators. Rather than directly predicting a velocity at the current point (as a Neural ODE does), Cell-MNN’s MLP maps each operating point into the subspace of <em>linear</em> operators, predicting a local linear approximation of the global dynamics.
 </figcaption>
 </figure>
-</div>
 </div>
 <p>This view is conceptually orthogonal to Neural ODEs <span class="citation" data-cites="chen2018neuralode">(<a href="#ref-chen2018neuralode" role="doc-biblioref">Chen et al. 2018</a>)</span>, which learn a single unconditional black-box velocity field. Here the MLP behaves like a <strong>hypernetwork</strong> <span class="citation" data-cites="ha2017hypernetworks">(<a href="#ref-ha2017hypernetworks" role="doc-biblioref">2017</a>)</span>: it outputs a state-conditioned, <em>white-box</em> linear operator for each operating point, which makes the learned dynamics explicit and lets a single network amortize across arbitrarily many states and datasets.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-chen2018neuralode" class="csl-entry" role="listitem">
@@ -578,17 +574,15 @@ Ha, David, Andrew M. Dai, and Quoc V. Le. 2017. <span>“HyperNetworks.”</span
 \mathbf{z}(t^{(i)} + \Delta t) = \exp\!\big(\mathbf{A}_\theta\,\Delta t\big)\,\mathbf{z}_t^{(i)},
 </span></p>
 <p>with predictions mapped back to gene space by <span class="math inline">\mathbf{x}(t+\Delta t) = \mathbf{V}_{\text{PCA}}\,\mathbf{z}(t+\Delta t)</span>. No numerical ODE solver and no recursion over a time grid are required.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
-<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The MLP predicts <span class="math inline">\mathbf{A}_\theta</span> in eigen-decomposed form <span class="math inline">\mathbf{A}_\theta = \mathbf{P}_\theta\,\text{diag}(\boldsymbol{\lambda}_\theta)\,\mathbf{P}_\theta^{-1}</span>, which both eases the matrix exponential and allows inductive biases such as fixing an eigenvalue to zero. Evaluating the solution at <span class="math inline">T</span> time points costs <span class="math inline">\mathcal{O}(T\,d_z^2)</span> time and <span class="math inline">\mathcal{O}(d_z^2)</span> space, with a one-time <span class="math inline">\mathcal{O}(d_z^3)</span> cost per operating point to form the operator.</p></div></div><div class="page-columns page-full">
-<div id="fig-cellmnn-vs-node" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
-<figure class="quarto-float quarto-float-fig figure page-columns page-full">
-<div aria-describedby="fig-cellmnn-vs-node-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<img src="cellmnn-vs-node.png" class="img-fluid figure-img column-page" style="width:50.0%">
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The MLP predicts <span class="math inline">\mathbf{A}_\theta</span> in eigen-decomposed form <span class="math inline">\mathbf{A}_\theta = \mathbf{P}_\theta\,\text{diag}(\boldsymbol{\lambda}_\theta)\,\mathbf{P}_\theta^{-1}</span>, which both eases the matrix exponential and allows inductive biases such as fixing an eigenvalue to zero. Evaluating the solution at <span class="math inline">T</span> time points costs <span class="math inline">\mathcal{O}(T\,d_z^2)</span> time and <span class="math inline">\mathcal{O}(d_z^2)</span> space, with a one-time <span class="math inline">\mathcal{O}(d_z^3)</span> cost per operating point to form the operator.</p></div></div><div id="fig-cellmnn-vs-node" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cellmnn-vs-node-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cellmnn-vs-node.png" class="img-fluid figure-img" style="width:72.0%">
 </div>
 <figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cellmnn-vs-node-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;3: Cell-MNN versus the Neural-ODE framing. A Neural ODE predicts a velocity that must be integrated numerically; Cell-MNN predicts a local linear operator <span class="math inline">\mathbf{A}_\theta</span> whose flow is solved analytically with the matrix exponential.
 </figcaption>
 </figure>
-</div>
 </div>
 <p>The model is trained end-to-end (besides PCA) by minimizing a discounted Maximum Mean Discrepancy <span class="citation" data-cites="gretton2012mmd">(<a href="#ref-gretton2012mmd" role="doc-biblioref">Gretton et al. 2012</a>)</span> between the model-induced marginals and the empirical marginals, computed in latent space, with a kinetic-energy regularizer encouraging trajectories close to optimal-transport flows and an invertibility regularizer on <span class="math inline">\mathbf{P}_\theta</span>.</p>
 <div class="no-row-height column-margin column-container"><div id="ref-gretton2012mmd" class="csl-entry" role="listitem">
