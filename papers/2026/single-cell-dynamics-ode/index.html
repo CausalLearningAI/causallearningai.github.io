@@ -6,8 +6,16 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Jan-Philipp von Bassewitz">
+<meta name="author" content="Adeel Pervez">
+<meta name="author" content="Marco Fumero">
+<meta name="author" content="Matthew Robinson">
+<meta name="author" content="Theofanis Karaletsos">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2026-03-04">
+<meta name="description" content="Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.">
 
-<title>Adeel Pervez – CLAI Research Group</title>
+<title>Learning Explicit Single-Cell Dynamics Using ODE Representations – CLAI Research Group</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -26,7 +34,26 @@ ul.task-list li input[type="checkbox"] {
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
-</style>
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
 
 
 <script src="../../../site_libs/quarto-nav/quarto-nav.js"></script>
@@ -37,12 +64,11 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../../">
 <link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
-<script src="../../../site_libs/quarto-listing/list.min.js"></script>
-<script src="../../../site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-9b13294eb98a7ccc9837366643235be5.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-ad7a70ee837950f74c3137b2b7f1bb4b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
@@ -79,35 +105,6 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
-
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-publications .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
-
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-venue','listing-year','listing-modifier',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-publications'] = new List('listing-publications', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
 
   <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
   <script>document.addEventListener("DOMContentLoaded", function () {
@@ -153,17 +150,45 @@ window.Quarto = {
 };
 </script>
 
-<meta property="og:title" content="Adeel Pervez – CLAI Research Group">
-<meta property="og:description" content="Postdoc">
-<meta property="og:image" content="https://causallearningai.github.io/team/members/adeel-pervez/photo.jpg">
+<meta property="og:title" content="Learning Explicit Single-Cell Dynamics Using ODE Representations – CLAI Research Group">
+<meta property="og:description" content="Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/single-cell-dynamics-ode/thumbnail.svg">
 <meta property="og:site_name" content="CLAI Research Group">
-<meta name="twitter:title" content="Adeel Pervez – CLAI Research Group">
-<meta name="twitter:description" content="Postdoc">
-<meta name="twitter:image" content="https://causallearningai.github.io/team/members/adeel-pervez/photo.jpg">
+<meta name="twitter:title" content="Learning Explicit Single-Cell Dynamics Using ODE Representations – CLAI Research Group">
+<meta name="twitter:description" content="Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/single-cell-dynamics-ode/thumbnail.svg">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Learning Explicit Single-Cell Dynamics Using ODE Representations">
+<meta name="citation_author" content="Jan-Philipp von Bassewitz">
+<meta name="citation_author" content="Adeel Pervez">
+<meta name="citation_author" content="Marco Fumero">
+<meta name="citation_author" content="Matthew Robinson">
+<meta name="citation_author" content="Theofanis Karaletsos">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2026-03-04">
+<meta name="citation_cover_date" content="2026-03-04">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-03-04">
+<meta name="citation_fulltext_html_url" content="https://arxiv.org/abs/2510.02903">
+<meta name="citation_language" content="en">
+<meta name="citation_conference_title" content="Proceedings of the Fourteenth International Conference on Learning Representations (ICLR)">
+<meta name="citation_reference" content="citation_title=Mechanistic neural networks for scientific machine learning;,citation_author=Adeel Pervez;,citation_author=Francesco Locatello;,citation_author=Stratis Gavves;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://openreview.net/forum?id=pLtuwhoQh7;,citation_conference_title=Proceedings of the 41st international conference on machine learning;">
+<meta name="citation_reference" content="citation_title=HyperNetworks;,citation_author=David Ha;,citation_author=Andrew M. Dai;,citation_author=Quoc V. Le;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_fulltext_html_url=https://openreview.net/forum?id=rkpACe1lx;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=Neural ordinary differential equations;,citation_author=Ricky T. Q. Chen;,citation_author=Yulia Rubanova;,citation_author=Jesse Bettencourt;,citation_author=David K. Duvenaud;,citation_publication_date=2018;,citation_cover_date=2018;,citation_year=2018;,citation_fulltext_html_url=https://proceedings.neurips.cc/paper_files/paper/2018/file/69386f6bb1dfed68692a24c8686939b9-Paper.pdf;,citation_volume=31;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=TrajectoryNet: A dynamic optimal transport network for modeling cellular dynamics;,citation_author=Alexander Tong;,citation_author=Jessie Huang;,citation_author=Guy Wolf;,citation_author=David Van Dijk;,citation_author=Smita Krishnaswamy;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_conference_title=Proceedings of the 37th international conference on machine learning;">
+<meta name="citation_reference" content="citation_title=Improving and generalizing flow-based generative models with minibatch optimal transport;,citation_author=Alexander Tong;,citation_author=Kilian Fatras;,citation_author=Nikolay Malkin;,citation_author=Guillaume Huguet;,citation_author=Yanlei Zhang;,citation_author=Jarrid Rector-Brooks;,citation_author=Guy Wolf;,citation_author=Yoshua Bengio;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://openreview.net/forum?id=CD9Snc73AW;,citation_journal_title=Transactions on Machine Learning Research;">
+<meta name="citation_reference" content="citation_title=Metric flow matching for smooth interpolations on the data manifold;,citation_author=Kacper Kapusniak;,citation_author=Peter Potaptchik;,citation_author=Teodora Reu;,citation_author=Leo Zhang;,citation_author=Alexander Tong;,citation_author=Michael M. Bronstein;,citation_author=Joey Bose;,citation_author=Francesco Di Giovanni;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://openreview.net/forum?id=fE3RqiF4Nx;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Learning stochastic dynamics from snapshots through regularized unbalanced optimal transport;,citation_author=Zhenyi Zhang;,citation_author=Tiejun Li;,citation_author=Peijie Zhou;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_fulltext_html_url=https://openreview.net/forum?id=gQlxd3Mtru;,citation_conference_title=The thirteenth international conference on learning representations;">
+<meta name="citation_reference" content="citation_title=A kernel two-sample test;,citation_author=Arthur Gretton;,citation_author=Karsten M. Borgwardt;,citation_author=Malte J. Rasch;,citation_author=Bernhard Schölkopf;,citation_author=Alexander Smola;,citation_publication_date=2012;,citation_cover_date=2012;,citation_year=2012;,citation_issue=25;,citation_volume=13;,citation_journal_title=Journal of Machine Learning Research;">
+<meta name="citation_reference" content="citation_title=Sinkhorn distances: Lightspeed computation of optimal transport;,citation_author=Marco Cuturi;,citation_publication_date=2013;,citation_cover_date=2013;,citation_year=2013;,citation_fulltext_html_url=https://proceedings.neurips.cc/paper_files/paper/2013/file/af21d0c97db2e27e13572cbf59eb343d-Paper.pdf;,citation_volume=26;,citation_conference_title=Advances in neural information processing systems;">
+<meta name="citation_reference" content="citation_title=Visualizing structure and transitions in high-dimensional biological data;,citation_author=Kevin R. Moon;,citation_author=David Dijk;,citation_author=Zheng Wang;,citation_author=Scott Gigante;,citation_author=Daniel B. Burkhardt;,citation_author=William S. Chen;,citation_author=Kristina Yim;,citation_author=Antonia Elzen;,citation_author=Matthew J. Hirn;,citation_author=Ronald R. Coifman;,citation_author=Natalia B. Ivanova;,citation_author=Guy Wolf;,citation_author=Smita Krishnaswamy;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_issue=12;,citation_volume=37;,citation_journal_title=Nature Biotechnology;">
+<meta name="citation_reference" content="citation_title=Open problems – multimodal single-cell integration;,citation_author=Daniel Burkhardt;,citation_author=Malte Luecken;,citation_author=Andrew Benz;,citation_author=Peter Holderrieth;,citation_author=Jonathan Bloom;,citation_author=Christopher Lance;,citation_author=Ashley Chow;,citation_author=Ryan Holbrook;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_fulltext_html_url=https://kaggle.com/competitions/open-problems-multimodal;,citation_publisher=Kaggle;">
+<meta name="citation_reference" content="citation_title=TRRUST v2: An expanded reference database of human and mouse transcriptional regulatory interactions;,citation_author=Heonjong Han;,citation_author=Jae-Won Cho;,citation_author=Sangyoung Lee;,citation_author=Ayoung Yun;,citation_author=Hyojin Kim;,citation_author=Dasom Bae;,citation_author=Sunmo Yang;,citation_author=Chan Yeong Kim;,citation_author=Muyoung Lee;,citation_author=Eunbeen Kim;,citation_author=Sungho Lee;,citation_author=Byunghee Kang;,citation_author=Dabin Jeong;,citation_author=Yaeji Kim;,citation_author=Hyeon-Nae Jeon;,citation_author=Haein Jung;,citation_author=Sunhwee Nam;,citation_author=Michael Chung;,citation_author=Jong-Hoon Kim;,citation_author=Insuk Lee;,citation_publication_date=2018;,citation_cover_date=2018;,citation_year=2018;,citation_issue=D1;,citation_volume=46;,citation_journal_title=Nucleic Acids Research;">
+<meta name="citation_reference" content="citation_title=SCODE: An efficient regulatory network inference algorithm from single-cell RNA-seq during differentiation;,citation_author=Hirotaka Matsumoto;,citation_author=Hisanori Kiryu;,citation_author=Chikara Furusawa;,citation_author=Minoru S. H. Ko;,citation_author=Shigeru B. H. Ko;,citation_author=Norio Gouda;,citation_author=Tetsutaro Hayashi;,citation_author=Itoshi Nikaido;,citation_publication_date=2017;,citation_cover_date=2017;,citation_year=2017;,citation_issue=15;,citation_volume=33;,citation_journal_title=Bioinformatics;">
+<meta name="citation_reference" content="citation_title=Mapping transcriptomic vector fields of single cells;,citation_author=Xiaojie Qiu;,citation_author=Yan Zhang;,citation_author=Jorge D. Martin-Rufino;,citation_author=Chen Weng;,citation_author=Shayan Hosseinzadeh;,citation_author=Dian Yang;,citation_author=Angela N. Pogson;,citation_author=Marco Y. Hein;,citation_author=Kyung Hoi (Joseph) Min;,citation_author=Li Wang;,citation_author=others;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_issue=4;,citation_volume=185;,citation_journal_title=Cell;">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -378,90 +403,478 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#the-problem-dynamics-from-snapshots" id="toc-the-problem-dynamics-from-snapshots" class="nav-link active" data-scroll-target="#the-problem-dynamics-from-snapshots">The problem: dynamics from snapshots</a></li>
+  <li><a href="#cell-mnn-a-locally-linearized-latent-ode" id="toc-cell-mnn-a-locally-linearized-latent-ode" class="nav-link" data-scroll-target="#cell-mnn-a-locally-linearized-latent-ode">Cell-MNN: a locally linearized latent ODE</a></li>
+  <li><a href="#explicit-gene-interactions-for-free" id="toc-explicit-gene-interactions-for-free" class="nav-link" data-scroll-target="#explicit-gene-interactions-for-free">Explicit gene interactions, for free</a></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results">Results</a>
+  <ul class="collapse">
+  <li><a href="#single-cell-interpolation" id="toc-single-cell-interpolation" class="nav-link" data-scroll-target="#single-cell-interpolation">Single-cell interpolation</a></li>
+  <li><a href="#amortized-training-and-scalability" id="toc-amortized-training-and-scalability" class="nav-link" data-scroll-target="#amortized-training-and-scalability">Amortized training and scalability</a></li>
+  <li><a href="#recovering-gene-interactions" id="toc-recovering-gene-interactions" class="nav-link" data-scroll-target="#recovering-gene-interactions">Recovering gene interactions</a></li>
+  </ul></li>
+  <li><a href="#why-it-matters" id="toc-why-it-matters" class="nav-link" data-scroll-target="#why-it-matters">Why it matters</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<div class="quarto-about-trestles">
-  <div class="about-entity">
-    <img src="photo.jpg" class="about-image
-  round " style="height: 20em; width: 20em;">
+<main class="content page-columns page-full" id="quarto-document-content">
+
+
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Adeel Pervez</h1>
-<p class="subtitle lead">Postdoc</p>
-</div>
-<div class="quarto-title-meta">
+<h1 class="title">Learning Explicit Single-Cell Dynamics Using ODE Representations</h1>
+<p class="subtitle lead">Cell-MNN: an end-to-end encoder–decoder whose latent representation is a locally linearized ODE, jointly predicting cell fate and gene interactions</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">AI for Science</div>
+    <div class="quarto-category">Dynamical Systems</div>
+    <div class="quarto-category">Interpretability</div>
   </div>
-</header>
-    <div class="about-links">
-  <a data-cloak="QWRlZWwuUGVydmV6QGlzdC5hYy5hdA==" class="about-link" rel="" target="">
-    <i class="bi bi-envelope"></i>
-     <span class="about-link-text">Email</span>
-  </a>
-</div>
   </div>
-  <div class="about-contents"><main class="content" id="quarto-document-content">
 
-<p>Adeel is a postdoc in the <a href="https://ista.ac.at/en/research/locatello-group/">Locatello group</a> at the Institute of Science and Technology Austria (ISTA).</p>
-<!-- publications: auto-generated below — keep your own prose ABOVE this line; sync_team.py rewrites from here down on every run. -->
-<section id="publications" class="level2 member-publications">
-<h2 data-anchor-id="publications">Publications</h2>
-<div id="listing-publications" class="quarto-listing quarto-listing-container-default">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="QUklMjBmb3IlMjBTY2llbmNlJTJDRHluYW1pY2FsJTIwU3lzdGVtcyUyQ1RoZW9yeQ==" data-listing-date-sort="1778284800000" data-listing-file-modified-sort="1787668657627" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1235">
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../../../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">Controlling Transient Amplification Improves Long-horizon Rollouts</a>
-</h3>
+<div>
+  <div class="description">
+    <p>Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.</p>
+  </div>
 </div>
-<div class="metadata">
-<a href="../../../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">
-<div class="listing-date">
-May 9, 2026
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Jan-Philipp von Bassewitz </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+        <p class="affiliation">
+            Chan Zuckerberg Initiative (CZI)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Adeel Pervez </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Marco Fumero </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Matthew Robinson </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Theofanis Karaletsos </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Chan Zuckerberg Initiative (CZI)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+        <p class="affiliation">
+            Chan Zuckerberg Initiative (CZI)
+          </p>
+      </div>
+  </div>
+
+<div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 4, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div class="paper-venue venue-iclr">
+<span class="venue-name">ICLR 2026</span>
 </div>
-<div class="listing-author">
-Adeel Pervez, Francesco Locatello
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2510.02903" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://openreview.net/forum?id=DzSNH5APPl" target="_blank" rel="noopener"><i class="bi bi-card-text" aria-hidden="true"></i> OpenReview</a><a class="paper-link" href="https://github.com/czi-ai/cell-mnn" target="_blank" rel="noopener"><i class="bi bi-github" aria-hidden="true"></i> Code</a></div>
+<section id="the-problem-dynamics-from-snapshots" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="the-problem-dynamics-from-snapshots">The problem: dynamics from snapshots</h2>
+<p>The process by which stem cells differentiate into specialized tissue cells is still poorly understood, and predicting cellular fate remains an open problem in systems biology. A deeper grasp of these dynamics matters for diseases such as cancer and for understanding how genes activate or repress one another as a cell differentiates. The combinatorial space of possible gene interactions is vast — on the order of <span class="math inline">10^8</span> theoretically possible interactions — yet single-cell sequencing now produces datasets growing faster than Moore’s law, making this a natural target for machine learning.</p>
+<div class="page-columns page-full"><p>The defining difficulty is that <strong>measuring a cell destroys it.</strong> Each cell is observed at exactly one point along its trajectory — a <em>snapshot observation</em> — so the data is a set of unpaired population marginals at a handful of experimental time points, not a set of tracked trajectories. The task is to learn dynamics for the observable gene-expression vector <span class="math inline">\mathbf{x}_t</span> that are consistent with the family of marginals <span class="math inline">\{p_t\}_{t\in\mathcal{T}}</span>. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Because cells are destroyed by measurement, there is no correspondence between the cells seen at <span class="math inline">t_1</span> and those seen at <span class="math inline">t_2</span> — only their distributions are observed.</span></div></div>
+<div id="fig-problem" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-problem-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="sc-problem.png" class="img-fluid figure-img" style="width:50.0%">
 </div>
-<div class="metadata-value listing-venue">
-arXiv
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-problem-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: The single-cell interpolation setup. Trajectories are scored by the earth-mover’s distance (EMD) between the model’s predicted distribution and the empirical marginal at a held-out time <span class="math inline">t_{\text{val}}</span>.
+</figcaption>
+</figure>
 </div>
-<div class="metadata-value listing-year">
-2026
+<p>Best-performing methods in this setting depend on <strong>optimal-transport (OT) preprocessing</strong> to manufacture trajectory labels, which becomes a bottleneck at scale: the Sinkhorn algorithm scales quadratically in the number of samples <span class="citation" data-cites="cuturi2013sinkhorn">(<a href="#ref-cuturi2013sinkhorn" role="doc-biblioref">Cuturi 2013</a>)</span>. Strong baselines such as OT-MFM <span class="citation" data-cites="kapusniak2024metric">(<a href="#ref-kapusniak2024metric" role="doc-biblioref">Kapusniak et al. 2024</a>)</span> and DeepRUOT <span class="citation" data-cites="zhang2025deepruot">(<a href="#ref-zhang2025deepruot" role="doc-biblioref">Zhang et al. 2025</a>)</span> also involve multiple training stages and networks, which makes amortized training across datasets awkward. And none of these methods directly learns explicit gene interactions.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-cuturi2013sinkhorn" class="csl-entry" role="listitem">
+Cuturi, Marco. 2013. <span>“Sinkhorn Distances: Lightspeed Computation of Optimal Transport.”</span> <em>Advances in Neural Information Processing Systems</em> 26. <a href="https://proceedings.neurips.cc/paper_files/paper/2013/file/af21d0c97db2e27e13572cbf59eb343d-Paper.pdf">https://proceedings.neurips.cc/paper_files/paper/2013/file/af21d0c97db2e27e13572cbf59eb343d-Paper.pdf</a>.
+</div></div></section>
+<section id="cell-mnn-a-locally-linearized-latent-ode" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="cell-mnn-a-locally-linearized-latent-ode">Cell-MNN: a locally linearized latent ODE</h2>
+<p>Cell-MNN is an encoder–decoder model that learns a mechanistic map</p>
+<p><span class="math display">
+\mathbf{x}_{t+\Delta t} = \text{Cell-MNN}_\theta(\mathbf{x}_t, t, \Delta t),
+</span></p>
+<p>predicting the state after an <em>arbitrary</em> interval <span class="math inline">\Delta t</span>. Following prior work <span class="citation" data-cites="tong2024otcfm">(<a href="#ref-tong2024otcfm" role="doc-biblioref">Tong et al. 2024</a>)</span>, the high-dimensional gene-expression vector is first projected to a low-dimensional latent space by PCA, <span class="math inline">\mathbf{z} = \mathbf{V}_{\text{PCA}}^\top \mathbf{x}</span>, and the dynamics are learned in that subspace. The latent state is assumed to follow non-autonomous, non-linear dynamics <span class="math inline">\dot{\mathbf{z}} = \mathbf{f}(\mathbf{z}, t)</span>. Learning an explicit global form of <span class="math inline">\mathbf{f}</span> is intractable, so Cell-MNN instead <strong>linearizes locally</strong>: at each <em>operating point</em> <span class="math inline">(\mathbf{z}^{(i)}, t^{(i)})</span> it approximates the dynamics by a linear ODE in a small neighborhood,</p>
+<div class="no-row-height column-margin column-container"></div><p><span class="math display">
+\dot{\mathbf{z}} = \mathbf{f}(\mathbf{z}, t) \approx
+\mathbf{A}_\theta\!\big(\mathbf{z}^{(i)}, t^{(i)}\big)\,\mathbf{z}.
+</span></p>
+<p>The linear operator <span class="math inline">\mathbf{A}_\theta</span> is produced by an <span class="math inline">\text{MLP}_\theta</span> that maps the operating point into the space of linear operators. Crucially, although the operator governing the <em>local</em> dynamics is linear, it is a <strong>non-linear function of the current state and time</strong>, so the global behavior remains non-linear. This is the role the paper draws as a meta-learning task for the encoder.</p>
+<div id="fig-projection" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="operator-projection.png" class="img-fluid figure-img" style="width:72.0%">
 </div>
-</a>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-projection-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: The encoder as a hypernetwork over operators. Rather than directly predicting a velocity at the current point (as a Neural ODE does), Cell-MNN’s MLP maps each operating point into the subspace of <em>linear</em> operators, predicting a local linear approximation of the global dynamics.
+</figcaption>
+</figure>
 </div>
+<p>This view is conceptually orthogonal to Neural ODEs <span class="citation" data-cites="chen2018neuralode">(<a href="#ref-chen2018neuralode" role="doc-biblioref">Chen et al. 2018</a>)</span>, which learn a single unconditional black-box velocity field. Here the MLP behaves like a <strong>hypernetwork</strong> <span class="citation" data-cites="ha2017hypernetworks">(<a href="#ref-ha2017hypernetworks" role="doc-biblioref">2017</a>)</span>: it outputs a state-conditioned, <em>white-box</em> linear operator for each operating point, which makes the learned dynamics explicit and lets a single network amortize across arbitrarily many states and datasets.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-chen2018neuralode" class="csl-entry" role="listitem">
+Chen, Ricky T. Q., Yulia Rubanova, Jesse Bettencourt, and David K. Duvenaud. 2018. <span>“Neural Ordinary Differential Equations.”</span> <em>Advances in Neural Information Processing Systems</em> 31. <a href="https://proceedings.neurips.cc/paper_files/paper/2018/file/69386f6bb1dfed68692a24c8686939b9-Paper.pdf">https://proceedings.neurips.cc/paper_files/paper/2018/file/69386f6bb1dfed68692a24c8686939b9-Paper.pdf</a>.
+</div><div id="ref-ha2017hypernetworks" class="csl-entry" role="listitem">
+Ha, David, Andrew M. Dai, and Quoc V. Le. 2017. <span>“HyperNetworks.”</span> <em>International Conference on Learning Representations</em>. <a href="https://openreview.net/forum?id=rkpACe1lx">https://openreview.net/forum?id=rkpACe1lx</a>.
+</div></div><p><strong>Decoding is analytic.</strong> Because the local dynamics are linear and time-invariant for a fixed <span class="math inline">\mathbf{A}_\theta</span>, the latent ODE has a closed-form solution via the matrix exponential,</p>
+<p><span class="math display">
+\mathbf{z}(t^{(i)} + \Delta t) = \exp\!\big(\mathbf{A}_\theta\,\Delta t\big)\,\mathbf{z}_t^{(i)},
+</span></p>
+<p>with predictions mapped back to gene space by <span class="math inline">\mathbf{x}(t+\Delta t) = \mathbf{V}_{\text{PCA}}\,\mathbf{z}(t+\Delta t)</span>. No numerical ODE solver and no recursion over a time grid are required.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<div class="no-row-height column-margin column-container"><div id="fn1"><p><sup>1</sup>&nbsp;The MLP predicts <span class="math inline">\mathbf{A}_\theta</span> in eigen-decomposed form <span class="math inline">\mathbf{A}_\theta = \mathbf{P}_\theta\,\text{diag}(\boldsymbol{\lambda}_\theta)\,\mathbf{P}_\theta^{-1}</span>, which both eases the matrix exponential and allows inductive biases such as fixing an eigenvalue to zero. Evaluating the solution at <span class="math inline">T</span> time points costs <span class="math inline">\mathcal{O}(T\,d_z^2)</span> time and <span class="math inline">\mathcal{O}(d_z^2)</span> space, with a one-time <span class="math inline">\mathcal{O}(d_z^3)</span> cost per operating point to form the operator.</p></div></div><div id="fig-cellmnn-vs-node" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cellmnn-vs-node-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="cellmnn-vs-node.png" class="img-fluid figure-img" style="width:72.0%">
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="QUklMjBmb3IlMjBTY2llbmNlJTJDRHluYW1pY2FsJTIwU3lzdGVtcyUyQ0ludGVycHJldGFiaWxpdHk=" data-listing-date-sort="1772582400000" data-listing-file-modified-sort="1787668657629" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2183">
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../../../papers/2026/single-cell-dynamics-ode/index.html" class="no-external">Learning Explicit Single-Cell Dynamics Using ODE Representations</a>
-</h3>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cellmnn-vs-node-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Cell-MNN versus the Neural-ODE framing. A Neural ODE predicts a velocity that must be integrated numerically; Cell-MNN predicts a local linear operator <span class="math inline">\mathbf{A}_\theta</span> whose flow is solved analytically with the matrix exponential.
+</figcaption>
+</figure>
 </div>
-<div class="metadata">
-<a href="../../../papers/2026/single-cell-dynamics-ode/index.html" class="no-external">
-<div class="listing-date">
-Mar 4, 2026
+<p>The model is trained end-to-end (besides PCA) by minimizing a discounted Maximum Mean Discrepancy <span class="citation" data-cites="gretton2012mmd">(<a href="#ref-gretton2012mmd" role="doc-biblioref">Gretton et al. 2012</a>)</span> between the model-induced marginals and the empirical marginals, computed in latent space, with a kinetic-energy regularizer encouraging trajectories close to optimal-transport flows.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-gretton2012mmd" class="csl-entry" role="listitem">
+Gretton, Arthur, Karsten M. Borgwardt, Malte J. Rasch, Bernhard Schölkopf, and Alexander Smola. 2012. <span>“A Kernel Two-Sample Test.”</span> <em>Journal of Machine Learning Research</em> 13 (25).
+</div></div></section>
+<section id="explicit-gene-interactions-for-free" class="level2">
+<h2 class="anchored" data-anchor-id="explicit-gene-interactions-for-free">Explicit gene interactions, for free</h2>
+<p>Because both the PCA projection and the local dynamics are linear, the predicted local operator can be pushed back into gene-expression space, <span class="math inline">\tfrac{d}{dt}\mathbf{x} = \mathbf{V}_{\text{PCA}}\,\mathbf{A}_\theta\,\mathbf{V}_{\text{PCA}}^\top\,\mathbf{x}</span>, giving an explicit form for the local dynamics. The paper reads off a per-cell interaction weight from gene <span class="math inline">j</span> to gene <span class="math inline">i</span> as</p>
+<p><span class="math display">
+w_{j\rightarrow i}(\mathbf{x}, t) :=
+\big[\mathbf{V}_{\text{PCA}}\,\mathbf{A}_\theta(\mathbf{x}, t)\,\mathbf{V}_{\text{PCA}}^\top\big]_{i,j}\cdot \mathbf{x}_j,
+</span></p>
+<p>the contribution of gene <span class="math inline">j</span>’s expression to the time-derivative of gene <span class="math inline">i</span>. The sign of <span class="math inline">w_{j\rightarrow i}</span> classifies an interaction as activating or repressing — an unsupervised readout obtained as a byproduct of the linearization, with no interaction labels used in training.</p>
+</section>
+<section id="results" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="results">Results</h2>
+<section id="single-cell-interpolation" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="single-cell-interpolation">Single-cell interpolation</h3>
+<p>The experiments use three commonly studied real datasets, preprocessed as in prior work <span class="citation" data-cites="tong2020trajectorynet tong2024otcfm">(<a href="#ref-tong2020trajectorynet" role="doc-biblioref">Tong et al. 2020</a>, <a href="#ref-tong2024otcfm" role="doc-biblioref">2024</a>)</span>: the <strong>Embryoid Body (EB)</strong> dataset <span class="citation" data-cites="moon2019eb">(<a href="#ref-moon2019eb" role="doc-biblioref">Moon et al. 2019</a>)</span> (ca. 16K human embryoid cells, five time points over 25 days), and the <strong>CITE-seq (Cite)</strong> (ca. 31K cells) and <strong>Multiome (Multi)</strong> (ca. 33K cells) datasets <span class="citation" data-cites="burkhardt2022multicite">(<a href="#ref-burkhardt2022multicite" role="doc-biblioref">Burkhardt et al. 2022</a>)</span>, each measured at four time points over seven days. Each intermediate day is left out in cross-validation fashion, and models are scored by the 1-Wasserstein distance (EMD) in the 5-dimensional PCA subspace; lower is better.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-tong2020trajectorynet" class="csl-entry" role="listitem">
+Tong, Alexander, Jessie Huang, Guy Wolf, David Van Dijk, and Smita Krishnaswamy. 2020. <span>“<span>TrajectoryNet</span>: A Dynamic Optimal Transport Network for Modeling Cellular Dynamics.”</span> <em>Proceedings of the 37th International Conference on Machine Learning</em>, 9526–36.
+</div><div id="ref-moon2019eb" class="csl-entry" role="listitem">
+Moon, Kevin R., David van Dijk, Zheng Wang, et al. 2019. <span>“Visualizing Structure and Transitions in High-Dimensional Biological Data.”</span> <em>Nature Biotechnology</em> 37 (12): 1482–92.
+</div><div id="ref-burkhardt2022multicite" class="csl-entry" role="listitem">
+Burkhardt, Daniel, Malte Luecken, Andrew Benz, et al. 2022. <em>Open Problems – Multimodal Single-Cell Integration</em>. Kaggle. <a href="https://kaggle.com/competitions/open-problems-multimodal">https://kaggle.com/competitions/open-problems-multimodal</a>.
+</div></div><div class="page-columns page-full"><p>Cell-MNN achieves the best result on EB and Multi and ranks second on Cite, giving the best <strong>average</strong> EMD across the three datasets. It is also the only method that beats the authors’ own OT-Interpolate reference on every dataset. </p><div class="no-row-height column-margin column-container"><span class="margin-aside">Values marked * in the paper are computed by the authors. The table here shows the three SOTA baselines, the OT-Interpolate reference, and Cell-MNN; the original paper also lists a longer set of earlier baselines.</span></div></div>
+<div id="tbl-interp" class="quarto-float quarto-figure quarto-figure-center anchored page-columns page-full">
+<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-interp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Single-cell interpolation, EMD in the 5-dimensional PCA subspace (mean over left-out time points; lower is better). Best per column in bold.
+</figcaption>
+<div aria-describedby="tbl-interp-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 38%">
+<col style="width: 16%">
+<col style="width: 15%">
+<col style="width: 15%">
+<col style="width: 13%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Method</th>
+<th style="text-align: right;">Cite (5D)</th>
+<th style="text-align: right;">EB (5D)</th>
+<th style="text-align: right;">Multi (5D)</th>
+<th style="text-align: right;">Average ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">OT-CFM <span class="citation" data-cites="tong2024otcfm">(<a href="#ref-tong2024otcfm" role="doc-biblioref">Tong et al. 2024</a>)</span></td>
+<td style="text-align: right;">0.882</td>
+<td style="text-align: right;">0.790</td>
+<td style="text-align: right;">0.937</td>
+<td style="text-align: right;">0.870</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">DeepRUOT <span class="citation" data-cites="zhang2025deepruot">(<a href="#ref-zhang2025deepruot" role="doc-biblioref">Zhang et al. 2025</a>)</span></td>
+<td style="text-align: right;">0.845</td>
+<td style="text-align: right;">0.776</td>
+<td style="text-align: right;">0.919</td>
+<td style="text-align: right;">0.846</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">OT-Interpolate (theirs)</td>
+<td style="text-align: right;">0.821</td>
+<td style="text-align: right;">0.749</td>
+<td style="text-align: right;">0.830</td>
+<td style="text-align: right;">0.800</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OT-MFM <span class="citation" data-cites="kapusniak2024metric">(<a href="#ref-kapusniak2024metric" role="doc-biblioref">Kapusniak et al. 2024</a>)</span></td>
+<td style="text-align: right;"><strong>0.724</strong></td>
+<td style="text-align: right;">0.713</td>
+<td style="text-align: right;">0.890</td>
+<td style="text-align: right;">0.776</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Cell-MNN (ours)</strong></td>
+<td style="text-align: right;">0.791</td>
+<td style="text-align: right;"><strong>0.690</strong></td>
+<td style="text-align: right;"><strong>0.742</strong></td>
+<td style="text-align: right;"><strong>0.741</strong></td>
+</tr>
+</tbody>
+</table>
+<div class="no-row-height column-margin column-container"><div id="ref-tong2024otcfm" class="csl-entry" role="listitem">
+Tong, Alexander, Kilian Fatras, Nikolay Malkin, et al. 2024. <span>“Improving and Generalizing Flow-Based Generative Models with Minibatch Optimal Transport.”</span> <em>Transactions on Machine Learning Research</em>. <a href="https://openreview.net/forum?id=CD9Snc73AW">https://openreview.net/forum?id=CD9Snc73AW</a>.
+</div><div id="ref-zhang2025deepruot" class="csl-entry" role="listitem">
+Zhang, Zhenyi, Tiejun Li, and Peijie Zhou. 2025. <span>“Learning Stochastic Dynamics from Snapshots Through Regularized Unbalanced Optimal Transport.”</span> <em>The Thirteenth International Conference on Learning Representations</em>. <a href="https://openreview.net/forum?id=gQlxd3Mtru">https://openreview.net/forum?id=gQlxd3Mtru</a>.
+</div><div id="ref-kapusniak2024metric" class="csl-entry" role="listitem">
+Kapusniak, Kacper, Peter Potaptchik, Teodora Reu, et al. 2024. <span>“Metric Flow Matching for Smooth Interpolations on the Data Manifold.”</span> <em>Advances in Neural Information Processing Systems</em>. <a href="https://openreview.net/forum?id=fE3RqiF4Nx">https://openreview.net/forum?id=fE3RqiF4Nx</a>.
+</div></div></div>
+</figure>
 </div>
-<div class="listing-author">
-Jan-Philipp von Bassewitz, Adeel Pervez, Marco Fumero, Matthew Robinson, Theofanis Karaletsos, Francesco Locatello
+</section>
+<section id="amortized-training-and-scalability" class="level3">
+<h3 class="anchored" data-anchor-id="amortized-training-and-scalability">Amortized training and scalability</h3>
+<p>Because Cell-MNN trains in a single stage, it can be jointly trained across datasets with the same time scale (Cite and Multi). In this amortized setting it <strong>outperforms both OT-CFM and I-CFM</strong> and reaches performance comparable to training on each dataset separately — an average EMD of <span class="math inline">0.768</span> for Cell-MNN versus <span class="math inline">0.835</span> for OT-CFM and <span class="math inline">0.925</span> for I-CFM across the two datasets.</p>
+<p>The end-to-end design also matters at scale. When the three datasets are synthetically inflated to 250,000 cells each (with added Gaussian noise on the PCA embeddings), the dataset-wide OT preprocessing required by OT-CFM and DeepRUOT runs <strong>out of memory</strong> on an 11 GB GPU, owing to the quadratic memory cost of Sinkhorn. Against a minibatch-OT variant (Batch-OT-CFM) and I-CFM — evaluated with the MMD metric, which is computable batch-wise — Cell-MNN attains the best score on all three inflated datasets.</p>
+<div id="tbl-scaling" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-scaling-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Scaling to 250K cells, MMD metric (lower is better). Dataset-wide OT preprocessing runs out of memory; Cell-MNN wins on every inflated dataset.
+</figcaption>
+<div aria-describedby="tbl-scaling-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 42%">
+<col style="width: 19%">
+<col style="width: 19%">
+<col style="width: 19%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model (inflated, MMD ↓)</th>
+<th style="text-align: right;">Cite</th>
+<th style="text-align: right;">EB</th>
+<th style="text-align: right;">Multi</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">I-CFM</td>
+<td style="text-align: right;">0.0390</td>
+<td style="text-align: right;">0.0403</td>
+<td style="text-align: right;">0.0482</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">OT-CFM</td>
+<td style="text-align: right;">OOM</td>
+<td style="text-align: right;">OOM</td>
+<td style="text-align: right;">OOM</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">DeepRUOT</td>
+<td style="text-align: right;">OOM</td>
+<td style="text-align: right;">OOM</td>
+<td style="text-align: right;">OOM</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Batch-OT-CFM</td>
+<td style="text-align: right;">0.0232</td>
+<td style="text-align: right;">0.0243</td>
+<td style="text-align: right;">0.0302</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Cell-MNN</strong></td>
+<td style="text-align: right;"><strong>0.0225</strong></td>
+<td style="text-align: right;"><strong>0.0240</strong></td>
+<td style="text-align: right;"><strong>0.0252</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
-<div class="metadata-value listing-venue">
-ICLR
+</figure>
 </div>
-<div class="metadata-value listing-year">
-2026
+</section>
+<section id="recovering-gene-interactions" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="recovering-gene-interactions">Recovering gene interactions</h3>
+<p>To check whether the learned interactions are biologically meaningful, the signed weights <span class="math inline">w_{j\rightarrow i}</span> are validated against the literature-curated <strong>TRRUST</strong> database <span class="citation" data-cites="Han2018_TRRUSTv2">(<a href="#ref-Han2018_TRRUSTv2" role="doc-biblioref">Han et al. 2018</a>)</span>, which contains 8,444 regulatory relationships synthesized from 11,237 PubMed articles. For each of the most active source genes, the model predicts activation versus repression for the labeled TRRUST edges — an unsupervised classification task.</p>
+<div class="no-row-height column-margin column-container"><div id="ref-Han2018_TRRUSTv2" class="csl-entry" role="listitem">
+Han, Heonjong, Jae-Won Cho, Sangyoung Lee, et al. 2018. <span>“<span>TRRUST</span> V2: An Expanded Reference Database of Human and Mouse Transcriptional Regulatory Interactions.”</span> <em>Nucleic Acids Research</em> 46 (D1): D380–86.
+</div><div id="ref-hirotaka2017scode" class="csl-entry" role="listitem">
+Matsumoto, Hirotaka, Hisanori Kiryu, Chikara Furusawa, et al. 2017. <span>“<span>SCODE</span>: An Efficient Regulatory Network Inference Algorithm from Single-Cell <span>RNA</span>-Seq During Differentiation.”</span> <em>Bioinformatics</em> 33 (15): 2314–21.
+</div><div id="ref-qiu2022dynamo" class="csl-entry" role="listitem">
+<span class="nocase">Qiu, Xiaojie, Yan Zhang, Jorge D. Martin-Rufino, et al.</span> 2022. <span>“Mapping Transcriptomic Vector Fields of Single Cells.”</span> <em>Cell</em> 185 (4): 690–711.e45.
+</div></div><p>Averaged over the reported source genes, Cell-MNN reaches an <strong>F1 of 69%</strong>, about twenty percentage points above SCODE <span class="citation" data-cites="hirotaka2017scode">(<a href="#ref-hirotaka2017scode" role="doc-biblioref">Matsumoto et al. 2017</a>)</span> (46%) and the Jacobian-of-OT-CFM baseline (48%) <span class="citation" data-cites="qiu2022dynamo">(<a href="#ref-qiu2022dynamo" role="doc-biblioref"><span class="nocase">Qiu et al.</span> 2022</a>)</span>. An inductive bias that fixes one eigenvalue of <span class="math inline">\mathbf{A}_\theta</span> to zero — encoding that some genes stay static over time — lifts F1 from 60% to 69% while costing only about 1% of interpolation performance.</p>
+<div id="fig-spider" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-spider-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="gene-f1-spider.png" class="img-fluid figure-img" style="width:50.0%">
 </div>
-</a>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-spider-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: Per-source-gene F1 on the TRRUST activation/repression task, comparing two Cell-MNN variants against a guessing baseline.
+</figcaption>
+</figure>
 </div>
+<div id="tbl-grn" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-grn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;3: GRN discovery on EB, F1 score (%) for predicting activation vs.&nbsp;repression of labeled TRRUST interactions. Best per row in bold.
+</figcaption>
+<div aria-describedby="tbl-grn-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 18%">
+<col style="width: 26%">
+<col style="width: 11%">
+<col style="width: 17%">
+<col style="width: 26%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Source gene</th>
+<th style="text-align: right;"><span class="math inline">N_{\text{int}}</span></th>
+<th style="text-align: right;">SCODE</th>
+<th style="text-align: right;">OT-CFM (J)</th>
+<th style="text-align: right;">Cell-MNN (1EV=0)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">JUN</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">56.34%</td>
+<td style="text-align: right;">64%</td>
+<td style="text-align: right;"><strong>71%</strong></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">FOS</td>
+<td style="text-align: right;">25</td>
+<td style="text-align: right;">38.10%</td>
+<td style="text-align: right;">50%</td>
+<td style="text-align: right;"><strong>71%</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">YBX1</td>
+<td style="text-align: right;">24</td>
+<td style="text-align: right;">54.55%</td>
+<td style="text-align: right;"><strong>72%</strong></td>
+<td style="text-align: right;">51%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">POU5F1</td>
+<td style="text-align: right;">19</td>
+<td style="text-align: right;">14.29%</td>
+<td style="text-align: right;">13%</td>
+<td style="text-align: right;"><strong>67%</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">SOX2</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;"><strong>84.21%</strong></td>
+<td style="text-align: right;">60%</td>
+<td style="text-align: right;">71%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">HMGA1</td>
+<td style="text-align: right;">10</td>
+<td style="text-align: right;">25.00%</td>
+<td style="text-align: right;">31%</td>
+<td style="text-align: right;"><strong>80%</strong></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Average</strong></td>
+<td style="text-align: right;"></td>
+<td style="text-align: right;">46%</td>
+<td style="text-align: right;">48%</td>
+<td style="text-align: right;"><strong>69%</strong></td>
+</tr>
+</tbody>
+</table>
 </div>
+</figure>
 </div>
-<div class="listing-no-matching d-none">No matching items</div>
+<p>Visualizing the predicted operators with UMAP shows that Cell-MNN learns <strong>distinct dynamics across time</strong> — the operators separate by time range rather than collapsing to a single global rule.</p>
+<div id="fig-umap" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-umap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="operator-umap.png" class="img-fluid figure-img" style="width:45.0%">
 </div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-umap-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: UMAP of the operators predicted by Cell-MNN across the EB time course, colored by day range. The model learns visibly distinct dynamics at different stages of differentiation.
+</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="why-it-matters" class="level2">
+<h2 class="anchored" data-anchor-id="why-it-matters">Why it matters</h2>
+<p>Cell-MNN jointly addresses two goals that previous methods treated separately: accurate trajectory reconstruction from snapshot data, and discovery of interpretable gene interactions — while removing the OT-preprocessing bottleneck and the multi-stage training that hampered scaling and amortization. Because the dynamics are expressed in locally linear form, the authors point to control theory as a natural next direction: in principle one could design perturbations that steer gene-expression states toward desired configurations, which could inform experimental follow-up such as CRISPR-based edits. The learned interactions are best read as <em>hypotheses for experimental validation</em>, not biological ground truth.</p>
+<p>A copyable BibTeX entry for this paper is generated automatically below; full references appear in the margin.</p>
+
+
+
 </section>
 
 
-</main></div>
-</div>
- <!-- /main -->
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@inproceedings{von_bassewitz2026,
+  author = {von Bassewitz, Jan-Philipp and Pervez, Adeel and Fumero,
+    Marco and Robinson, Matthew and Karaletsos, Theofanis and Locatello,
+    Francesco},
+  title = {Learning {Explicit} {Single-Cell} {Dynamics} {Using} {ODE}
+    {Representations}},
+  booktitle = {Proceedings of the Fourteenth International Conference on
+    Learning Representations (ICLR)},
+  date = {2026-03-04},
+  url = {https://arxiv.org/abs/2510.02903}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
 <!--
   Interactive component kit for paper pages. Inlined (no external request, no
   build step, no dependencies). Styles live in theme/interactive.scss.
@@ -997,6 +1410,13 @@ document.addEventListener("DOMContentLoaded", function () {
       window.document.body.appendChild(a);
     }
     setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     

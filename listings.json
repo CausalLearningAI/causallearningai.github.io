@@ -13,7 +13,9 @@
   },
   {
     "listing": "/team/members/marco-fumero/index.html",
-    "items": []
+    "items": [
+      "/papers/2026/single-cell-dynamics-ode/index.html"
+    ]
   },
   {
     "listing": "/team/members/francesco-montagna/index.html",
@@ -53,24 +55,26 @@
     ]
   },
   {
-    "listing": "/news/index.html",
+    "listing": "/index.html",
     "items": []
   },
   {
-    "listing": "/index.html",
+    "listing": "/news/index.html",
     "items": []
   },
   {
     "listing": "/papers/index.html",
     "items": [
       "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/single-cell-dynamics-ode/index.html",
       "/papers/2026/mendelian-randomization-representation-learning/index.html"
     ]
   },
   {
     "listing": "/team/members/adeel-pervez/index.html",
     "items": [
-      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html"
+      "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/single-cell-dynamics-ode/index.html"
     ]
   },
   {
@@ -85,12 +89,15 @@
     "listing": "/team/members/francesco-locatello/index.html",
     "items": [
       "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/single-cell-dynamics-ode/index.html",
       "/papers/2026/mendelian-randomization-representation-learning/index.html"
     ]
   },
   {
     "listing": "/team/members/jan-philipp-von-bassewitz/index.html",
-    "items": []
+    "items": [
+      "/papers/2026/single-cell-dynamics-ode/index.html"
+    ]
   },
   {
     "listing": "/team/members/marek-jankola/index.html",
