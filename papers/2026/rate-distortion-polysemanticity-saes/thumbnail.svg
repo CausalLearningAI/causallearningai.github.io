@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- three-axis tradeoff triangle: rate / distortion / polysemanticity -->
+  <g stroke="#6f6f78" stroke-width="1.5" fill="none" opacity="0.6">
+    <path d="M300 70 L470 300 L130 300 Z"/>
+  </g>
+  <!-- inner frontier surface -->
+  <g stroke="#026234" stroke-width="1.5" fill="none" opacity="0.9">
+    <path d="M300 130 L405 280 L195 280 Z"/>
+    <path d="M300 70 L300 130 M470 300 L405 280 M130 300 L195 280"/>
+  </g>
+  <g fill="#fbfaf7">
+    <circle cx="300" cy="70" r="4"/>
+    <circle cx="470" cy="300" r="4"/>
+    <circle cx="130" cy="300" r="4"/>
+  </g>
+  <g fill="#fbfaf7" font-family="Inter, sans-serif" font-size="15">
+    <text x="300" y="52" text-anchor="middle">rate</text>
+    <text x="486" y="320" text-anchor="middle">distortion</text>
+    <text x="114" y="320" text-anchor="middle">polysemy</text>
+  </g>
+</svg>
