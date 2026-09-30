@@ -20,7 +20,8 @@
   {
     "listing": "/team/members/francesco-montagna/index.html",
     "items": [
-      "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html"
+      "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html",
+      "/papers/2025/score-matching-through-the-roof/index.html"
     ]
   },
   {
@@ -57,11 +58,11 @@
     ]
   },
   {
-    "listing": "/news/index.html",
+    "listing": "/index.html",
     "items": []
   },
   {
-    "listing": "/index.html",
+    "listing": "/news/index.html",
     "items": []
   },
   {
@@ -70,7 +71,8 @@
       "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
       "/papers/2026/single-cell-dynamics-ode/index.html",
       "/papers/2026/mendelian-randomization-representation-learning/index.html",
-      "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html"
+      "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html",
+      "/papers/2025/score-matching-through-the-roof/index.html"
     ]
   },
   {
@@ -94,7 +96,8 @@
       "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
       "/papers/2026/single-cell-dynamics-ode/index.html",
       "/papers/2026/mendelian-randomization-representation-learning/index.html",
-      "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html"
+      "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html",
+      "/papers/2025/score-matching-through-the-roof/index.html"
     ]
   },
   {
