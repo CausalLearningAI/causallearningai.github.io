@@ -2,98 +2,102 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://causallearningai.github.io/team/members/yiwen-qiu/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.671Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/valentino-maiorca/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.671Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/riccardo-cadei/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.671Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/marco-fumero/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.670Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/francesco-montagna/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.670Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/dingling-yao/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.670Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/clementine-domine/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.669Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/berker-demirel/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.669Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.669Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/papers/2026/single-cell-dynamics-ode/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.665Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.992Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.663Z</lastmod>
-  </url>
-  <url>
-    <loc>https://causallearningai.github.io/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.397Z</lastmod>
-  </url>
-  <url>
-    <loc>https://causallearningai.github.io/about.html</loc>
-    <lastmod>2026-09-27T20:16:43.395Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.990Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/news/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.398Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.792Z</lastmod>
+  </url>
+  <url>
+    <loc>https://causallearningai.github.io/about.html</loc>
+    <lastmod>2026-09-30T15:10:27.790Z</lastmod>
+  </url>
+  <url>
+    <loc>https://causallearningai.github.io/index.html</loc>
+    <lastmod>2026-09-30T15:10:27.791Z</lastmod>
+  </url>
+  <url>
+    <loc>https://causallearningai.github.io/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html</loc>
+    <lastmod>2026-09-30T15:10:27.841Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/papers/2026/mendelian-randomization-representation-learning/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.664Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.991Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/papers/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.668Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.994Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/adeel-pervez/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.669Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/christine-francois/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.669Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/dario-rancati/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.669Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/francesco-locatello/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.670Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.995Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/jan-philipp-von-bassewitz/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.670Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/marek-jankola/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.670Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/shimeng-huang/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.671Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
   <url>
     <loc>https://causallearningai.github.io/team/members/walter-nelson/index.html</loc>
-    <lastmod>2026-09-27T20:16:43.671Z</lastmod>
+    <lastmod>2026-09-30T15:10:27.996Z</lastmod>
   </url>
 </urlset>

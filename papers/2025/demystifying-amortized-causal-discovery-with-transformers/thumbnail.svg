@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="380" viewBox="0 0 600 380">
+  <rect width="600" height="380" fill="#16161d"/>
+  <!-- two-node bivariate graph X -> Y -->
+  <g font-family="Georgia, serif" font-style="italic" fill="#fbfaf7">
+    <circle cx="190" cy="150" r="26" fill="none" stroke="#fbfaf7" stroke-width="1.5"/>
+    <text x="190" y="157" text-anchor="middle" font-size="22">X</text>
+    <circle cx="410" cy="150" r="26" fill="none" stroke="#fbfaf7" stroke-width="1.5"/>
+    <text x="410" y="157" text-anchor="middle" font-size="22">Y</text>
+  </g>
+  <defs>
+    <marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#026234"/>
+    </marker>
+  </defs>
+  <line x1="218" y1="150" x2="380" y2="150" stroke="#026234" stroke-width="2.5" marker-end="url(#ah)"/>
+  <!-- ambiguous reverse direction, faint dashed -->
+  <line x1="382" y1="172" x2="220" y2="172" stroke="#6f6f78" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ah)" opacity="0.5"/>
+  <!-- training prior bracket below -->
+  <g stroke="#026234" stroke-width="1.4" fill="none" opacity="0.85">
+    <path d="M150 250 q150 50 300 0"/>
+  </g>
+  <g fill="#6f6f78" font-family="monospace" font-size="13">
+    <text x="300" y="295" text-anchor="middle">training prior &#8594; identifiability</text>
+  </g>
+</svg>
