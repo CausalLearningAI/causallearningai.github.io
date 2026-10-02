@@ -6,8 +6,14 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Walter Nelson">
+<meta name="author" content="Marco Fumero">
+<meta name="author" content="Theofanis Karaletsos">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2026-03-12">
+<meta name="description" content="Representation learning models exhibit a surprising stability in their internal representations. We separate this into two properties: statistical identifiability (consistency of representations across independent training runs) and structural identifiability (alignment with an unobserved ground truth). Because exact pointwise identifiability is unrealistic for modern models, we give model-agnostic definitions of statistical and structural near-identifiability up to a tolerance ε, and prove a statistical ε-near-identifiability result for the intermediate representations of models with nonlinear decoders — a class that includes (masked) autoencoders and supervised learners. Independent components analysis (ICA) resolves much of the remaining linear ambiguity, and under further assumptions on the data-generating process this yields a simple recipe for disentanglement: ICA post-processing of latent representations. The recipe reaches state-of-the-art disentanglement with a vanilla autoencoder on synthetic benchmarks, and on a foundation-model-scale microscopy MAE it separates biological variation from technical batch effects.">
 
-<title>Walter Nelson – CLAI Research Group</title>
+<title>Statistical and structural identifiability in representation learning – CLAI Research Group</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -37,12 +43,11 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../../">
 <link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
-<script src="../../../site_libs/quarto-listing/list.min.js"></script>
-<script src="../../../site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-9b13294eb98a7ccc9837366643235be5.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-ad7a70ee837950f74c3137b2b7f1bb4b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
@@ -79,83 +84,47 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-publications .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
 
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-venue','listing-year','listing-modifier',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-publications'] = new List('listing-publications', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
-  <script>document.addEventListener("DOMContentLoaded", function () {
- var mathElements = document.getElementsByClassName("math");
- var macros = [];
- for (var i = 0; i < mathElements.length; i++) {
-  var texText = mathElements[i].firstChild;
-  if (mathElements[i].tagName == "SPAN") {
-   katex.render(texText.data, mathElements[i], {
-    displayMode: mathElements[i].classList.contains('display'),
-    throwOnError: false,
-    macros: macros,
-    fleqn: false
-   });
-}}});
-  </script>
-  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
+<meta property="og:title" content="Statistical and structural identifiability in representation learning – CLAI Research Group">
+<meta property="og:description" content="Representation learning models exhibit a surprising stability in their internal representations. We separate this into two properties: statistical identifiability (consistency of representations across independent training runs) and structural identifiability (alignment with an unobserved ground truth). Because exact pointwise identifiability is unrealistic for modern models, we give model-agnostic definitions of statistical and structural near-identifiability up to a tolerance ε, and prove a statistical ε-near-identifiability result for the intermediate representations of models with nonlinear decoders — a class that includes (masked) autoencoders and supervised learners. Independent components analysis (ICA) resolves much of the remaining linear ambiguity, and under further assumptions on the data-generating process this yields a simple recipe for disentanglement: ICA post-processing of latent representations. The recipe reaches state-of-the-art disentanglement with a vanilla autoencoder on synthetic benchmarks, and on a foundation-model-scale microscopy MAE it separates biological variation from technical batch effects.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/statistical-and-structural-identifiability-in-representation-learning/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="Statistical and structural identifiability in representation learning – CLAI Research Group">
+<meta name="twitter:description" content="Representation learning models exhibit a surprising stability in their internal representations. We separate this into two properties: statistical identifiability (consistency of representations across independent training runs) and structural identifiability (alignment with an unobserved ground truth). Because exact pointwise identifiability is unrealistic for modern models, we give model-agnostic definitions of statistical and structural near-identifiability up to a tolerance ε, and prove a statistical ε-near-identifiability result for the intermediate representations of models with nonlinear decoders — a class that includes (masked) autoencoders and supervised learners. Independent components analysis (ICA) resolves much of the remaining linear ambiguity, and under further assumptions on the data-generating process this yields a simple recipe for disentanglement: ICA post-processing of latent representations. The recipe reaches state-of-the-art disentanglement with a vanilla autoencoder on synthetic benchmarks, and on a foundation-model-scale microscopy MAE it separates biological variation from technical batch effects.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/statistical-and-structural-identifiability-in-representation-learning/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Statistical and structural identifiability in representation learning">
+<meta name="citation_author" content="Walter Nelson">
+<meta name="citation_author" content="Marco Fumero">
+<meta name="citation_author" content="Theofanis Karaletsos">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2026-03-12">
+<meta name="citation_cover_date" content="2026-03-12">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-03-12">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2026/statistical-and-structural-identifiability-in-representation-learning/">
+<meta name="citation_doi" content="10.48550/arXiv.2603.11970">
+<meta name="citation_language" content="en">
+<meta name="citation_conference_title" content="International Conference on Learning Representations (ICLR)">
+<meta name="citation_reference" content="citation_title=Position: The platonic representation hypothesis;,citation_author=Minyoung Huh;,citation_author=Brian Cheung;,citation_author=Tongzhou Wang;,citation_author=Phillip Isola;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://proceedings.mlr.press/v235/huh24a.html;,citation_volume=235;,citation_conference_title=Proceedings of the 41st international conference on machine learning;,citation_conference=PMLR;,citation_series_title=Proceedings of machine learning research;">
+<meta name="citation_reference" content="citation_title=On linear identifiability of learned representations;,citation_author=Geoffrey Roeder;,citation_author=Luke Metz;,citation_author=Durk Kingma;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://proceedings.mlr.press/v139/roeder21a.html;,citation_volume=139;,citation_conference_title=Proceedings of the 38th international conference on machine learning;,citation_conference=PMLR;,citation_series_title=Proceedings of machine learning research;">
+<meta name="citation_reference" content="citation_title=Contrastive learning inverts the data generating process;,citation_author=Roland S. Zimmermann;,citation_author=Yash Sharma;,citation_author=Steffen Schneider;,citation_author=Matthias Bethge;,citation_author=Wieland Brendel;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://proceedings.mlr.press/v139/zimmermann21a.html;,citation_volume=139;,citation_conference_title=Proceedings of the 38th international conference on machine learning;,citation_conference=PMLR;,citation_series_title=Proceedings of machine learning research;">
+<meta name="citation_reference" content="citation_title=Position: An empirically grounded identifiability theory will accelerate self-supervised learning research;,citation_author=Patrik Reizinger;,citation_author=Randall Balestriero;,citation_author=David Klindt;,citation_author=Wieland Brendel;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_fulltext_html_url=https://arxiv.org/abs/2504.13101;">
+<meta name="citation_reference" content="citation_title=Disentanglement via latent quantization;,citation_author=Kyle Hsu;,citation_author=William Dorrell;,citation_author=James Whittington;,citation_author=Jiajun Wu;,citation_author=Chelsea Finn;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_fulltext_html_url=https://proceedings.neurips.cc/paper_files/paper/2023/file/8e63972d4d9d81b31459d787466ce271-Paper-Conference.pdf;,citation_volume=36;,citation_conference_title=Advances in neural information processing systems;,citation_conference=Curran Associates, Inc.;">
+<meta name="citation_reference" content="citation_title=Masked autoencoders for microscopy are scalable learners of cellular biology;,citation_author=Oren Kraus;,citation_author=Kian Kenyon-Dean;,citation_author=Saber Saberian;,citation_author=Maryam Fallah;,citation_author=Peter McLean;,citation_author=Jess Leung;,citation_author=Vasudev Sharma;,citation_author=Ayla Khan;,citation_author=Jia Balakrishnan;,citation_author=Safiye Celik;,citation_author=others;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=Proceedings of the IEEE/CVF conference on computer vision and pattern recognition;">
+<meta name="citation_reference" content="citation_title=When is unsupervised disentanglement possible?;,citation_author=Daniella Horan;,citation_author=Eitan Richardson;,citation_author=Yair Weiss;,citation_publication_date=2021;,citation_cover_date=2021;,citation_year=2021;,citation_fulltext_html_url=https://proceedings.neurips.cc/paper_files/paper/2021/file/29586cb449c90e249f1f09a0a4ee245a-Paper.pdf;,citation_volume=34;,citation_conference_title=Advances in neural information processing systems;,citation_conference=Curran Associates, Inc.;">
+<meta name="citation_reference" content="citation_title=Robustness of nonlinear representation learning;,citation_author=Simon Buchholz;,citation_author=Bernhard Schölkopf;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_fulltext_html_url=https://proceedings.mlr.press/v235/buchholz24a.html;,citation_volume=235;,citation_conference_title=Proceedings of the 41st international conference on machine learning;,citation_conference=PMLR;,citation_series_title=Proceedings of machine learning research;">
+<meta name="citation_reference" content="citation_title=Disentangling factors of variations using few labels;,citation_author=Francesco Locatello;,citation_author=Michael Tschannen;,citation_author=Stefan Bauer;,citation_author=Gunnar Rätsch;,citation_author=Bernhard Schölkopf;,citation_author=Olivier Bachem;,citation_publication_date=2020;,citation_cover_date=2020;,citation_year=2020;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=Challenging common assumptions in the unsupervised learning of disentangled representations;,citation_author=Francesco Locatello;,citation_author=Stefan Bauer;,citation_author=Mario Lucic;,citation_author=Gunnar Raetsch;,citation_author=Sylvain Gelly;,citation_author=Bernhard Schölkopf;,citation_author=Olivier Bachem;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;,citation_fulltext_html_url=https://proceedings.mlr.press/v97/locatello19a.html;,citation_volume=97;,citation_conference_title=Proceedings of the 36th international conference on machine learning;,citation_conference=PMLR;,citation_series_title=Proceedings of machine learning research;">
+<meta name="citation_reference" content="citation_title=Independent component analysis, a new concept?;,citation_author=Pierre Comon;,citation_publication_date=1994;,citation_cover_date=1994;,citation_year=1994;,citation_issue=3;,citation_doi=10.1016/0165-1684(94)90029-9;,citation_issn=0165-1684;,citation_volume=36;,citation_journal_title=Signal Processing;">
+<meta name="citation_reference" content="citation_title=When does closeness in distribution imply representational similarity? An identifiability perspective;,citation_author=Beatrix M. G. Nielsen;,citation_author=Emanuele Marconato;,citation_author=Andrea Dittadi;,citation_author=Luigi Gresele;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_fulltext_html_url=https://arxiv.org/abs/2506.03784;">
+<meta name="citation_reference" content="citation_title=RxRx3-core: Benchmarking drug-target interactions in high-content microscopy;,citation_author=Oren Kraus;,citation_author=Federico Comitani;,citation_author=John Urbanik;,citation_author=Kian Kenyon-Dean;,citation_author=Lakshmanan Arumugam;,citation_author=Saber Saberian;,citation_author=Cas Wognum;,citation_author=Safiye Celik;,citation_author=Imran S. Haque;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_fulltext_html_url=https://arxiv.org/abs/2503.20158;">
+<meta name="citation_reference" content="citation_title=MNIST handwritten digit database;,citation_author=Yann LeCun;,citation_author=Corinna Cortes;,citation_author=CJ Burges;,citation_publication_date=2010;,citation_cover_date=2010;,citation_year=2010;,citation_fulltext_html_url=http://yann.lecun.com/exdb/mnist;,citation_volume=2;,citation_journal_title=ATT Labs [Online];">
+<meta name="citation_reference" content="citation_title=Statistical inference;,citation_author=George Casella;,citation_author=Roger Berger;,citation_publication_date=2001;,citation_cover_date=2001;,citation_year=2001;,citation_isbn=0534243126;">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -370,94 +339,103 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
 <!-- main -->
-<div class="quarto-about-trestles">
-  <div class="about-entity">
-    <img src="photo.jpg" class="about-image
-  round " style="height: 20em; width: 20em;">
+<main class="content" id="quarto-document-content">
+
+
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Walter Nelson</h1>
-<p class="subtitle lead">PhD Student</p>
+<h1 class="title">Statistical and structural identifiability in representation learning</h1>
+  <div class="quarto-categories">
+    <div class="quarto-category">Identifiability</div>
+    <div class="quarto-category">Representation Learning</div>
+    <div class="quarto-category">Theory</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Representation learning models exhibit a surprising stability in their internal representations. We separate this into two properties: statistical identifiability (consistency of representations across independent training runs) and structural identifiability (alignment with an unobserved ground truth). Because exact pointwise identifiability is unrealistic for modern models, we give model-agnostic definitions of statistical and structural near-identifiability up to a tolerance ε, and prove a statistical ε-near-identifiability result for the intermediate representations of models with nonlinear decoders — a class that includes (masked) autoencoders and supervised learners. Independent components analysis (ICA) resolves much of the remaining linear ambiguity, and under further assumptions on the data-generating process this yields a simple recipe for disentanglement: ICA post-processing of latent representations. The recipe reaches state-of-the-art disentanglement with a vanilla autoencoder on synthetic benchmarks, and on a foundation-model-scale microscopy MAE it separates biological variation from technical batch effects.</p>
+  </div>
 </div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Walter Nelson </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Marco Fumero </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Theofanis Karaletsos </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Chan Zuckerberg Initiative
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria
+          </p>
+      </div>
+  </div>
+
 <div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">March 12, 2026</p>
+    </div>
   </div>
+  
+    
+  </div>
+  
+
+
 </header>
-    <div class="about-links">
-  <a data-cloak="V2FsdGVyLk5lbHNvbkBpc3QuYWMuYXQ=" class="about-link" rel="" target="">
-    <i class="bi bi-envelope"></i>
-     <span class="about-link-text">Email</span>
-  </a>
-  <a href="https://wjn0.io" class="about-link" rel="" target="">
-    <i class="bi bi-globe"></i>
-     <span class="about-link-text">Website</span>
-  </a>
-</div>
-  </div>
-  <div class="about-contents"><main class="content" id="quarto-document-content">
-
-<p>Walter is an ELLIS PhD student at the Institute of Science and Technology Austria (ISTA), supervised by Francesco Locatello and co-supervised by Arthur Gretton at University College London. His research focuses on the identifiability of representations in modern machine learning models, particularly foundation models. He is motivated by applications in biology and medicine that can reveal mechanisms of human disease and behaviour and improve patient care.</p>
-<!-- publications: auto-generated below — keep your own prose ABOVE this line; sync_team.py rewrites from here down on every run. -->
-<section id="publications" class="level2 member-publications">
-<h2 data-anchor-id="publications">Publications</h2>
-<div id="listing-publications" class="quarto-listing quarto-listing-container-default">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="SW50ZXJwcmV0YWJpbGl0eSUyQ0lkZW50aWZpYWJpbGl0eQ==" data-listing-date-sort="1780012800000" data-listing-file-modified-sort="1790955522676" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../../../papers/2026/identifiable-sparse-autoencoders/index.html" class="no-external">Toward Identifiable Sparse Autoencoders</a>
-</h3>
-</div>
-<div class="metadata">
-<a href="../../../papers/2026/identifiable-sparse-autoencoders/index.html" class="no-external">
-<div class="listing-date">
-May 29, 2026
-</div>
-<div class="listing-author">
-Walter Nelson, Theofanis Karaletsos, Francesco Locatello
-</div>
-<div class="metadata-value listing-venue">
-ICML
-</div>
-<div class="metadata-value listing-year">
-2026
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="SWRlbnRpZmlhYmlsaXR5JTJDUmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ1RoZW9yeQ==" data-listing-date-sort="1773273600000" data-listing-file-modified-sort="1790955522689" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../../../papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html" class="no-external">Statistical and structural identifiability in representation learning</a>
-</h3>
-</div>
-<div class="metadata">
-<a href="../../../papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html" class="no-external">
-<div class="listing-date">
-Mar 12, 2026
-</div>
-<div class="listing-author">
-Walter Nelson, Marco Fumero, Theofanis Karaletsos, Francesco Locatello
-</div>
-<div class="metadata-value listing-venue">
-ICLR
-</div>
-<div class="metadata-value listing-year">
-2026
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div>
-</section>
 
 
-</main></div>
+<div class="paper-venue venue-iclr">
+<span class="venue-name">ICLR 2026</span>
 </div>
- <!-- /main -->
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2603.11970" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a><a class="paper-link" href="https://openreview.net/forum?id=Wa3cfE3Iay" target="_blank" rel="noopener"><i class="bi bi-card-text" aria-hidden="true"></i> OpenReview</a></div>
+
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@inproceedings{nelson2026,
+  author = {Nelson, Walter and Fumero, Marco and Karaletsos, Theofanis
+    and Locatello, Francesco},
+  title = {Statistical and Structural Identifiability in Representation
+    Learning},
+  booktitle = {International Conference on Learning Representations
+    (ICLR)},
+  date = {2026-03-12},
+  doi = {10.48550/arXiv.2603.11970}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
 <!--
   Interactive component kit for paper pages. Inlined (no external request, no
   build step, no dependencies). Styles live in theme/interactive.scss.
@@ -993,6 +971,13 @@ document.addEventListener("DOMContentLoaded", function () {
       window.document.body.appendChild(a);
     }
     setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     
@@ -1057,7 +1042,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }

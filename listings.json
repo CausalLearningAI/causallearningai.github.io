@@ -14,6 +14,7 @@
   {
     "listing": "/team/members/marco-fumero/index.html",
     "items": [
+      "/papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html",
       "/papers/2026/single-cell-dynamics-ode/index.html"
     ]
   },
@@ -70,9 +71,11 @@
   {
     "listing": "/papers/index.html",
     "items": [
+      "/papers/2026/identifiable-sparse-autoencoders/index.html",
       "/papers/2026/rate-distortion-polysemanticity-saes/index.html",
       "/papers/2026/causal-learning-invariance-principle/index.html",
       "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html",
       "/papers/2026/single-cell-dynamics-ode/index.html",
       "/papers/2026/mendelian-randomization-representation-learning/index.html",
       "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html",
@@ -97,9 +100,11 @@
   {
     "listing": "/team/members/francesco-locatello/index.html",
     "items": [
+      "/papers/2026/identifiable-sparse-autoencoders/index.html",
       "/papers/2026/rate-distortion-polysemanticity-saes/index.html",
       "/papers/2026/causal-learning-invariance-principle/index.html",
       "/papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html",
+      "/papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html",
       "/papers/2026/single-cell-dynamics-ode/index.html",
       "/papers/2026/mendelian-randomization-representation-learning/index.html",
       "/papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html",
@@ -124,6 +129,9 @@
   },
   {
     "listing": "/team/members/walter-nelson/index.html",
-    "items": []
+    "items": [
+      "/papers/2026/identifiable-sparse-autoencoders/index.html",
+      "/papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html"
+    ]
   }
 ]

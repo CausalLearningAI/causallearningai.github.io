@@ -6,8 +6,13 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="author" content="Walter Nelson">
+<meta name="author" content="Theofanis Karaletsos">
+<meta name="author" content="Francesco Locatello">
+<meta name="dcterms.date" content="2026-05-29">
+<meta name="description" content="Recently, sparse autoencoders (SAEs) have emerged as an attractive tool for interpreting and interacting with representations in practical neural networks. While it is common empirical folklore, we also show theoretically that SAEs are highly unstable: different training runs are likely to produce different concept dictionaries and sparse codes. We characterize the model properties that hinder the stability of real-world SAEs, and address each of these problems through minimal changes to the architecture and training procedure. Together, these changes yield two versions of an identifiable SAE (iSAE), a variant of the standard TopK SAE with lower reconstruction error and improved stability. We explain this improvement theoretically by connecting SAEs with traditional dictionary learning approaches, and show that the dictionaries learned in practice satisfy an approximate restricted isometry condition, rendering the corresponding sparse codes in those models near-identifiable.">
 
-<title>Walter Nelson – CLAI Research Group</title>
+<title>Toward Identifiable Sparse Autoencoders – CLAI Research Group</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -37,12 +42,11 @@ ul.task-list li input[type="checkbox"] {
 <script src="../../../site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="../../../">
 <link href="../../../assets/favicon.svg" rel="icon" type="image/svg+xml">
-<script src="../../../site_libs/quarto-listing/list.min.js"></script>
-<script src="../../../site_libs/quarto-listing/quarto-listing.js"></script>
 <script src="../../../site_libs/quarto-html/quarto.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
 <script src="../../../site_libs/quarto-html/popper.min.js"></script>
 <script src="../../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../../../site_libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-9b13294eb98a7ccc9837366643235be5.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
 <link href="../../../site_libs/quarto-html/quarto-syntax-highlighting-dark-ad7a70ee837950f74c3137b2b7f1bb4b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
@@ -79,83 +83,43 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<script>
 
-  window.document.addEventListener("DOMContentLoaded", function (_event) {
-    const listingTargetEl = window.document.querySelector('#listing-publications .list');
-    if (!listingTargetEl) {
-      // No listing discovered, do not attach.
-      return; 
-    }
 
-    const options = {
-      valueNames: ['listing-date','listing-title','listing-author','listing-venue','listing-year','listing-modifier',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-      
-      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description"],
-    };
-
-    window['quarto-listings'] = window['quarto-listings'] || {};
-    window['quarto-listings']['listing-publications'] = new List('listing-publications', options);
-
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  });
-
-  window.addEventListener('hashchange',() => {
-    if (window['quarto-listing-loaded']) {
-      window['quarto-listing-loaded']();
-    }
-  })
-  </script>
-
-  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
-  <script>document.addEventListener("DOMContentLoaded", function () {
- var mathElements = document.getElementsByClassName("math");
- var macros = [];
- for (var i = 0; i < mathElements.length; i++) {
-  var texText = mathElements[i].firstChild;
-  if (mathElements[i].tagName == "SPAN") {
-   katex.render(texText.data, mathElements[i], {
-    displayMode: mathElements[i].classList.contains('display'),
-    throwOnError: false,
-    macros: macros,
-    fleqn: false
-   });
-}}});
-  </script>
-  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
-
+<meta property="og:title" content="Toward Identifiable Sparse Autoencoders – CLAI Research Group">
+<meta property="og:description" content="Recently, sparse autoencoders (SAEs) have emerged as an attractive tool for interpreting and interacting with representations in practical neural networks. While it is common empirical folklore, we also show theoretically that SAEs are highly unstable: different training runs are likely to produce different concept dictionaries and sparse codes. We characterize the model properties that hinder the stability of real-world SAEs, and address each of these problems through minimal changes to the architecture and training procedure. Together, these changes yield two versions of an identifiable SAE (iSAE), a variant of the standard TopK SAE with lower reconstruction error and improved stability. We explain this improvement theoretically by connecting SAEs with traditional dictionary learning approaches, and show that the dictionaries learned in practice satisfy an approximate restricted isometry condition, rendering the corresponding sparse codes in those models near-identifiable.">
+<meta property="og:image" content="https://causallearningai.github.io/papers/2026/identifiable-sparse-autoencoders/thumbnail.svg">
+<meta property="og:site_name" content="CLAI Research Group">
+<meta name="twitter:title" content="Toward Identifiable Sparse Autoencoders – CLAI Research Group">
+<meta name="twitter:description" content="Recently, sparse autoencoders (SAEs) have emerged as an attractive tool for interpreting and interacting with representations in practical neural networks. While it is common empirical folklore, we also show theoretically that SAEs are highly unstable: different training runs are likely to produce different concept dictionaries and sparse codes. We characterize the model properties that hinder the stability of real-world SAEs, and address each of these problems through minimal changes to the architecture and training procedure. Together, these changes yield two versions of an identifiable SAE (iSAE), a variant of the standard TopK SAE with lower reconstruction error and improved stability. We explain this improvement theoretically by connecting SAEs with traditional dictionary learning approaches, and show that the dictionaries learned in practice satisfy an approximate restricted isometry condition, rendering the corresponding sparse codes in those models near-identifiable.">
+<meta name="twitter:image" content="https://causallearningai.github.io/papers/2026/identifiable-sparse-autoencoders/thumbnail.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="citation_title" content="Toward Identifiable Sparse Autoencoders">
+<meta name="citation_author" content="Walter Nelson">
+<meta name="citation_author" content="Theofanis Karaletsos">
+<meta name="citation_author" content="Francesco Locatello">
+<meta name="citation_publication_date" content="2026-05-29">
+<meta name="citation_cover_date" content="2026-05-29">
+<meta name="citation_year" content="2026">
+<meta name="citation_online_date" content="2026-05-29">
+<meta name="citation_fulltext_html_url" content="https://causallearningai.github.io/papers/2026/identifiable-sparse-autoencoders/">
+<meta name="citation_language" content="en">
+<meta name="citation_journal_title" content="arXiv preprint">
+<meta name="citation_reference" content="citation_title=Stable signal recovery from incomplete and inaccurate measurements;,citation_author=Emmanuel J. Candès;,citation_author=Justin K. Romberg;,citation_author=Terence Tao;,citation_publication_date=2006;,citation_cover_date=2006;,citation_year=2006;,citation_issue=8;,citation_volume=59;,citation_journal_title=Communications on Pure and Applied Mathematics;">
+<meta name="citation_reference" content="citation_title=Scaling and evaluating sparse autoencoders;,citation_author=Leo Gao;,citation_author=Tom Dupré Tour;,citation_author=Henk Tillman;,citation_author=Gabriel Goh;,citation_author=Rajan Troll;,citation_author=Alec Radford;,citation_author=Ilya Sutskever;,citation_author=Jan Leike;,citation_author=Jeffrey Wu;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=arXiv preprint arXiv:2406.04093;">
+<meta name="citation_reference" content="citation_title=Towards monosemanticity: Decomposing language models with dictionary learning;,citation_author=Trenton Bricken;,citation_author=Adly Templeton;,citation_author=Joshua Batson;,citation_author=Brian Chen;,citation_author=Adam Jermyn;,citation_author=Tom Conerly;,citation_author=Nick Turner;,citation_author=Cem Anil;,citation_author=Carson Denison;,citation_author=Amanda Askell;,citation_author=others;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_journal_title=Transformer Circuits Thread;">
+<meta name="citation_reference" content="citation_title=Toy models of superposition;,citation_author=Nelson Elhage;,citation_author=Tristan Hume;,citation_author=Catherine Olsson;,citation_author=Nicholas Schiefer;,citation_author=Tom Henighan;,citation_author=Shauna Kravec;,citation_author=Zac Hatfield-Dodds;,citation_author=Robert Lasenby;,citation_author=Dawn Drain;,citation_author=Carol Chen;,citation_author=others;,citation_publication_date=2022;,citation_cover_date=2022;,citation_year=2022;,citation_journal_title=Transformer Circuits Thread;">
+<meta name="citation_reference" content="citation_title=Challenging common assumptions in the unsupervised learning of disentangled representations;,citation_author=Francesco Locatello;,citation_author=Stefan Bauer;,citation_author=Mario Lucic;,citation_author=Gunnar Rätsch;,citation_author=Sylvain Gelly;,citation_author=Bernhard Schölkopf;,citation_author=Olivier Bachem;,citation_publication_date=2019;,citation_cover_date=2019;,citation_year=2019;">
+<meta name="citation_reference" content="citation_title=Position: Mechanistic interpretability should prioritize feature consistency in SAEs;,citation_author=Xiangchen Song;,citation_author=Aashiq Muhamed;,citation_author=Yujia Zheng;,citation_author=Lingjing Kong;,citation_author=Zeyu Tang;,citation_author=Mona T. Diab;,citation_author=Virginia Smith;,citation_author=Kun Zhang;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_journal_title=arXiv preprint arXiv:2505.20254;">
+<meta name="citation_reference" content="citation_title=Sparse autoencoders trained on the same data learn different features;,citation_author=Gonçalo Paulo;,citation_author=Nora Belrose;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_journal_title=arXiv preprint arXiv:2501.16615;">
+<meta name="citation_reference" content="citation_title=AbsTopK: Rethinking sparse autoencoders for bidirectional features;,citation_author=Xudong Zhu;,citation_author=Mohammad Mahdi Khalili;,citation_author=Zhihui Zhu;,citation_publication_date=2025;,citation_cover_date=2025;,citation_year=2025;,citation_journal_title=arXiv preprint arXiv:2510.00404;">
+<meta name="citation_reference" content="citation_title=K-sparse autoencoders;,citation_author=Alireza Makhzani;,citation_author=Brendan J. Frey;,citation_publication_date=2013;,citation_cover_date=2013;,citation_year=2013;,citation_journal_title=arXiv preprint arXiv:1312.5663;">
+<meta name="citation_reference" content="citation_title=Learning fast approximations of sparse coding;,citation_author=Karol Gregor;,citation_author=Yann LeCun;,citation_publication_date=2010;,citation_cover_date=2010;,citation_year=2010;,citation_conference_title=International conference on machine learning;">
+<meta name="citation_reference" content="citation_title=Sparse autoencoders find highly interpretable features in language models;,citation_author=Hoagy Cunningham;,citation_author=Aidan Ewart;,citation_author=Logan Riggs;,citation_author=Robert Huben;,citation_author=Lee Sharkey;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_conference_title=International conference on learning representations;">
+<meta name="citation_reference" content="citation_title=Pythia: A suite for analyzing large language models across training and scaling;,citation_author=Stella Biderman;,citation_author=Hailey Schoelkopf;,citation_author=Quentin Anthony;,citation_author=Herbie Bradley;,citation_author=Kyle O’Brien;,citation_author=Eric Hallahan;,citation_author=Mohammad Aflah Khan;,citation_author=others;,citation_publication_date=2023;,citation_cover_date=2023;,citation_year=2023;,citation_conference_title=International conference on machine learning;">
+<meta name="citation_reference" content="citation_title=DINOv2: Learning robust visual features without supervision;,citation_author=Maxime Oquab;,citation_author=Timothée Darcet;,citation_author=Théo Moutakanni;,citation_author=Huy V. Vo;,citation_author=others;,citation_publication_date=2024;,citation_cover_date=2024;,citation_year=2024;,citation_journal_title=Transactions on Machine Learning Research;">
 </head>
 
-<body class="nav-fixed fullcontent quarto-light"><script id="quarto-html-before-body" type="application/javascript">
+<body class="nav-fixed paper quarto-light"><script id="quarto-html-before-body" type="application/javascript">
     const toggleBodyColorMode = (bsSheetEl) => {
       const mode = bsSheetEl.getAttribute("data-mode");
       const bodyEl = window.document.querySelector("body");
@@ -370,94 +334,92 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
 <!-- main -->
-<div class="quarto-about-trestles">
-  <div class="about-entity">
-    <img src="photo.jpg" class="about-image
-  round " style="height: 20em; width: 20em;">
+<main class="content" id="quarto-document-content">
+
+
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Walter Nelson</h1>
-<p class="subtitle lead">PhD Student</p>
+<h1 class="title">Toward Identifiable Sparse Autoencoders</h1>
+<p class="subtitle lead">When are the dictionaries and sparse codes learned by SAEs actually recoverable?</p>
+  <div class="quarto-categories">
+    <div class="quarto-category">Interpretability</div>
+    <div class="quarto-category">Identifiability</div>
+  </div>
+  </div>
+
+<div>
+  <div class="description">
+    <p>Recently, sparse autoencoders (SAEs) have emerged as an attractive tool for interpreting and interacting with representations in practical neural networks. While it is common empirical folklore, we also show theoretically that SAEs are highly unstable: different training runs are likely to produce different concept dictionaries and sparse codes. We characterize the model properties that hinder the stability of real-world SAEs, and address each of these problems through minimal changes to the architecture and training procedure. Together, these changes yield two versions of an identifiable SAE (iSAE), a variant of the standard TopK SAE with lower reconstruction error and improved stability. We explain this improvement theoretically by connecting SAEs with traditional dictionary learning approaches, and show that the dictionaries learned in practice satisfy an approximate restricted isometry condition, rendering the corresponding sparse codes in those models near-identifiable.</p>
+  </div>
 </div>
+
+<div class="quarto-title-meta-author">
+  <div class="quarto-title-meta-heading">Authors</div>
+  <div class="quarto-title-meta-heading">Affiliations</div>
+  
+    <div class="quarto-title-meta-contents">
+    <p class="author">Walter Nelson </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Theofanis Karaletsos </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Pyramidal Inc.&nbsp;and Achira Inc., USA
+          </p>
+      </div>
+    <div class="quarto-title-meta-contents">
+    <p class="author">Francesco Locatello </p>
+  </div>
+  <div class="quarto-title-meta-contents">
+        <p class="affiliation">
+            Institute of Science and Technology Austria (ISTA)
+          </p>
+      </div>
+  </div>
+
 <div class="quarto-title-meta">
+
+      
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">May 29, 2026</p>
+    </div>
   </div>
+  
+    
+  </div>
+  
+
+
 </header>
-    <div class="about-links">
-  <a data-cloak="V2FsdGVyLk5lbHNvbkBpc3QuYWMuYXQ=" class="about-link" rel="" target="">
-    <i class="bi bi-envelope"></i>
-     <span class="about-link-text">Email</span>
-  </a>
-  <a href="https://wjn0.io" class="about-link" rel="" target="">
-    <i class="bi bi-globe"></i>
-     <span class="about-link-text">Website</span>
-  </a>
-</div>
-  </div>
-  <div class="about-contents"><main class="content" id="quarto-document-content">
-
-<p>Walter is an ELLIS PhD student at the Institute of Science and Technology Austria (ISTA), supervised by Francesco Locatello and co-supervised by Arthur Gretton at University College London. His research focuses on the identifiability of representations in modern machine learning models, particularly foundation models. He is motivated by applications in biology and medicine that can reveal mechanisms of human disease and behaviour and improve patient care.</p>
-<!-- publications: auto-generated below — keep your own prose ABOVE this line; sync_team.py rewrites from here down on every run. -->
-<section id="publications" class="level2 member-publications">
-<h2 data-anchor-id="publications">Publications</h2>
-<div id="listing-publications" class="quarto-listing quarto-listing-container-default">
-<div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="SW50ZXJwcmV0YWJpbGl0eSUyQ0lkZW50aWZpYWJpbGl0eQ==" data-listing-date-sort="1780012800000" data-listing-file-modified-sort="1790955522676" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../../../papers/2026/identifiable-sparse-autoencoders/index.html" class="no-external">Toward Identifiable Sparse Autoencoders</a>
-</h3>
-</div>
-<div class="metadata">
-<a href="../../../papers/2026/identifiable-sparse-autoencoders/index.html" class="no-external">
-<div class="listing-date">
-May 29, 2026
-</div>
-<div class="listing-author">
-Walter Nelson, Theofanis Karaletsos, Francesco Locatello
-</div>
-<div class="metadata-value listing-venue">
-ICML
-</div>
-<div class="metadata-value listing-year">
-2026
-</div>
-</a>
-</div>
-</div>
-<div class="quarto-post image-right" data-index="1" data-categories="SWRlbnRpZmlhYmlsaXR5JTJDUmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ1RoZW9yeQ==" data-listing-date-sort="1773273600000" data-listing-file-modified-sort="1790955522689" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
-<div class="body">
-<h3 class="no-anchor listing-title">
-<a href="../../../papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html" class="no-external">Statistical and structural identifiability in representation learning</a>
-</h3>
-</div>
-<div class="metadata">
-<a href="../../../papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html" class="no-external">
-<div class="listing-date">
-Mar 12, 2026
-</div>
-<div class="listing-author">
-Walter Nelson, Marco Fumero, Theofanis Karaletsos, Francesco Locatello
-</div>
-<div class="metadata-value listing-venue">
-ICLR
-</div>
-<div class="metadata-value listing-year">
-2026
-</div>
-</a>
-</div>
-</div>
-</div>
-<div class="listing-no-matching d-none">No matching items</div>
-</div>
-</section>
 
 
-</main></div>
+<div class="paper-venue venue-icml">
+<span class="venue-name">ICML 2026</span>
 </div>
- <!-- /main -->
+<div class="paper-links"><a class="paper-link" href="https://arxiv.org/abs/2605.31245" target="_blank" rel="noopener"><i class="bi bi-file-pdf" aria-hidden="true"></i> arXiv</a></div>
+
+
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" id="quarto-citation"><h2 class="anchored quarto-appendix-heading">Citation</h2><div><div class="quarto-appendix-secondary-label">BibTeX citation:</div><pre class="sourceCode code-with-copy quarto-appendix-bibtex"><code class="sourceCode bibtex">@article{nelson2026,
+  author = {Nelson, Walter and Karaletsos, Theofanis and Locatello,
+    Francesco},
+  title = {Toward {Identifiable} {Sparse} {Autoencoders}},
+  journal = {arXiv preprint},
+  date = {2026-05-29}
+}
+</code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div></section></div></main> <!-- /main -->
 <!--
   Interactive component kit for paper pages. Inlined (no external request, no
   build step, no dependencies). Styles live in theme/interactive.scss.
@@ -993,6 +955,13 @@ document.addEventListener("DOMContentLoaded", function () {
       window.document.body.appendChild(a);
     }
     setColorSchemeToggle(hasAlternateSentinel())
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
         if (clz.startsWith('code-annotation-')) {                     
@@ -1057,7 +1026,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
-        var filterRegex = new RegExp('/' + window.location.host + '/');
+        var filterRegex = new RegExp("https:\/\/causallearningai\.github\.io");
       var isInternal = (href) => {
           return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
       }
