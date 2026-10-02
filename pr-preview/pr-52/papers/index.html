@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.9.38">
+<meta name="generator" content="quarto-1.10.18">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -13,10 +13,13 @@
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
 */
-code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
-div.columns{display: flex; gap: min(4vw, 1.5em);}
-div.column{flex: auto; overflow-x: auto;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
@@ -43,14 +46,14 @@ ul.task-list li input[type="checkbox"] {
 <script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
 <script src="../site_libs/quarto-html/anchor.min.js"></script>
 <link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-9bfc61b20ce54e18ae6b25bf56d136e1.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
-<link href="../site_libs/quarto-html/quarto-syntax-highlighting-6a50bd621f08fdc5c26e43d254df0a90.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-9b13294eb98a7ccc9837366643235be5.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-ad7a70ee837950f74c3137b2b7f1bb4b.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-9b13294eb98a7ccc9837366643235be5.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
 <script src="../site_libs/bootstrap/bootstrap.min.js"></script>
 <link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
-<link href="../site_libs/bootstrap/bootstrap-dark-a208a425cdc81fcf85dda97472dc73c1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
-<link href="../site_libs/bootstrap/bootstrap-dcdd53afd14e79efa90aaa644f07b774.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-0dfe66025517618e77d22404e4a557bf.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-e027298beaab0f1cce504620e8fa16c1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="dark">
+<link href="../site_libs/bootstrap/bootstrap-0dfe66025517618e77d22404e4a557bf.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -434,7 +437,7 @@ window.Quarto = {
     </div>
 </div>
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="SW50ZXJwcmV0YWJpbGl0eSUyQ0lkZW50aWZpYWJpbGl0eQ==" data-listing-date-sort="1780012800000" data-listing-file-modified-sort="1782494508946" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
+<div class="quarto-post image-right" data-index="0" data-categories="SW50ZXJwcmV0YWJpbGl0eSUyQ0lkZW50aWZpYWJpbGl0eQ==" data-listing-date-sort="1780012800000" data-listing-file-modified-sort="1790955340964" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
 <div class="body">
 <h3 class="no-anchor listing-title">
 <a href="../papers/2026/identifiable-sparse-autoencoders/index.html" class="no-external">Toward Identifiable Sparse Autoencoders</a>
@@ -467,7 +470,108 @@ ICML
 </a>
 </div>
 </div>
-<div class="quarto-post image-right" data-index="1" data-categories="SWRlbnRpZmlhYmlsaXR5JTJDUmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ1RoZW9yeQ==" data-listing-date-sort="1773273600000" data-listing-file-modified-sort="1782494508946" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
+<div class="quarto-post image-right" data-index="1" data-categories="SW50ZXJwcmV0YWJpbGl0eSUyQ1RoZW9yeQ==" data-listing-date-sort="1778716800000" data-listing-file-modified-sort="1790955340971" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="9" data-listing-word-count-sort="1782">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2026/rate-distortion-polysemanticity-saes/index.html" class="no-external">The Rate-Distortion-Polysemanticity Tradeoff in SAEs</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('SW50ZXJwcmV0YWJpbGl0eQ=='); return false;">Interpretability</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('VGhlb3J5'); return false;">Theory</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2026/rate-distortion-polysemanticity-saes/index.html" class="no-external">
+<p>Sparse autoencoders (SAEs) that accurately reconstruct their input (low distortion) while using few active features (low rate) often fail to learn monosemantic, human-interpretable features. We cast this tension as a rate-distortion-polysemanticity (RDP) tradeoff and show, theoretically and empirically, that enforcing monosemanticity raises both the rate and the distortion an SAE must pay. The optimal degree of polysemanticity is set by the data distribution — specifically by how ground-truth concepts co-occur — rather than by optimization choices. We derive necessary conditions that any polysemanticity measure must satisfy in realistic settings and audit nine proxies used on LLM-trained SAEs, finding that most fail to track the RDP-predicted direction. Polysemanticity is therefore a data-level constraint, not merely a training artifact.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2026/rate-distortion-polysemanticity-saes/index.html" class="no-external">
+<div class="listing-date">
+May 14, 2026
+</div>
+<div class="listing-author">
+Tommaso Mencattini, Francesco Montagna, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+arXiv
+</div>
+<div class="metadata-value listing-year">
+2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="2" data-categories="Q2F1c2FsJTIwRGlzY292ZXJ5JTJDSWRlbnRpZmlhYmlsaXR5" data-listing-date-sort="1778630400000" data-listing-file-modified-sort="1790955340860" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1372">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2026/causal-learning-invariance-principle/index.html" class="no-external">Causal Learning with the Invariance Principle</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('Q2F1c2FsJTIwRGlzY292ZXJ5'); return false;">Causal Discovery</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('SWRlbnRpZmlhYmlsaXR5'); return false;">Identifiability</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2026/causal-learning-invariance-principle/index.html" class="no-external">
+<p>Causal discovery, the problem of inferring the direction of causality, is generally ill-posed. We use the language of structural causal models (SCM) to show that assuming that the causal relations are acyclic and invariant across multiple environments (e.g., the way minimum wage affects employment rate is stable across different geographical regions), only two auxiliary environments are sufficient to infer the causal graph for arbitrary nonlinear mechanisms. Moreover, we demonstrate that this implies identifiability of the SCM functional mechanisms: as a corollary, we show that two auxiliary environments are sufficient to guarantee correct counterfactual inference. We empirically support our theoretical results on synthetic data.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2026/causal-learning-invariance-principle/index.html" class="no-external">
+<div class="listing-date">
+May 13, 2026
+</div>
+<div class="listing-author">
+Francesco Montagna, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+arXiv
+</div>
+<div class="metadata-value listing-year">
+2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="3" data-categories="QUklMjBmb3IlMjBTY2llbmNlJTJDRHluYW1pY2FsJTIwU3lzdGVtcyUyQ1RoZW9yeQ==" data-listing-date-sort="1778284800000" data-listing-file-modified-sort="1790955340964" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1235">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">Controlling Transient Amplification Improves Long-horizon Rollouts</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('QUklMjBmb3IlMjBTY2llbmNl'); return false;">AI for Science</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('RHluYW1pY2FsJTIwU3lzdGVtcw=='); return false;">Dynamical Systems</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('VGhlb3J5'); return false;">Theory</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">
+<p>Autoregressive neural simulators match classical solvers on short-horizon prediction but degrade rapidly over long rollouts. This work identifies transient amplification of perturbations along rollout trajectories as a structural driver of that error: when the Jacobians along an autoregressive trajectory are non-normal and non-commuting, errors are amplified transiently even when the system is asymptotically stable. The authors propose commutativity regularization — a commutator penalty and a normality penalty, both estimated with Jacobian-vector products and carrying no inference-time cost — and prove a propagator bound that replaces the per-step spectral-norm decay rate with the shared spectral radius under approximate commutativity and normality. On UNet and FNO variants across the 1D KdV equation, the 2D barotropic vorticity equation, sea-surface temperature, and fine-tuning of FourCastNet on ERA5, the method sustains long-horizon rollouts over thousands of steps, with the largest gains out-of-distribution.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2026/controlling-transient-amplification-improves-long-horizon-rollouts/index.html" class="no-external">
+<div class="listing-date">
+May 9, 2026
+</div>
+<div class="listing-author">
+Adeel Pervez, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+arXiv
+</div>
+<div class="metadata-value listing-year">
+2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="4" data-categories="SWRlbnRpZmlhYmlsaXR5JTJDUmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ1RoZW9yeQ==" data-listing-date-sort="1773273600000" data-listing-file-modified-sort="1790955340975" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="1" data-listing-word-count-sort="1">
 <div class="body">
 <h3 class="no-anchor listing-title">
 <a href="../papers/2026/statistical-and-structural-identifiability-in-representation-learning/index.html" class="no-external">Statistical and structural identifiability in representation learning</a>
@@ -498,6 +602,144 @@ ICLR
 </div>
 <div class="metadata-value listing-year">
 2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="5" data-categories="QUklMjBmb3IlMjBTY2llbmNlJTJDRHluYW1pY2FsJTIwU3lzdGVtcyUyQ0ludGVycHJldGFiaWxpdHk=" data-listing-date-sort="1772582400000" data-listing-file-modified-sort="1790955340973" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="11" data-listing-word-count-sort="2183">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2026/single-cell-dynamics-ode/index.html" class="no-external">Learning Explicit Single-Cell Dynamics Using ODE Representations</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('QUklMjBmb3IlMjBTY2llbmNl'); return false;">AI for Science</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('RHluYW1pY2FsJTIwU3lzdGVtcw=='); return false;">Dynamical Systems</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('SW50ZXJwcmV0YWJpbGl0eQ=='); return false;">Interpretability</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2026/single-cell-dynamics-ode/index.html" class="no-external">
+<p>Modeling the dynamics of cellular differentiation is fundamental to advancing the understanding and treatment of diseases associated with this process, such as cancer. With the rapid growth of single-cell datasets, this has also become a particularly promising and active domain for machine learning. Current state-of-the-art models, however, rely on computationally expensive optimal transport preprocessing and multi-stage training, while also not discovering explicit gene interactions. To address these challenges we propose Cell-Mechanistic Neural Networks (Cell-MNN), an encoder-decoder architecture whose latent representation is a locally linearized ODE governing the dynamics of cellular evolution from stem to tissue cells. Cell-MNN is fully end-to-end (besides a standard PCA pre-processing) and its ODE representation explicitly learns biologically consistent and interpretable gene interactions. Empirically, we show that Cell-MNN achieves competitive performance on single-cell benchmarks, surpasses state-of-the-art baselines in scaling to larger datasets and joint training across multiple datasets, while also learning interpretable gene interactions that we validate against the TRRUST database of gene interactions.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2026/single-cell-dynamics-ode/index.html" class="no-external">
+<div class="listing-date">
+Mar 4, 2026
+</div>
+<div class="listing-author">
+Jan-Philipp von Bassewitz, Adeel Pervez, Marco Fumero, Matthew Robinson, Theofanis Karaletsos, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+ICLR
+</div>
+<div class="metadata-value listing-year">
+2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="6" data-categories="Q2F1c2FsJTIwSW5mZXJlbmNlJTJDUmVwcmVzZW50YXRpb24lMjBMZWFybmluZyUyQ0FJJTIwZm9yJTIwU2NpZW5jZQ==" data-listing-date-sort="1771804800000" data-listing-file-modified-sort="1790955340965" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2610">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2026/mendelian-randomization-representation-learning/index.html" class="no-external">Addressing Instrument–Outcome Confounding in Mendelian Randomization through Representation Learning</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('Q2F1c2FsJTIwSW5mZXJlbmNl'); return false;">Causal Inference</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('UmVwcmVzZW50YXRpb24lMjBMZWFybmluZw=='); return false;">Representation Learning</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('QUklMjBmb3IlMjBTY2llbmNl'); return false;">AI for Science</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2026/mendelian-randomization-representation-learning/index.html" class="no-external">
+<p>Mendelian Randomization (MR) uses genetic variants as instruments to estimate causal effects from observational data, but its core assumptions — especially the independence between instruments and unobserved confounders — are routinely broken by population stratification and assortative mating. Leveraging the growing availability of multi-environment biobank data, this work proposes a representation-learning framework that exploits cross-environment invariance to recover the latent exogenous component of a confounded genetic instrument. It provides identifiability guarantees for recovering these latent instruments under several mixing mechanisms, and demonstrates effective bias correction in simulations and in semi-synthetic experiments built from the All of Us Research Hub.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2026/mendelian-randomization-representation-learning/index.html" class="no-external">
+<div class="listing-date">
+Feb 23, 2026
+</div>
+<div class="listing-author">
+Shimeng Huang, Matthew R. Robinson, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+ICML
+</div>
+<div class="metadata-value listing-year">
+2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="7" data-categories="Q2F1c2FsJTIwRGlzY292ZXJ5JTJDSWRlbnRpZmlhYmlsaXR5JTJDVGhlb3J5" data-listing-date-sort="1766016000000" data-listing-file-modified-sort="1790955340814" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="7" data-listing-word-count-sort="1326">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html" class="no-external">Demystifying Amortized Causal Discovery with Transformers</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('Q2F1c2FsJTIwRGlzY292ZXJ5'); return false;">Causal Discovery</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('SWRlbnRpZmlhYmlsaXR5'); return false;">Identifiability</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('VGhlb3J5'); return false;">Theory</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html" class="no-external">
+<p>Supervised learning for causal discovery often performs well while seemingly sidestepping the assumptions classical methods need for identifiability. This work analyzes CSIvA — a transformer for amortized inference — on bivariate causal models and shows that the training distribution implicitly defines a prior on the causal model of the test data. Good performance is achieved exactly when that prior is good and the underlying model is identifiable. CSIvA fails to generalize to classes of causal models unseen in training; the authors show theoretically and empirically when training on mixtures of identifiable models with different structural assumptions restores generalization. Amortized causal discovery with transformers therefore still adheres to identifiability theory.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2025/demystifying-amortized-causal-discovery-with-transformers/index.html" class="no-external">
+<div class="listing-date">
+Dec 18, 2025
+</div>
+<div class="listing-author">
+Francesco Montagna, Max Cairney-Leeming, Dhanya Sridhar, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+TMLR
+</div>
+<div class="metadata-value listing-year">
+2025
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="8" data-categories="Q2F1c2FsJTIwRGlzY292ZXJ5JTJDVGhlb3J5" data-listing-date-sort="1721952000000" data-listing-file-modified-sort="1790955340815" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1583">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="../papers/2025/score-matching-through-the-roof/index.html" class="no-external">Score matching through the roof: linear, nonlinear, and latent variables causal discovery</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('Q2F1c2FsJTIwRGlzY292ZXJ5'); return false;">Causal Discovery</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('VGhlb3J5'); return false;">Theory</div>
+
+</div>
+<div class="delink listing-description"><a href="../papers/2025/score-matching-through-the-roof/index.html" class="no-external">
+<p>Causal discovery from observational data holds great promise, but existing methods rely on strong assumptions about the underlying causal structure, often requiring full observability of all relevant variables. This work leverages the score function ∇ log p(X) of the observed variables for causal discovery. First, it fine-tunes existing identifiability results for additive noise models, showing that the assumption of nonlinear causal mechanisms is not necessary. Second, it establishes conditions for inferring causal relations from the score even in the presence of hidden variables: the score can recover the equivalence class of causal graphs with latent variables (whereas prior results are restricted to the fully observable setting), and sufficient conditions are given for identifying direct causes in latent variable models. These insights yield AdaScore, a flexible algorithm for causal discovery on linear, nonlinear, and latent variable models, validated empirically.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="../papers/2025/score-matching-through-the-roof/index.html" class="no-external">
+<div class="listing-date">
+Jul 26, 2024
+</div>
+<div class="listing-author">
+Francesco Montagna, Philipp M. Faller, Patrick Blöbaum, Elke Kirschbaum, Francesco Locatello
+</div>
+<div class="metadata-value listing-venue">
+CLeaR
+</div>
+<div class="metadata-value listing-year">
+2025
 </div>
 </a>
 </div>
@@ -840,10 +1082,12 @@ document.addEventListener("DOMContentLoaded", function () {
   "Francesco Montagna": "francesco-montagna",
   "Jan-Philipp von Bassewitz": "jan-philipp-von-bassewitz",
   "Marco Fumero": "marco-fumero",
+  "Marek Jankola": "marek-jankola",
   "Riccardo Cadei": "riccardo-cadei",
   "Shimeng Huang": "shimeng-huang",
   "Valentino Maiorca": "valentino-maiorca",
-  "Walter Nelson": "walter-nelson"
+  "Walter Nelson": "walter-nelson",
+  "Yiwen Qiu": "yiwen-qiu"
 };</script>
 <script>
 // Author line for publication listing rows. Quarto renders the `author` field as
