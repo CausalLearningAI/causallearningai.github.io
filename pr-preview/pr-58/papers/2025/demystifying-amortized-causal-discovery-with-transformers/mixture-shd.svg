@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360">
+  <rect width="900" height="360" fill="#fbfaf7"/>
+  <g font-family="Inter, sans-serif">
+    <!-- axes -->
+    <line x1="90" y1="300" x2="840" y2="300" stroke="#16161d" stroke-width="1.5"/>
+    <line x1="90" y1="40"  x2="90"  y2="300" stroke="#16161d" stroke-width="1.5"/>
+
+    <!-- y ticks: SHD 0, 0.2, 0.5 (random baseline) -->
+    <!-- y=300 -> SHD 0 ; y=40 -> SHD 0.6.  scale: 1 SHD unit = (300-40)/0.6 = 433.3 px -->
+    <!-- 0.5 -> 300 - 0.5*433.3 = 83.3 ; 0.2 -> 300 - 0.2*433.3 = 213.3 -->
+    <g font-size="12" fill="#6f6f78">
+      <line x1="86" y1="300" x2="90" y2="300" stroke="#16161d" stroke-width="1.5"/>
+      <text x="78" y="304" text-anchor="end">0.0</text>
+      <line x1="86" y1="213.3" x2="90" y2="213.3" stroke="#16161d" stroke-width="1.5"/>
+      <text x="78" y="217" text-anchor="end">0.2</text>
+      <line x1="86" y1="83.3" x2="90" y2="83.3" stroke="#16161d" stroke-width="1.5"/>
+      <text x="78" y="87" text-anchor="end">0.5</text>
+    </g>
+
+    <!-- random baseline at SHD = 0.5 -->
+    <line x1="90" y1="83.3" x2="840" y2="83.3" stroke="#6f6f78" stroke-width="1.5" stroke-dasharray="6 5"/>
+    <text x="835" y="76" text-anchor="end" font-size="12" fill="#6f6f78">random baseline (SHD = 0.5)</text>
+
+    <!-- group 1: Linear test data -->
+    <!-- single-SCM bar ~0.5 -->
+    <rect x="180" y="83.3" width="70" height="216.7" fill="#6f6f78" opacity="0.55"/>
+    <text x="215" y="76" text-anchor="middle" font-size="12" fill="#6f6f78">~0.5</text>
+    <!-- mixed bar ~0.2 -->
+    <rect x="260" y="213.3" width="70" height="86.7" fill="#026234"/>
+    <text x="295" y="206" text-anchor="middle" font-size="12" fill="#026234">~0.2</text>
+    <text x="255" y="322" text-anchor="middle" font-size="13" fill="#16161d">Linear test data</text>
+
+    <!-- group 2: Nonlinear test data -->
+    <rect x="500" y="83.3" width="70" height="216.7" fill="#6f6f78" opacity="0.55"/>
+    <text x="535" y="76" text-anchor="middle" font-size="12" fill="#6f6f78">~0.5</text>
+    <rect x="580" y="213.3" width="70" height="86.7" fill="#026234"/>
+    <text x="615" y="206" text-anchor="middle" font-size="12" fill="#026234">~0.2</text>
+    <text x="575" y="322" text-anchor="middle" font-size="13" fill="#16161d">Nonlinear test data</text>
+
+    <!-- legend -->
+    <rect x="690" y="120" width="16" height="16" fill="#6f6f78" opacity="0.55"/>
+    <text x="712" y="133" font-size="12" fill="#16161d">single-mechanism training</text>
+    <rect x="690" y="146" width="16" height="16" fill="#026234"/>
+    <text x="712" y="159" font-size="12" fill="#16161d">mixed-mechanism training</text>
+
+    <!-- y label -->
+    <text x="36" y="170" text-anchor="middle" font-size="13" fill="#6f6f78" transform="rotate(-90 36 170)">test SHD (lower is better)</text>
+  </g>
+</svg>
